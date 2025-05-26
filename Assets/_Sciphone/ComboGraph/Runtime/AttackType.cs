@@ -1,11 +1,18 @@
-using UnityEngine;
-
-namespace Sciphone
+namespace Sciphone.ComboGraph
 {
     public enum AttackType
     {
         None,
-        Light,
-        Heavy
+        LightAttack,
+        HeavyAttack,
+        SprintLightAttack,
+        SprintHeavyAttack,
+        LightHoldAttack,
+        HeavyHoldAttack,
+        DodgeAttack,
+        FrontFrontLightAttack,
+        FrontFrontHeavyAttack,
+        BackFrontLightAttack,
+        BackFrontHeavyAttack
     }
 }

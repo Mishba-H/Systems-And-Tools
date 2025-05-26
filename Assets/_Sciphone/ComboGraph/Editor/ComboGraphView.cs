@@ -7,7 +7,7 @@ using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Sciphone
+namespace Sciphone.ComboGraph
 {
     public class ComboGraphView : GraphView
     {

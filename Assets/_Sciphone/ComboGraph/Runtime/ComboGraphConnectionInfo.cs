@@ -1,6 +1,6 @@
 using System;
 
-namespace Sciphone
+namespace Sciphone.ComboGraph
 {
     [Serializable]
     public class ComboGraphConnectionInfo

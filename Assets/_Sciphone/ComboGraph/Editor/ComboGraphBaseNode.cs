@@ -4,7 +4,7 @@ using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
-namespace Sciphone
+namespace Sciphone.ComboGraph
 {
     [Serializable]
     public class ComboGraphBaseNode : Node

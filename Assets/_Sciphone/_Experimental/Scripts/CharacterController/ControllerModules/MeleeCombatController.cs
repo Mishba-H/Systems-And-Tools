@@ -1,8 +1,8 @@
 using System;
 using UnityEngine;
 using System.Collections.Generic;
+using Sciphone.ComboGraph;
 using Sciphone;
-using System.Linq;
 
 [Serializable]
 public class MeleeCombatController : MonoBehaviour, IControllerModule
@@ -228,20 +228,4 @@ public class AttackData
     public string attackName;
     public AttackType attackType;
     public float attackRange = 3f;
-}
-
-public enum AttackType
-{
-    None,
-    LightAttack,
-    HeavyAttack,
-    SprintLightAttack,
-    SprintHeavyAttack,
-    LightHoldAttack,
-    HeavyHoldAttack,
-    DodgeAttack,
-    FrontFrontLightAttack,
-    FrontFrontHeavyAttack,
-    BackFrontLightAttack,
-    BackFrontHeavyAttack
 }

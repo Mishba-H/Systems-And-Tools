@@ -6,7 +6,7 @@ using UnityEditor.Callbacks;
 using UnityEditor;
 #endif
 
-namespace Sciphone
+namespace Sciphone.ComboGraph
 {
     [CreateAssetMenu(fileName = "NewComboGraph", menuName = "ComboGraph/New Combo Graph")]
     public class ComboGraphAsset : ScriptableObject

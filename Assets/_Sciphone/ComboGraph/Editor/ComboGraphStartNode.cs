@@ -2,7 +2,7 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace Sciphone
+namespace Sciphone.ComboGraph
 {
     public class ComboGraphStartNode : ComboGraphBaseNode
     {

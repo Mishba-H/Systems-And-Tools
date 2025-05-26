@@ -1,7 +1,6 @@
 using System;
-using UnityEngine;
 
-namespace Sciphone
+namespace Sciphone.ComboGraph
 {
     [Serializable]
     public class AttackData

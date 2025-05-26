@@ -1,8 +1,7 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 
-namespace Sciphone
+namespace Sciphone.ComboGraph
 {
     [Serializable]
     public class ComboGraphNodeInfo

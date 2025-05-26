@@ -1,6 +1,7 @@
 using System;
 using System.Linq.Expressions;
 using UnityEngine;
+using Sciphone.ComboGraph;
 
 [Serializable]
 public abstract class MeleeCombatAction : CharacterAction

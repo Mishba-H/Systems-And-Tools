@@ -1,5 +1,5 @@
 #if UNITY_EDITOR
-namespace Sciphone
+namespace Sciphone.ComboGraph
 {
     public class ComboGraphEndNode : ComboGraphBaseNode
     {
