@@ -51,13 +51,13 @@ public class ApplyRootMotionProperty : AnimationStateProperty
 }
 
 [Serializable]
-public class CancellableProperty : AnimationStateProperty
+public class NotCancellableProperty : AnimationStateProperty
 {
-    public bool cancellable = false;
+    public bool notCancellable = true;
     public override object Value
     {
-        get => cancellable;
-        set => cancellable = (bool)value;
+        get => notCancellable;
+        set => notCancellable = (bool)value;
     }
 }
 
@@ -74,7 +74,7 @@ public class PlaybackSpeedProperty : AnimationStateProperty
 
 public class BlendDurationProperty : AnimationStateProperty
 {
-    [Range(0f, 1f)] public float blendDuration = 0.2f;
+    [Range(0f, 3f)] public float blendDuration = 0.2f;
     public override object Value 
     { 
         get => blendDuration; 

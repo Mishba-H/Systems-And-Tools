@@ -51,15 +51,6 @@ public class AnimationClipState : AnimationStateInfo
         {
             playable.SetDuration(clip.length);
         }
-        /*if (TryGetProperty<RootMotionCurvesProperty>(out property))
-        {
-            var playWindow = new Vector2(0f, 1f);
-            if (TryGetProperty<PlayWindowProperty>(out AnimationStateProperty normalizedTimes))
-            {
-                playWindow = (normalizedTimes as PlayWindowProperty).playWindow;
-            }
-            property.Value = clip.ExtractRootMotionData(playWindow.x, playWindow.y);
-        }*/
     }
     public override void ResetState(float normalizedTime = 0f)
     {
@@ -136,15 +127,6 @@ public class FourWayBlendState : AnimationStateInfo
                 }
             }
         }
-        /*if (TryGetProperty<RootMotionCurvesProperty>(out property))
-        {
-            var playWindow = new Vector2(0f, 1f);
-            if (TryGetProperty<PlayWindowProperty>(out AnimationStateProperty normalizedTimes))
-            {
-                playWindow = (normalizedTimes as PlayWindowProperty).playWindow;
-            }
-            property.Value = Forward.ExtractRootMotionData(playWindow.x, playWindow.y);
-        }*/
     }
     public override void ResetState(float normalizedTime = 0f)
     {
@@ -271,15 +253,6 @@ public class EightWayBlendState : AnimationStateInfo
                 }
             }
         }
-        /*if (TryGetProperty<RootMotionCurvesProperty>(out property))
-        {
-            var playWindow = new Vector2(0f, 1f);
-            if (TryGetProperty<PlayWindowProperty>(out AnimationStateProperty normalizedTimes))
-            {
-                playWindow = (normalizedTimes as PlayWindowProperty).playWindow;
-            }
-            property.Value = Forward.ExtractRootMotionData(playWindow.x, playWindow.y);
-        }*/
     }
     public override void ResetState(float normalizedTime = 0f)
     {

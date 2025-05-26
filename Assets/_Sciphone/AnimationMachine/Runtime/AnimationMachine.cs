@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Sciphone;
+using UnityEditor.VersionControl;
 using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
@@ -82,6 +83,10 @@ public class AnimationMachine : MonoBehaviour
 
     public void InitializeGraph()
     {
+#if UNITY_EDITOR
+        InititalizeRootMotionProperty();
+#endif
+
         playableGraph = PlayableGraph.Create(graphName);
         playableGraph.SetTimeUpdateMode(DirectorUpdateMode.Manual);
         GraphVisualizerClient.Show(playableGraph);
@@ -203,7 +208,7 @@ public class AnimationMachine : MonoBehaviour
 
     public void PlayActive(string stateName, string layerName)
     {
-        if (activeState.TryGetProperty<CancellableProperty>(out _))
+        if (activeState.TryGetProperty<NotCancellableProperty>(out _))
         {
             return;
         }
@@ -253,7 +258,7 @@ public class AnimationMachine : MonoBehaviour
 
     public void PlayOneShot(AnimationStateInfo state)
     {
-        if (activeState.TryGetProperty<CancellableProperty>(out _))
+        if (activeState.TryGetProperty<NotCancellableProperty>(out _))
         {
             return;
         }
@@ -414,6 +419,41 @@ public class AnimationMachine : MonoBehaviour
             playableGraph.Destroy();
     }
 
+#if UNITY_EDITOR
+    [Button(nameof(InititalizeRootMotionProperty))]
+    public void InititalizeRootMotionProperty()
+    {
+        foreach (var layer in layers)
+        {
+            foreach (var state in layer.states)
+            {
+                if (state.TryGetProperty<RootMotionCurvesProperty>(out var curve))
+                {
+                    var playWindow = new Vector2(0f, 1f);
+                    if (state.TryGetProperty<PlayWindowProperty>(out var normalizedTimes))
+                    {
+                        playWindow = (normalizedTimes as PlayWindowProperty).playWindow;
+                    }
+
+                    if (state is AnimationClipState)
+                    {
+                        curve.Value = (state as AnimationClipState).clip.ExtractRootMotionData(playWindow.x, playWindow.y);
+                    }
+                    else if (state is FourWayBlendState)
+                    {
+                        curve.Value = (state as FourWayBlendState).Forward.ExtractRootMotionData(playWindow.x, playWindow.y);
+                    }
+                    else if (state is EightWayBlendState)
+                    {
+                        curve.Value = (state as EightWayBlendState).Forward.ExtractRootMotionData(playWindow.x, playWindow.y);
+                    }
+                }
+            }
+        }
+
+        UnityEditor.EditorUtility.SetDirty(this);
+        UnityEditor.AssetDatabase.SaveAssets();
+    }
 
     [Button(nameof(ImportLayersFromAsset))]
     public void ImportLayersFromAsset(ScriptableAnimationMachineAsset asset)
@@ -426,7 +466,6 @@ public class AnimationMachine : MonoBehaviour
     {
         asset.layers = this.layers;
 
-#if UNITY_EDITOR
         UnityEditor.EditorUtility.SetDirty(asset);
         UnityEditor.AssetDatabase.SaveAssets();
 #endif
