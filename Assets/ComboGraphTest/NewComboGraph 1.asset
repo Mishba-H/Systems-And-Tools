@@ -1,0 +1,181 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 497cc32a5e0962242810202e8e43f4a3, type: 3}
+  m_Name: NewComboGraph 1
+  m_EditorClassIdentifier: 
+  nodeInfos:
+  - rid: 7531493742355415157
+  - rid: 7531493742355415158
+  - rid: 7531493742355415161
+  - rid: 7531493742355415164
+  - rid: 7531493742355415167
+  - rid: 7531493743936405595
+  - rid: 4945720378451034112
+  - rid: 4945720378451034114
+  connectionInfos:
+  - rid: 7531493742355415160
+  - rid: 7531493742355415163
+  - rid: 7531493742355415166
+  - rid: 7531493742355415169
+  - rid: 7531493743936405596
+  - rid: 7531493743936405597
+  currentNodeInfo:
+    rid: -2
+  references:
+    version: 2
+    RefIds:
+    - rid: -2
+      type: {class: , ns: , asm: }
+    - rid: 4945720378451034112
+      type: {class: ComboGraphAttackNodeInfo, ns: Sciphone, asm: ComboGraph}
+      data:
+        guid: ffafe17b-1a21-45b0-b083-82cb2666314f
+        position: {x: 1068, y: -380}
+        nodeType: 2
+        attackData:
+          rid: 4945720378451034113
+    - rid: 4945720378451034113
+      type: {class: AttackData, ns: Sciphone, asm: ComboGraph}
+      data:
+        attackName: NewAttack
+        attackType: 0
+    - rid: 4945720378451034114
+      type: {class: ComboGraphAttackNodeInfo, ns: Sciphone, asm: ComboGraph}
+      data:
+        guid: 2c2e8ace-fe2c-4101-9570-e71c033ef24b
+        position: {x: 1068, y: -100}
+        nodeType: 2
+        attackData:
+          rid: 4945720378451034115
+    - rid: 4945720378451034115
+      type: {class: AttackData, ns: Sciphone, asm: ComboGraph}
+      data:
+        attackName: NewAttack
+        attackType: 0
+    - rid: 7531493742355415157
+      type: {class: ComboGraphStartNodeInfo, ns: Sciphone, asm: ComboGraph}
+      data:
+        guid: 4acf469d-67a3-48f0-ba3d-774c6bef1eb1
+        position: {x: 191, y: 233}
+        nodeType: 1
+    - rid: 7531493742355415158
+      type: {class: ComboGraphAttackNodeInfo, ns: Sciphone, asm: ComboGraph}
+      data:
+        guid: 7185eb81-5371-47dc-a5e7-6619ca317d4c
+        position: {x: 339, y: 128}
+        nodeType: 2
+        attackData:
+          rid: 7531493742355415159
+    - rid: 7531493742355415159
+      type: {class: AttackData, ns: Sciphone, asm: ComboGraph}
+      data:
+        attackName: Att
+        attackType: 0
+    - rid: 7531493742355415160
+      type: {class: ComboGraphConnectionInfo, ns: Sciphone, asm: ComboGraph}
+      data:
+        inputPort:
+          nodeId: 7185eb81-5371-47dc-a5e7-6619ca317d4c
+          portIndex: 0
+        outputPort:
+          nodeId: 4acf469d-67a3-48f0-ba3d-774c6bef1eb1
+          portIndex: 0
+    - rid: 7531493742355415161
+      type: {class: ComboGraphAttackNodeInfo, ns: Sciphone, asm: ComboGraph}
+      data:
+        guid: 40ecd13b-f0ef-4757-9fe7-2bcaac187cac
+        position: {x: 742, y: -85}
+        nodeType: 2
+        attackData:
+          rid: 7531493742355415162
+    - rid: 7531493742355415162
+      type: {class: AttackData, ns: Sciphone, asm: ComboGraph}
+      data:
+        attackName: NewAttack
+        attackType: 0
+    - rid: 7531493742355415163
+      type: {class: ComboGraphConnectionInfo, ns: Sciphone, asm: ComboGraph}
+      data:
+        inputPort:
+          nodeId: 40ecd13b-f0ef-4757-9fe7-2bcaac187cac
+          portIndex: 0
+        outputPort:
+          nodeId: 7185eb81-5371-47dc-a5e7-6619ca317d4c
+          portIndex: 0
+    - rid: 7531493742355415164
+      type: {class: ComboGraphAttackNodeInfo, ns: Sciphone, asm: ComboGraph}
+      data:
+        guid: e502ac7d-4a29-4c78-98f0-263f2f92aeb1
+        position: {x: 647, y: 341}
+        nodeType: 2
+        attackData:
+          rid: 7531493742355415165
+    - rid: 7531493742355415165
+      type: {class: AttackData, ns: Sciphone, asm: ComboGraph}
+      data:
+        attackName: ack
+        attackType: 0
+    - rid: 7531493742355415166
+      type: {class: ComboGraphConnectionInfo, ns: Sciphone, asm: ComboGraph}
+      data:
+        inputPort:
+          nodeId: e502ac7d-4a29-4c78-98f0-263f2f92aeb1
+          portIndex: 0
+        outputPort:
+          nodeId: 7185eb81-5371-47dc-a5e7-6619ca317d4c
+          portIndex: 0
+    - rid: 7531493742355415167
+      type: {class: ComboGraphAttackNodeInfo, ns: Sciphone, asm: ComboGraph}
+      data:
+        guid: 2dcab76b-6a8f-4588-bf8c-e8aec36cdf0e
+        position: {x: 876, y: 187}
+        nodeType: 2
+        attackData:
+          rid: 7531493742355415168
+    - rid: 7531493742355415168
+      type: {class: AttackData, ns: Sciphone, asm: ComboGraph}
+      data:
+        attackName: NewAttack
+        attackType: 0
+    - rid: 7531493742355415169
+      type: {class: ComboGraphConnectionInfo, ns: Sciphone, asm: ComboGraph}
+      data:
+        inputPort:
+          nodeId: 2dcab76b-6a8f-4588-bf8c-e8aec36cdf0e
+          portIndex: 0
+        outputPort:
+          nodeId: e502ac7d-4a29-4c78-98f0-263f2f92aeb1
+          portIndex: 0
+    - rid: 7531493743936405595
+      type: {class: ComboGraphEndNodeInfo, ns: Sciphone, asm: ComboGraph}
+      data:
+        guid: 3c22cfd9-60bd-494d-a410-f279f701378e
+        position: {x: 1169, y: 156}
+        nodeType: 3
+    - rid: 7531493743936405596
+      type: {class: ComboGraphConnectionInfo, ns: Sciphone, asm: ComboGraph}
+      data:
+        inputPort:
+          nodeId: 3c22cfd9-60bd-494d-a410-f279f701378e
+          portIndex: 0
+        outputPort:
+          nodeId: 40ecd13b-f0ef-4757-9fe7-2bcaac187cac
+          portIndex: 0
+    - rid: 7531493743936405597
+      type: {class: ComboGraphConnectionInfo, ns: Sciphone, asm: ComboGraph}
+      data:
+        inputPort:
+          nodeId: 3c22cfd9-60bd-494d-a410-f279f701378e
+          portIndex: 0
+        outputPort:
+          nodeId: 2dcab76b-6a8f-4588-bf8c-e8aec36cdf0e
+          portIndex: 0

@@ -1,0 +1,17 @@
+{
+    "name": "Sciphone.Runtime",
+    "rootNamespace": "Sciphone",
+    "references": [
+        "GUID:696a0953692949b40bec8730e64e1fdd",
+        "GUID:d1b444302b718f44cb143fec387f1e3e"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

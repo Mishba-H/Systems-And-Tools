@@ -1,0 +1,18 @@
+{
+    "name": "Sciphone.Editor",
+    "rootNamespace": "Sciphone.Editor",
+    "references": [
+        "GUID:23117dc810931e14da96ee7d66e745ee",
+        "GUID:696a0953692949b40bec8730e64e1fdd",
+        "GUID:1b845e2499b39be4aab3e6ac2c8aa02a"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

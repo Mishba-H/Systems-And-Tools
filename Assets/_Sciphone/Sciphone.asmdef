@@ -1,0 +1,21 @@
+{
+    "name": "Sciphone",
+    "rootNamespace": "Sciphone",
+    "references": [
+        "GUID:1b845e2499b39be4aab3e6ac2c8aa02a",
+        "GUID:696a0953692949b40bec8730e64e1fdd",
+        "GUID:75469ad4d38634e559750d17036d5f7c",
+        "GUID:d8e7b33ba1e4a89fc8a64b6b1e97a6ac",
+        "GUID:d1b444302b718f44cb143fec387f1e3e",
+        "GUID:23117dc810931e14da96ee7d66e745ee"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

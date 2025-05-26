@@ -1,0 +1,140 @@
+using System;
+using UnityEngine;
+
+public interface IAnimationProperty
+{
+    object Value { get; set; }
+}
+[Serializable]
+public abstract class AnimationStateProperty : IAnimationProperty
+{
+    public virtual object Value { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+}
+[Serializable]
+public abstract class AnimationLayerProperty : IAnimationProperty
+{
+    public virtual object Value { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+}
+
+#region ANIMATION_STATE_PROPERTIES
+[Serializable]
+public class LoopProperty : AnimationStateProperty
+{
+    public bool loop = true;
+    public override object Value
+    {
+        get => loop;
+        set => loop = (bool)value;
+    }
+}
+
+[Serializable]
+public class PlayWindowProperty : AnimationStateProperty
+{
+    [MinMaxSlider(0, 1)] public Vector2 playWindow = new Vector2(0, 1);
+    public override object Value
+    {
+        get => playWindow;
+        set => playWindow = (Vector2)value;
+    }
+}
+
+[Serializable]
+public class ApplyRootMotionProperty : AnimationStateProperty
+{
+    public bool applyRootMotion = true;
+    public override object Value
+    {
+        get => applyRootMotion;
+        set => applyRootMotion = (bool)value;
+    }
+}
+
+[Serializable]
+public class CancellableProperty : AnimationStateProperty
+{
+    public bool cancellable = false;
+    public override object Value
+    {
+        get => cancellable;
+        set => cancellable = (bool)value;
+    }
+}
+
+[Serializable]
+public class PlaybackSpeedProperty : AnimationStateProperty
+{
+    public float playbackSpeed = 1.0f;
+    public override object Value
+    {
+        get => playbackSpeed;
+        set => playbackSpeed = (float)value;
+    }
+}
+
+public class BlendDurationProperty : AnimationStateProperty
+{
+    [Range(0f, 1f)] public float blendDuration = 0.2f;
+    public override object Value 
+    { 
+        get => blendDuration; 
+        set => blendDuration = (float)value; 
+    }
+}
+
+[Serializable]
+public class RootMotionCurvesProperty : AnimationStateProperty
+{
+    public RootMotionData rootMotionData;
+    public override object Value
+    {
+        get => rootMotionData;
+        set => rootMotionData = (RootMotionData)value;
+    }
+}
+[Serializable]
+public struct RootMotionData
+{
+    public AnimationCurve rootTX;
+    public AnimationCurve rootTY;
+    public AnimationCurve rootTZ;
+    public AnimationCurve rootQX;
+    public AnimationCurve rootQY;
+    public AnimationCurve rootQZ;
+    public AnimationCurve rootQW;
+}
+#endregion
+
+#region ANIMATION_LAYER_PROPERTIES
+[Serializable]
+public class OverrideLayerProperty : AnimationLayerProperty
+{
+    public float weight = 0f;
+    public override object Value 
+    {
+        get => weight; 
+        set => weight = (float)value; 
+    }
+}
+[Serializable]
+public class AdditiveLayerProperty : AnimationLayerProperty
+{
+    public float weight = 0f;
+    public override object Value
+    {
+        get => weight;
+        set => weight = (float)value;
+    }
+}
+
+[Serializable]
+public class AvatarMaskProperty : AnimationLayerProperty
+{
+    public AvatarMask mask;
+    public override object Value
+    {
+        get => mask;
+        set => mask = (AvatarMask)value;
+    }
+}
+#endregion
