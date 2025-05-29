@@ -14,9 +14,9 @@ public class Evade : MeleeCombatAction
     public override void OnEnable()
     {
         base.OnEnable();
-        InputReader.instance.Dodge += OnDodgeInput;
+        character.characterCommand.DodgeCommand += OnDodgeCommand;
     }
-    private void OnDodgeInput()
+    private void OnDodgeCommand()
     {
         if (!CanPerform) return;
 
@@ -32,7 +32,6 @@ public class Evade : MeleeCombatAction
         if (baseController != null)
         {
             var baseExpression = (Expression<Func<bool>>)(() =>
-                character.isGrounded &&
                 !character.PerformingAction<Sprint>() &&
                 !character.PerformingAction<Jump>() &&
                 !character.PerformingAction<Fall>());
@@ -63,7 +62,7 @@ public class Evade : MeleeCombatAction
     {
         base.EvaluateStatus();
 
-        if (IsBeingPerformed && (MathF.Abs(character.animMachine.activeState.GetNormalizedTime() - 1f) < 0.01f || !character.isGrounded))
+        if (IsBeingPerformed && (MathF.Abs(character.animMachine.activeState.GetNormalizedTime() - 1f) < 0.01f))
         {
             IsBeingPerformed = false;
         }
@@ -95,7 +94,7 @@ public class Roll : MeleeCombatAction
     public override void OnEnable()
     {
         base.OnEnable();
-        InputReader.instance.Dodge += OnDodgeInput;
+        character.characterCommand.DodgeCommand += OnDodgeInput;
     }
     private void OnDodgeInput()
     {
@@ -113,7 +112,6 @@ public class Roll : MeleeCombatAction
         if (baseController != null)
         {
             var baseExpression = (Expression<Func<bool>>)(() =>
-                character.isGrounded  &&
                 !character.PerformingAction<Roll>() &&
                 !character.PerformingAction<Jump>() &&
                 !character.PerformingAction<Fall>());
@@ -144,7 +142,7 @@ public class Roll : MeleeCombatAction
     {
         base.EvaluateStatus();
 
-        if (IsBeingPerformed && (MathF.Abs(character.animMachine.activeState.GetNormalizedTime() - 1f) < 0.01f || !character.isGrounded))
+        if (IsBeingPerformed && (MathF.Abs(character.animMachine.activeState.GetNormalizedTime() - 1f) < 0.01f))
         {
             IsBeingPerformed = false;
         }
@@ -230,7 +228,6 @@ public class Attack : MeleeCombatAction
         if (baseController != null)
         {
             var baseExpression = (Expression<Func<bool>>)(() =>
-                character.isGrounded &&
                 !character.PerformingAction<Jump>() &&
                 !character.PerformingAction<AirJump>() &&
                 !character.PerformingAction<Fall>());

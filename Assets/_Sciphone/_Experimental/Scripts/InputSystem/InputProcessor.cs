@@ -14,9 +14,9 @@ public class InputProcessor : MonoBehaviour
 
     public List<InputSequence> allSequences;
 
-    public int memorySize = 10; // Max stored inputs
-    public float inputBufferTime = 1.0f; // Time window for sequences
-    public float moveInputThreshold = 0.7f; // Min magnitude to register a direction
+    public int memorySize = 10; // Max no. of buffered inputs
+    public float inputBufferTime = 1.0f;
+    public float moveInputThreshold = 0.7f; // Min magnitude to register a directional input
     private Vector2 storedMoveDir;
     private float previousMagnitude;
 
@@ -39,9 +39,9 @@ public class InputProcessor : MonoBehaviour
 
     private void Start()
     {
-        InputReader.instance.Move += OnMoveInput;
-        InputReader.instance.Attack += OnAttackInput;
-        InputReader.instance.AltAttack += OnAltAttackInput;
+        InputReader.instance.Subscribe("Move", OnMoveInput);
+        InputReader.instance.Subscribe("Attack", OnAttackInput);
+        InputReader.instance.Subscribe("AttackAlt", OnAttackAltInput);
     }
 
     private void Update()
@@ -49,30 +49,30 @@ public class InputProcessor : MonoBehaviour
         CleanBuffer();
     }
 
-    private void OnMoveInput(Vector2 vector)
+    private void OnMoveInput(InputAction.CallbackContext context)
     {
-        ProcessMoveInput(vector);
+        ProcessMoveInput(context.ReadValue<Vector2>());
     }
 
-    private void OnAttackInput(IInputInteraction interaction)
+    private void OnAttackInput(InputAction.CallbackContext context)
     {
-        if (interaction is TapInteraction)
+        if (context.interaction is TapInteraction)
         {
             RegisterInput(InputType.AttackTap);
         }
-        else if (interaction is HoldInteraction)
+        else if (context.interaction is HoldInteraction)
         {
             RegisterInput(InputType.AttackHold);
         }
     }
 
-    private void OnAltAttackInput(IInputInteraction interaction)
+    private void OnAttackAltInput(InputAction.CallbackContext context)
     {
-        if (interaction is TapInteraction)
+        if (context.interaction is TapInteraction)
         {
             RegisterInput(InputType.AltAttackTap);
         }
-        else if (interaction is HoldInteraction)
+        else if (context.interaction is HoldInteraction)
         {
             RegisterInput(InputType.AltAttackHold);
         }

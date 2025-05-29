@@ -10633,8 +10633,11 @@ GameObject:
   - component: {fileID: 371146018}
   - component: {fileID: 371146020}
   - component: {fileID: 371146024}
+  - component: {fileID: 371146026}
   - component: {fileID: 371146016}
+  - component: {fileID: 371146028}
   - component: {fileID: 371146022}
+  - component: {fileID: 371146027}
   - component: {fileID: 371146019}
   - component: {fileID: 371146014}
   - component: {fileID: 371146025}
@@ -10731,15 +10734,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 103b4033e1c07f24b8dc4171da5342f6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rb: {fileID: 0}
   timeScale: 1
-  isGrounded: 0
-  cameraOrientation: {fileID: 1276928875}
-  moveInput: {x: 0, y: 0}
-  moveDir: {x: 0, y: 0, z: 0}
-  animMachine: {fileID: 0}
-  characterAnimator: {fileID: 0}
-  characterDetector: {fileID: 0}
   actions:
   - rid: 3137252334503723017
   - rid: 3137252301772423169
@@ -10754,6 +10749,11 @@ MonoBehaviour:
   - rid: 3049075905773174794
   - rid: 3049075854944239627
   - rid: 3049075854944239628
+  animMachine: {fileID: 0}
+  characterCommand: {fileID: 0}
+  characterAnimator: {fileID: 0}
+  characterDetector: {fileID: 0}
+  characterMover: {fileID: 0}
   references:
     version: 2
     RefIds:
@@ -10789,7 +10789,6 @@ MonoBehaviour:
         canPerform: 0
         isBeingPerformed: 0
         controller: {fileID: 0}
-        forceWalk: 0
     - rid: 3137252301772423170
       type: {class: Run, ns: , asm: Sciphone}
       data:
@@ -10806,7 +10805,6 @@ MonoBehaviour:
         canPerform: 0
         isBeingPerformed: 0
         controller: {fileID: 0}
-        sprintCached: 0
     - rid: 3137252301772423172
       type: {class: Jump, ns: , asm: Sciphone}
       data:
@@ -10953,7 +10951,7 @@ CapsuleCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 2
   m_Radius: 0.28
   m_Height: 1.7
@@ -10972,14 +10970,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   character: {fileID: 0}
-  groundLayer:
-    serializedVersion: 2
-    m_Bits: 1
-  sides: 5
-  radius: 0.28
-  noOfLayers: 3
-  groundCheckerHeight: 0.75
-  groundCheckerDepth: 0.15
   noOfRays: 15
   seperationAngle: 5
   targetCheckerHeight: 1.5
@@ -11037,9 +11027,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   graphName: Playable Graph
+  timeScale: 1
   useCustomFrameRate: 0
   frameRate: 24
-  timeScale: 1
   layers:
   - rid: 4945720422352290216
   - rid: 4945720422352290217
@@ -11053,7 +11043,6 @@ MonoBehaviour:
   animatorDeltaRotation: {x: 0, y: 0, z: 0, w: 0}
   rootDeltaPosition: {x: 0, y: 0, z: 0}
   rootDeltaRotation: {x: 0, y: 0, z: 0, w: 0}
-  rootLinearVelocity: {x: 0, y: 0, z: 0}
   references:
     version: 2
     RefIds:
@@ -11151,8 +11140,8 @@ MonoBehaviour:
         Backward: {fileID: 7400000, guid: c2aa4866de4e19546966e3d2a319e7b7, type: 3}
         BackwardRight: {fileID: 7400000, guid: f62381c450492044cb59a10f015a9cb0, type: 3}
         preview: 0
-        blendX: 0.000015258789
-        blendY: -0.38732532
+        blendX: 0
+        blendY: 1
         weights:
         - 0
         - 0
@@ -11185,7 +11174,7 @@ MonoBehaviour:
         BackwardRight: {fileID: 7400000, guid: b0d2665b92540fd43bd61b0a2a528489, type: 3}
         preview: 0
         blendX: 0
-        blendY: 0.8783396
+        blendY: 1
         weights:
         - 0
         - 0.8783396
@@ -33225,6 +33214,84 @@ MonoBehaviour:
         attackName: Combo_1_7
         attackType: 2
         attackRange: 3
+--- !u!114 &371146026
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 371146009}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a0dba2667a5a38149b00bffd775e274e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  characterCommand: {fileID: 371146028}
+  cameraTransform: {fileID: 23362794}
+  movementMode: 1
+  moveInput: {x: 0, y: 0}
+  sprint: 0
+  walk: 0
+  crouch: 0
+--- !u!114 &371146027
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 371146009}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 258ffa9c68752db4c9973da34e023a1b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  character: {fileID: 0}
+  timeScale: 1
+  maxBounces: 3
+  sweepDistance: 1.5
+  simulatePhysics: 1
+  simulationStep: 0.016666668
+  accumulatedTime: 0
+  worldVelocity: {x: 0, y: 0, z: 0}
+  gravityDirection: {x: 0, y: -1, z: 0}
+  gravityMagnitude: 10
+  terminalVelocity: -50
+  maxStepHeight: 0
+  maxStepWidth: 0
+  capsuleOrientation: 1
+  offset: {x: 0, y: 0.9, z: 0}
+  radius: 0.3
+  size: 1.8
+  skinWidth: 0.015
+  criticalSlopeAngle: 75
+  criticalWallAngle: 15
+  movementMode: 1
+  worldMoveDir: {x: 0, y: 0, z: 0}
+  faceDir: {x: 0, y: 0, z: 0}
+  rotateSpeed: 240
+  isGrounded: 1
+  groundLayer:
+    serializedVersion: 2
+    m_Bits: 1
+  sides: 6
+  noOfLayers: 3
+  groundCheckerHeight: 1
+  groundCheckerDepth: 0.3
+  rootDeltaPosition: {x: 0, y: 0, z: 0}
+  rootDeltaRotation: {x: 0, y: 0, z: 0, w: 0}
+  scaleFactor: {x: 0, y: 0, z: 0}
+--- !u!114 &371146028
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 371146009}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3e60a9ded89f6974fb0ba2bb91f47d74, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!43 &441665877
 Mesh:
   m_ObjectHideFlags: 0
@@ -46935,7 +47002,7 @@ MonoBehaviour:
         topClampAngle: 75
         bottomClampAngle: 75
         smoothTime: {x: 10, y: 1.5, z: 3.4}
-        horizontalRecentering: 1
+        horizontalRecentering: 0
         recenterTime: 50
         recenterDelay: 1.5
     - rid: 3049075833287737344
@@ -51112,7 +51179,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1958678679}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: 0.99999976, z: -0, w: 0.00078606606}
+  m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
   m_LocalPosition: {x: 0, y: 0, z: 4.73}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -51121,7 +51188,7 @@ Transform:
   - {fileID: 1958251753}
   - {fileID: 1958251841}
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 179.91, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
 --- !u!4 &1958251769
 Transform:
   m_ObjectHideFlags: 0

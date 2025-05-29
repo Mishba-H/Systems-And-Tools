@@ -72,7 +72,7 @@ public class MeleeCombatController : MonoBehaviour, IControllerModule
     }
     public void InitiateDodge()
     {
-        cachedDodgeDir = character.moveDir == Vector3.zero ? transform.forward : character.moveDir;
+        /*cachedDodgeDir = character.moveDir == Vector3.zero ? transform.forward : character.moveDir;
         if (character.PerformingAction<Sprint>())
         {
             dodgeDir = Vector2.up;
@@ -91,11 +91,11 @@ public class MeleeCombatController : MonoBehaviour, IControllerModule
         else
         {
             dodgeDir = Vector2.up;
-        }
+        }*/
     }
     public void HandleDodgeMotion()
     {
-        if (dodgeDir == Vector2.up)
+        /*if (dodgeDir == Vector2.up)
         {
             character.rb.linearVelocity = Quaternion.LookRotation(transform.forward, Vector3.up) *
                 character.animMachine.rootLinearVelocity.With(y: 0f, z: speedFactor * character.animMachine.rootLinearVelocity.z);
@@ -114,7 +114,7 @@ public class MeleeCombatController : MonoBehaviour, IControllerModule
         {
             character.rb.linearVelocity = Quaternion.LookRotation(-transform.right, Vector3.up) *
                 character.animMachine.rootLinearVelocity.With(y: 0f, z: speedFactor * character.animMachine.rootLinearVelocity.z);
-        }
+        }*/
     }
     public bool SelectAttack(AttackType attackType, int depth = 1)
     {
@@ -164,7 +164,7 @@ public class MeleeCombatController : MonoBehaviour, IControllerModule
     }
     public void CalculateAttackDir(float dt)
     {
-        if (character.moveInput.magnitude > 0.7f)
+        /*if (character.moveInput.magnitude > 0.7f)
         {
             attackDir = character.moveDir;
             attackDirTimer = 0f;
@@ -176,12 +176,12 @@ public class MeleeCombatController : MonoBehaviour, IControllerModule
             {
                 attackDir = character.transform.forward;
             }
-        }
+        }*/
     }
     public void HandleAttackMotion()
     {
-        character.rb.linearVelocity = Quaternion.LookRotation(transform.forward, Vector3.up) *
-                character.animMachine.rootLinearVelocity.With(y: 0f, z: speedFactor * character.animMachine.rootLinearVelocity.z);
+        /*character.rb.linearVelocity = Quaternion.LookRotation(transform.forward, Vector3.up) *
+                character.animMachine.rootLinearVelocity.With(y: 0f, z: speedFactor * character.animMachine.rootLinearVelocity.z);*/
     }
     public void HandleRotation(float dt)
     {
@@ -211,7 +211,7 @@ public class MeleeCombatController : MonoBehaviour, IControllerModule
     }
     public void SnapToGround()
     {
-        transform.position = new Vector3(transform.position.x, character.groundHit.point.y, transform.position.z);
+        /*transform.position = new Vector3(transform.position.x, character.groundHit.point.y, transform.position.z);*/
     }
 }
 

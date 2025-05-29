@@ -33,13 +33,12 @@ public class BaseController : MonoBehaviour, IControllerModule
     private Vector3 jumpDir;
     #endregion
 
-    private float speedFactor;
-
     private void Start()
     {
         foreach (var action in character.actions)
         {
-            action.IsBeingPerformed_OnValueChanged += CalculateTargetSpeed;
+            if (action is Idle || action is Walk || action is Run || action is Sprint || action is Crouch)
+                action.IsBeingPerformed_OnValueChanged += CalculateTargetSpeed;
         }
 
         character.animMachine.OnActiveStateChanged += CalculateSpeedFactor;
@@ -58,30 +57,12 @@ public class BaseController : MonoBehaviour, IControllerModule
             jumpDir = transform.forward;
         }
     }
-    public void HandleRotation(float dt)
+
+    public void CalculateTargetSpeed(bool value)
     {
-        if (character.PerformingAction<Sprint>())
-        {
-            //Player faces along the move direction
-            var targetForward = character.moveDir == Vector3.zero ? transform.forward : character.moveDir;
-            targetForward = new Vector3(targetForward.x, 0f, targetForward.z);
-            transform.forward = Vector3.Slerp(transform.forward, targetForward, rotateSpeed * dt);
-        }
-        else if (character.PerformingAction<Walk>() || character.PerformingAction<Run>())
-        {
-            //Player always faces in the direction of the dynamic forward
-            var targetForward = new Vector3(character.cameraOrientation.forward.x, 0f, character.cameraOrientation.forward.z);
-            transform.forward = Vector3.Slerp(transform.forward, targetForward, rotateSpeed * dt);
-        }
-        else if (character.PerformingAction<Jump>() || character.PerformingAction<AirJump>())
-        {
-            var targetForward = jumpDir;
-            transform.forward = Vector3.Slerp(transform.forward, targetForward, rotateSpeed * dt);
-        }
-    }
-    public void CalculateTargetSpeed(bool _)
-    {
-        if (character.PerformingAction <Idle>())
+        if (!value) return;
+
+        if (character.PerformingAction<Idle>())
         {
             targetSpeed = 0f;
         }
@@ -103,23 +84,35 @@ public class BaseController : MonoBehaviour, IControllerModule
             targetSpeed *= crouchSpeedMultiplier;
         }
     }
+
     private void CalculateSpeedFactor()
     {
-        if (character.animMachine.activeState.TryGetProperty<RootMotionCurvesProperty>(out AnimationStateProperty prop))
+        if (character.PerformingAction<Idle>())
         {
-            var curves = (RootMotionData)prop.Value;
-            var totalTime = curves.rootTZ.keys[curves.rootTZ.length - 1].time;
-            var totalZDisp = curves.rootTZ.Evaluate(totalTime) - curves.rootTZ.Evaluate(0f);
-            speedFactor = targetSpeed / (totalZDisp / totalTime);
+            character.characterMover.SetScaleFactor(new Vector3(1f, 0f, 1f));
+        }
+        else if (character.PerformingAction<Walk>() || character.PerformingAction<Run>() || 
+            character.PerformingAction<Sprint>() || character.PerformingAction<Crouch>())
+        {
+            if (character.animMachine.activeState.TryGetProperty<RootMotionCurvesProperty>(out var prop))
+            {
+                var curves = (RootMotionData)prop.Value;
+                var totalTime = curves.rootTZ.keys[curves.rootTZ.length - 1].time;
+                var totalZDisp = curves.rootTZ.Evaluate(totalTime) - curves.rootTZ.Evaluate(0f);
+
+                Vector3 speedFactor = new Vector3(1f, 0f, targetSpeed / (totalZDisp/totalTime));
+                character.characterMover.SetScaleFactor(speedFactor);
+            }
         }
     }
+
     public void SnapToGround()
     {
-        transform.position = new Vector3(transform.position.x, character.groundHit.point.y, transform.position.z);
+        /*transform.position = new Vector3(transform.position.x, character.groundHit.point.y, transform.position.z);*/
     }
     public void HandleGroundMovement()
     {
-        if (speedFactor == 0f)
+        /*if (speedFactor == 0f)
         {
             character.rb.linearVelocity = Vector3.zero;
             return;
@@ -133,7 +126,7 @@ public class BaseController : MonoBehaviour, IControllerModule
         {
             character.rb.linearVelocity = Quaternion.LookRotation(character.moveDir, Vector3.up) *
                 character.animMachine.rootLinearVelocity.With(y: 0f, z: speedFactor * character.animMachine.rootLinearVelocity.z);
-        }
+        }*/
     }
     public void InitiateJump()
     {
@@ -148,7 +141,7 @@ public class BaseController : MonoBehaviour, IControllerModule
             CalculateJumpVelocity(jumpHeight, jumpDistance);
             jumpDurationCounter = timeOfFlight * 0.5f;
         }
-        character.rb.linearVelocity = jumpVelocity;
+        /*character.rb.linearVelocity = jumpVelocity;*/
     }
     public void CalculateJumpVelocity(float jumpHeight, float jumpDistance)
     {
@@ -156,14 +149,14 @@ public class BaseController : MonoBehaviour, IControllerModule
         float jumpVelocityY = Mathf.Sqrt(2 * gravityValue * jumpHeight);
         timeOfFlight = gravityValue == 0f ? 0f : 2 * jumpVelocityY / gravityValue;
         float jumpVelocityXZ = timeOfFlight == 0f ? 0f : jumpDistance / timeOfFlight;
-        jumpVelocity = new Vector3(character.moveDir.x * jumpVelocityXZ, jumpVelocityY, character.moveDir.z * jumpVelocityXZ);
+        /*jumpVelocity = new Vector3(character.moveDir.x * jumpVelocityXZ, jumpVelocityY, character.moveDir.z * jumpVelocityXZ);*/
     }
     public void HandleAirMovement(float dt)
     {
-        float gravityValue = this.gravityValue * (float)Math.Pow(character.timeScale, 2);
+        /*float gravityValue = this.gravityValue * (float)Math.Pow(character.timeScale, 2);
         if (character.rb.linearVelocity.y > terminalVelocity)
             character.rb.AddForce(gravityValue * dt * Vector3.down, ForceMode.VelocityChange);
         else
-            character.rb.linearVelocity = new Vector3(character.rb.linearVelocity.x, character.timeScale * terminalVelocity, character.rb.linearVelocity.z);
+            character.rb.linearVelocity = new Vector3(character.rb.linearVelocity.x, character.timeScale * terminalVelocity, character.rb.linearVelocity.z);*/
     }
 }

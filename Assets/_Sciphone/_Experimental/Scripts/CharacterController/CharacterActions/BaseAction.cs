@@ -1,7 +1,6 @@
 using System.Linq.Expressions;
 using System;
 using UnityEngine;
-using UnityEngine.Playables;
 using UnityEngine.InputSystem;
 
 [Serializable]
@@ -9,9 +8,28 @@ public abstract class BaseAction : CharacterAction
 {
     [HideInInspector] public BaseController controller;
 }
+
 [Serializable]
 public class Idle : BaseAction
 {
+    private Vector3 moveDir;
+
+    public override void OnEnable()
+    {
+        base.OnEnable();
+
+        character.characterCommand.FaceDirCommand += CharacterCommand_FaceDirCommand; ;
+        character.characterCommand.MoveDirCommand += CharacterCommand_MoveDirCommand;
+    }
+    private void CharacterCommand_FaceDirCommand(Vector3 obj)
+    {
+        character.characterMover.SetFaceDir(obj);
+    }
+    private void CharacterCommand_MoveDirCommand(Vector3 dir)
+    {
+        moveDir = dir;
+        character.characterMover.SetMoveDir(moveDir);
+    }
     public override void CompileCondition()
     {
         Expression<Func<bool>> condition = () => true;
@@ -19,10 +37,7 @@ public class Idle : BaseAction
         if (baseController != null)
         {
             var baseExpression = (Expression<Func<bool>>)(() =>
-                character.isGrounded &&
-                !character.PerformingAction<Walk>() &&
-                !character.PerformingAction<Run>() &&
-                !character.PerformingAction<Sprint>() &&
+                character.characterMover.isGrounded  &&
                 !character.PerformingAction<Fall>() &&
                 !character.PerformingAction<Jump>() &&
                 !character.PerformingAction<AirJump>());
@@ -58,7 +73,7 @@ public class Idle : BaseAction
             return;
         }
 
-        if (character.moveInput.sqrMagnitude == 0f)
+        if (moveDir.sqrMagnitude == 0f)
         {
             IsBeingPerformed = true;
         }
@@ -67,34 +82,35 @@ public class Idle : BaseAction
             IsBeingPerformed = false;
         }
     }
-    public override void Update()
-    {
-        if (IsBeingPerformed)
-        {
-            controller.HandleRotation(Time.deltaTime);
-            controller.HandleGroundMovement();
-            controller.SnapToGround();
-        }
-    }
 }
+
 [Serializable]
 public class Walk : BaseAction
 {
-    public bool forceWalk;
+    private Vector3 moveDir;
+    private bool walk;
+
     public override void OnEnable()
     {
         base.OnEnable();
-        InputReader.instance.Walk += OnWalkInput;
-    }
 
-    private void OnWalkInput(bool walkPressed, InputDevice device)
+        character.characterCommand.FaceDirCommand += CharacterCommand_FaceDirCommand;
+        character.characterCommand.MoveDirCommand += CharacterCommand_MoveDirCommand;
+        character.characterCommand.WalkCommand += CharacterCommand_WalkCommand;
+    }
+    private void CharacterCommand_FaceDirCommand(Vector3 obj)
     {
-        if (device is Keyboard)
-        {
-            forceWalk = walkPressed;
-        }
+        character.characterMover.SetFaceDir(obj);
     }
-
+    private void CharacterCommand_WalkCommand(bool obj)
+    {
+        walk = obj;
+    }
+    private void CharacterCommand_MoveDirCommand(Vector3 dir)
+    {
+        moveDir = dir;
+        character.characterMover.SetMoveDir(moveDir);
+    }
     public override void CompileCondition()
     {
         Expression<Func<bool>> condition = () => true;
@@ -102,8 +118,7 @@ public class Walk : BaseAction
         if (baseController != null)
         {
             var baseExpression = (Expression<Func<bool>>)(() =>
-                character.isGrounded &&
-                !character.PerformingAction<Sprint>() &&
+                character.characterMover.isGrounded &&
                 !character.PerformingAction<Jump>() &&
                 !character.PerformingAction<AirJump>());
             condition = CombineExpressions(condition, baseExpression);
@@ -137,7 +152,7 @@ public class Walk : BaseAction
             IsBeingPerformed = false;
             return;
         }
-        if (character.moveInput.sqrMagnitude > 0f && !character.PerformingAction<Run>())
+        if (moveDir.sqrMagnitude > 0f && walk)
         {
             IsBeingPerformed = true;
         }
@@ -146,19 +161,35 @@ public class Walk : BaseAction
             IsBeingPerformed = false;
         }
     }
-    public override void Update()
-    {
-        if (IsBeingPerformed)
-        {
-            controller.HandleRotation(Time.deltaTime);
-            controller.HandleGroundMovement();
-            controller.SnapToGround();
-        }
-    }
 }
+
 [Serializable]
 public class Run : BaseAction
 {
+    private Vector3 moveDir;
+    private bool run;
+
+    public override void OnEnable()
+    {
+        base.OnEnable();
+
+        character.characterCommand.FaceDirCommand += CharacterCommand_FaceDirCommand;
+        character.characterCommand.MoveDirCommand += CharacterCommand_MoveDirCommand;
+        character.characterCommand.RunCommand += CharacterCommand_RunCommand;
+    }
+    private void CharacterCommand_FaceDirCommand(Vector3 obj)
+    {
+        character.characterMover.SetFaceDir(obj);
+    }
+    private void CharacterCommand_RunCommand(bool obj)
+    {
+        run = obj;
+    }
+    private void CharacterCommand_MoveDirCommand(Vector3 dir)
+    {
+        moveDir = dir;
+        character.characterMover.SetMoveDir(moveDir);
+    }
     public override void CompileCondition()
     {
         Expression<Func<bool>> condition = () => true;
@@ -167,9 +198,7 @@ public class Run : BaseAction
         if (baseController != null)
         {
             var baseExpression = (Expression<Func<bool>>)(() =>
-                character.isGrounded &&
-                !((Walk)character.GetAction<Walk>()).forceWalk &&
-                !character.PerformingAction<Sprint>() &&
+                character.characterMover.isGrounded &&
                 !character.PerformingAction<Jump>() &&
                 !character.PerformingAction<AirJump>());
             condition = CombineExpressions(condition, baseExpression);
@@ -203,7 +232,7 @@ public class Run : BaseAction
             IsBeingPerformed = false;
             return;
         }
-        if (character.moveInput.sqrMagnitude > 0.99f)
+        if (run)
         {
             IsBeingPerformed = true;
         }
@@ -212,53 +241,35 @@ public class Run : BaseAction
             IsBeingPerformed = false;
         }
     }
-    public override void Update()
-    {
-        if (IsBeingPerformed)
-        {
-            controller.HandleRotation(Time.deltaTime);
-            controller.HandleGroundMovement();
-            controller.SnapToGround();
-        }
-    }
 }
+
 [Serializable]
 public class Sprint : BaseAction
 {
-    public bool sprintCached;
+    private Vector3 moveDir;
+    private bool sprint;
+
     public override void OnEnable()
     {
         base.OnEnable();
-        InputReader.instance.Sprint += OnSprintInput;
-        IsBeingPerformed_OnValueChanged += Sprint_IsBeingPerformed_OnValueChanged;
-    }
 
-    private void Sprint_IsBeingPerformed_OnValueChanged(bool value)
+        character.characterCommand.FaceDirCommand += CharacterCommand_FaceDirCommand;
+        character.characterCommand.MoveDirCommand += CharacterCommand_MoveDirCommand;
+        character.characterCommand.SprintCommand += CharacterCommand_SprintCommand;
+    }
+    private void CharacterCommand_FaceDirCommand(Vector3 obj)
     {
-        character.GetAction<Fall>().EvaluateStatus();
-
-        if (character.PerformingAction<Jump>() || character.PerformingAction<Fall>() ||
-            character.PerformingAction<Evade>() || character.PerformingAction<Roll>())
-        {
-            sprintCached = true;
-        }
+        character.characterMover.SetFaceDir(obj);
     }
-
-    private void OnSprintInput(bool sprintPressed, InputDevice device)
+    private void CharacterCommand_SprintCommand(bool obj)
     {
-        if (!CanPerform || character.moveInput.sqrMagnitude == 0f) return;
-        if (device is Gamepad && sprintPressed)
-        {
-            IsBeingPerformed = true;
-        }
-        if (device is Keyboard)
-        {
-            IsBeingPerformed = sprintPressed;
-            if (sprintCached && !sprintPressed)
-                sprintCached = false;
-        }
+        sprint = obj;
     }
-
+    private void CharacterCommand_MoveDirCommand(Vector3 dir)
+    {
+        moveDir = dir;
+        character.characterMover.SetMoveDir(moveDir);
+    }
     public override void CompileCondition()
     {
         Expression<Func<bool>> condition = () => true;
@@ -267,7 +278,7 @@ public class Sprint : BaseAction
         if (baseController != null)
         {
             var baseExpression = (Expression<Func<bool>>)(() =>
-                character.isGrounded &&
+                character.characterMover.isGrounded &&
                 !character.PerformingAction<Jump>() &&
                 !character.PerformingAction<AirJump>() &&
                 !character.PerformingAction<Fall>());
@@ -302,42 +313,33 @@ public class Sprint : BaseAction
             IsBeingPerformed = false;
             return;
         }
-        if (sprintCached)
+        if (moveDir.sqrMagnitude > 0f && sprint)
         {
             IsBeingPerformed = true;
-            sprintCached = false;
         }
-        if (character.moveInput.sqrMagnitude == 0f)
+        else
         {
             IsBeingPerformed = false;
-            sprintCached = false;
-        }
-    }
-    public override void Update()
-    {
-        if (IsBeingPerformed)
-        {
-            controller.HandleRotation(Time.deltaTime);
-            controller.HandleGroundMovement();
-            controller.SnapToGround();
         }
     }
 }
+
 [Serializable]
 public class Crouch : BaseAction
 {
     public override void OnEnable()
     {
         base.OnEnable();
-        InputReader.instance.Crouch += CrouchPressed;
+        character.characterCommand.CrouchCommand += CharacterCommand_CrouchCommand;
     }
-
-    private void CrouchPressed()
+    private void CharacterCommand_CrouchCommand(bool crouch)
     {
-        if (!CanPerform) return;
-        IsBeingPerformed = !IsBeingPerformed;
+        if (!CanPerform)
+        {
+            IsBeingPerformed = false;
+        }
+        IsBeingPerformed = crouch;
     }
-
     public override void CompileCondition()
     {
         Expression<Func<bool>> condition = () => true;
@@ -345,7 +347,7 @@ public class Crouch : BaseAction
         if (baseController != null)
         {
             var baseExpression = (Expression<Func<bool>>)(() =>
-                character.isGrounded &&
+                character.characterMover.isGrounded &&
                 !character.PerformingAction<Sprint>() &&
                 !character.PerformingAction<Jump>() &&
                 !character.PerformingAction<AirJump>());
@@ -382,25 +384,23 @@ public class Crouch : BaseAction
         }
     }
 }
+
 [Serializable]
 public class Jump : BaseAction
 {
     public override void OnEnable()
     {
         base.OnEnable();
-        InputReader.instance.Jump += OnJumpInput;
+        character.characterCommand.JumpCommand += OnJumpInput;
     }
-    private void OnJumpInput(bool jumpPressed)
+    private void OnJumpInput()
     {
         if (!CanPerform) return;
-        if (jumpPressed)
-        {
-            IsBeingPerformed = true;
-            controller.InitiateJump();
-            controller.CalculateJumpDirection();
-        }
-    }
 
+        IsBeingPerformed = true;
+        controller.InitiateJump();
+        controller.CalculateJumpDirection();
+    }
     public override void CompileCondition()
     {
         Expression<Func<bool>> condition = () => true;
@@ -409,7 +409,7 @@ public class Jump : BaseAction
         if (baseController != null)
         {
             var baseExpression = (Expression<Func<bool>>)(() =>
-                character.isGrounded &&
+                character.characterMover.isGrounded &&
                 baseController.jumpDurationCounter <= 0f);
             condition = CombineExpressions(condition, baseExpression);
         }
@@ -439,7 +439,7 @@ public class Jump : BaseAction
     {
         base.EvaluateStatus();
 
-        if (IsBeingPerformed && character.isGrounded && character.rb.linearVelocity.y < 0f)
+        if (IsBeingPerformed && character.characterMover.isGrounded)
         {
             controller.jumpDurationCounter = 0f;
         }
@@ -466,28 +466,26 @@ public class Jump : BaseAction
     {
         if (IsBeingPerformed)
         {
-            controller.HandleRotation(Time.fixedDeltaTime);
             controller.HandleAirMovement(Time.fixedDeltaTime);
         }
     }
 }
+
 [Serializable]
 public class AirJump : BaseAction
 {
     public override void OnEnable()
     {
         base.OnEnable();
-        InputReader.instance.Jump += OnJumpInput;
+        character.characterCommand.JumpCommand += OnJumpInput;
     }
-    private void OnJumpInput(bool jumpPressed)
+    private void OnJumpInput()
     {
         if (!CanPerform) return;
-        if (jumpPressed)
-        {
-            IsBeingPerformed = true;
-            controller.InitiateJump();
-            controller.CalculateJumpDirection();
-        }
+
+        IsBeingPerformed = true;
+        controller.InitiateJump();
+        controller.CalculateJumpDirection();
     }
     public override void CompileCondition()
     {
@@ -528,7 +526,7 @@ public class AirJump : BaseAction
     {
         base.EvaluateStatus();
 
-        if (character.isGrounded)
+        if (character.characterMover.isGrounded)
         {
             controller.airJumpDurationCounter = 0f;
             controller.currentAirJumpCount = controller.airJumpCount;
@@ -555,11 +553,11 @@ public class AirJump : BaseAction
     {
         if (IsBeingPerformed)
         {
-            controller.HandleRotation(Time.fixedDeltaTime);
             controller.HandleAirMovement(Time.fixedDeltaTime);
         }
     }
 }
+
 [Serializable]
 public class Fall : BaseAction
 {
@@ -575,7 +573,7 @@ public class Fall : BaseAction
         if (baseController != null)
         {
             var baseExpression = (Expression<Func<bool>>)(() =>
-                !character.isGrounded &&
+                !character.characterMover.isGrounded &&
                 !character.PerformingAction<Jump>() &&
                 !character.PerformingAction<AirJump>());
             condition = CombineExpressions(condition, baseExpression);
@@ -611,7 +609,6 @@ public class Fall : BaseAction
         if (IsBeingPerformed)
         {
             controller.CalculateJumpDirection();
-            controller.HandleRotation(Time.fixedDeltaTime);
             controller.HandleAirMovement(Time.fixedDeltaTime);
         }
     }

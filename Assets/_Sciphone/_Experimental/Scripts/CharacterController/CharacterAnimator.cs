@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq;
-using Sciphone;
+﻿using Sciphone;
 using UnityEngine;
 
 public class CharacterAnimator : MonoBehaviour
@@ -17,19 +15,11 @@ public class CharacterAnimator : MonoBehaviour
     }
     private void Start()
     {
-        InputReader.instance.Move += OnMoveInput;
-
         foreach (var action in character.actions)
         {
             action.IsBeingPerformed_OnValueChanged += HandleCharacterAnimation;
         }
         character.GetControllerModule<MeleeCombatController>().OnAttackSelected += HandleCharacterAnimation;
-    }
-
-    private Vector2 moveInput;
-    private void OnMoveInput(Vector2 moveInput)
-    {
-        this.moveInput = moveInput;
     }
 
     private void Update()
@@ -98,10 +88,12 @@ public class CharacterAnimator : MonoBehaviour
             animMachine.PlayActive("ClimbOverHigh", "Parkour");
         }
     }
+
     private float error = 0.1f;
     private float lerpSpeed = 10f;
     private void HandleBlendParameters()
     {
+        Vector2 moveInput = new Vector2(0f, 1f);
         if (character.PerformingAction<Walk>())
         {
             Vector2 moveDir = moveInput.normalized;

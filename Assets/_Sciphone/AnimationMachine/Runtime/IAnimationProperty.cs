@@ -5,18 +5,13 @@ public interface IAnimationProperty
 {
     object Value { get; set; }
 }
+
+#region ANIMATION_STATE_PROPERTIES
 [Serializable]
 public abstract class AnimationStateProperty : IAnimationProperty
 {
     public virtual object Value { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 }
-[Serializable]
-public abstract class AnimationLayerProperty : IAnimationProperty
-{
-    public virtual object Value { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-}
-
-#region ANIMATION_STATE_PROPERTIES
 [Serializable]
 public class LoopProperty : AnimationStateProperty
 {
@@ -107,17 +102,28 @@ public struct RootMotionData
 
 #region ANIMATION_LAYER_PROPERTIES
 [Serializable]
-public class OverrideLayerProperty : AnimationLayerProperty
+public abstract class AnimationLayerProperty : IAnimationProperty
 {
-    public float weight = 0f;
-    public override object Value 
-    {
-        get => weight; 
-        set => weight = (float)value; 
-    }
+    public virtual object Value { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 }
 [Serializable]
-public class AdditiveLayerProperty : AnimationLayerProperty
+public class LayerTypeProperty : AnimationLayerProperty
+{
+    AnimationLayerType layerType = AnimationLayerType.Active;
+    public override object Value
+    {
+        get => layerType;
+        set => layerType = (AnimationLayerType)value;
+    }
+}
+public enum AnimationLayerType
+{
+    Active,
+    Additive,
+    Override
+}
+[Serializable]
+public class LayerWeightProperty : AnimationLayerProperty
 {
     public float weight = 0f;
     public override object Value
@@ -126,7 +132,6 @@ public class AdditiveLayerProperty : AnimationLayerProperty
         set => weight = (float)value;
     }
 }
-
 [Serializable]
 public class AvatarMaskProperty : AnimationLayerProperty
 {

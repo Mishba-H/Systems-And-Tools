@@ -1,6 +1,7 @@
 using System;
 using System.Linq.Expressions;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 [Serializable]
 public abstract class ParkourAction : CharacterAction
@@ -13,11 +14,11 @@ public class ClimbOverLow : ParkourAction
     public override void OnEnable()
     {
         base.OnEnable();
-        InputReader.instance.Jump += OnJumpPressed;
+        InputReader.instance.Subscribe("Jump", OnJumpPressed);
     }
-    private void OnJumpPressed(bool jumpPressed)
+    private void OnJumpPressed(InputAction.CallbackContext context)
     {
-        if (CanPerform && jumpPressed)
+        if (CanPerform && context.performed)
         {
             IsBeingPerformed = true;
             controller.InitiateClimb();
@@ -70,11 +71,11 @@ public class ClimbOverHigh : ParkourAction
     public override void OnEnable()
     {
         base.OnEnable();
-        InputReader.instance.Jump += OnJumpPressed;
+        InputReader.instance.Subscribe("Jump", OnJumpPressed);
     }
-    private void OnJumpPressed(bool jumpPressed)
+    private void OnJumpPressed(InputAction.CallbackContext context)
     {
-        if (CanPerform && jumpPressed)
+        if (CanPerform && context.performed)
         {
             IsBeingPerformed = true;
             controller.InitiateClimb();

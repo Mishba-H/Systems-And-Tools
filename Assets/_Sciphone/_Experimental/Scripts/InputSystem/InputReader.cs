@@ -47,6 +47,18 @@ public class InputReader : MonoBehaviour, IPlayerActions
 
         playerInput = GetComponent<PlayerInput>();
         inputActions = new PlayerInputActions();
+
+        inputTable = new();
+        inputTable.Add("Look", null);
+        inputTable.Add("Move", null);
+        inputTable.Add("Walk", null);
+        inputTable.Add("Sprint", null);
+        inputTable.Add("Crouch", null);
+        inputTable.Add("Jump", null);
+        inputTable.Add("Dodge", null);
+        inputTable.Add("Block", null);
+        inputTable.Add("Attack", null);
+        inputTable.Add("AltAttack", null);
     }
 
     private void OnEnable()
@@ -60,92 +72,53 @@ public class InputReader : MonoBehaviour, IPlayerActions
         inputActions.Player.Disable();
     }
 
-    public event Action<Vector2, InputDevice> Look;
     public void OnLook(InputAction.CallbackContext context)
     {
-        Look?.Invoke(context.ReadValue<Vector2>(), context.control.device);
+        Invoke("Look", context);
     }
 
-    public event Action<Vector2> Move;
     public void OnMove(InputAction.CallbackContext context)
     {
-        Move?.Invoke(context.ReadValue<Vector2>());
+        Invoke("Move", context);
     }
 
-    public event Action<bool, InputDevice> Walk;
     public void OnWalk(InputAction.CallbackContext context)
     {
-        switch (context.phase)
-        {
-            case InputActionPhase.Started:
-                Walk?.Invoke(true, context.control.device);
-                break;
-            case InputActionPhase.Canceled:
-                Walk?.Invoke(false, context.control.device);
-                break;
-        }
+        Invoke("Walk", context);
     }
 
-    public event Action<bool, InputDevice> Sprint;
     public void OnSprint(InputAction.CallbackContext context)
     {
-        switch (context.phase)
-        {
-            case InputActionPhase.Started:
-                Sprint?.Invoke(true, context.control.device);
-                break;
-            case InputActionPhase.Canceled:
-                Sprint?.Invoke(false, context.control.device);
-                break;
-        }
+        Invoke("Sprint", context);
     }
 
-    public event Action Crouch;
     public void OnCrouch(InputAction.CallbackContext context)
     {
-        if (context.performed)
-            Crouch?.Invoke();
+        Invoke("Crouch", context);
     }
 
-    public event Action<bool> Jump;
     public void OnJump(InputAction.CallbackContext context)
     {
-        switch (context.phase)
-        {
-            case InputActionPhase.Started:
-                Jump?.Invoke(true);
-                break;
-            case InputActionPhase.Canceled:
-                Jump?.Invoke(false);
-                break;
-        }
+        Invoke("Jump", context);
     }
 
-    public event Action Dodge;
     public void OnDodge(InputAction.CallbackContext context)
     {
-        if (context.performed)
-            Dodge?.Invoke();
+        Invoke("Dodge", context);
     }
 
-    public event Action Block;
     public void OnBlock(InputAction.CallbackContext context)
     {
-        if (context.performed)
-            Block?.Invoke();
+        Invoke("Block", context);
     }
 
-    public event Action<IInputInteraction> Attack;
     public void OnAttack(InputAction.CallbackContext context)
     {
-        if (context.performed)
-            Attack?.Invoke(context.interaction);
+        Invoke("Attack", context);
     }
 
-    public event Action<IInputInteraction> AltAttack;
     public void OnAltAttack(InputAction.CallbackContext context)
     {
-        if (context.performed)
-            AltAttack?.Invoke(context.interaction);
+        Invoke("AttackAlt", context);
     }
 }

@@ -16,40 +16,6 @@ public class CharacterDetector : MonoBehaviour
         character = GetComponent<Character>();
     }
 
-    [TabGroup("Ground")] public LayerMask groundLayer;
-    [TabGroup("Ground")] public int sides = 8;
-    [TabGroup("Ground")] public float radius = 0.3f;
-    [TabGroup("Ground")] public int noOfLayers = 3;
-    [TabGroup("Ground")] public float groundCheckerHeight = 1f;
-    [TabGroup("Ground")] public float groundCheckerDepth = 0.3f;
-    public bool CheckGround(out RaycastHit groundHit)
-    {
-        groundCheckerDepth = character.GetGroundCheckerDepth();
-
-        if (Physics.Raycast(transform.position + Vector3.up * groundCheckerHeight,
-            Vector3.down, out groundHit, groundCheckerHeight + groundCheckerDepth, groundLayer))
-        {
-            return true;
-        }
-        for (int i = 1; i < noOfLayers; i++)
-        {
-            float angleStep = 360f / sides;
-            var radius = this.radius * i / (noOfLayers - 1);
-            for (int j = 0; j < sides; j++)
-            {
-                float angle = j * angleStep * Mathf.Deg2Rad;
-                Vector3 direction = new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle)).normalized;
-                Vector3 rayStart = transform.position + Vector3.up * groundCheckerHeight + direction * radius;
-                if (Physics.Raycast(rayStart, Vector3.down, out groundHit, groundCheckerHeight + groundCheckerDepth, groundLayer))
-                {
-                    return true;
-                }
-            }
-        }
-        groundHit = new RaycastHit();
-        return false;
-    }
-
     [TabGroup("Attack")] public int noOfRays;
     [TabGroup("Attack")] public int seperationAngle;
     [TabGroup("Attack")] public float targetCheckerHeight;

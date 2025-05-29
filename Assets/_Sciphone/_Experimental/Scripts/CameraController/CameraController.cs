@@ -33,13 +33,13 @@ public class CameraController : MonoBehaviour
     private void LateUpdate()
     {
         currentCameraMode.HandleLookInput(this, Time.deltaTime);
+        currentCameraMode.HandlePivotRotation(this, Time.deltaTime);
+        currentCameraMode.HandlePivotPosition(this, Time.deltaTime);
+        currentCameraMode.HandleCamera(this, Time.deltaTime);
     }
 
     private void FixedUpdate()
     {
-        currentCameraMode.HandlePivotRotation(this, Time.fixedDeltaTime);
-        currentCameraMode.HandlePivotPosition(this, Time.fixedDeltaTime);
-        currentCameraMode.HandleCamera(this, Time.fixedDeltaTime);
     }
 
     [Button(nameof(SetCameraTransform))]
@@ -79,20 +79,20 @@ public abstract class BaseCameraMode : ICameraMode
 
     public float switchTime = 0.5f;
 
-    private void OnLookInput(Vector2 vector, InputDevice device)
+    private void OnLookInput(InputAction.CallbackContext context)
     {
-        lookInput = vector;
-        this.device = device;
+        lookInput = context.ReadValue<Vector2>();
+        device = context.control.device;
     }
-    private void OnMoveInput(Vector2 vector)
+    private void OnMoveInput(InputAction.CallbackContext context)
     {
-        moveInput = vector;
+        moveInput = context.ReadValue<Vector2>();
     }
 
     public virtual void Initialize(CameraController controller)
     {
-        InputReader.instance.Look += OnLookInput;
-        InputReader.instance.Move += OnMoveInput;
+        InputReader.instance.Subscribe("Look", OnLookInput);
+        InputReader.instance.Subscribe("Move", OnMoveInput);
 
         cameraTransform = controller.cameraTransform;
         followTarget = controller.playerTransform;

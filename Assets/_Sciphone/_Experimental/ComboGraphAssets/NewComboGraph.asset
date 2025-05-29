@@ -12,8 +12,31 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 497cc32a5e0962242810202e8e43f4a3, type: 3}
   m_Name: NewComboGraph
   m_EditorClassIdentifier: 
-  nodeInfos: []
-  connectionInfos: []
+  nodeInfos:
+  - rid: 4945720444371599632
+  - rid: 4945720444371599633
+  - rid: 4945720444371599635
+  - rid: 4945720444371599637
+  - rid: 4945720444371599639
+  - rid: 4945720444371599645
+  - rid: 4945720444371599647
+  - rid: 4945720444371599649
+  - rid: 4945720444371599652
+  - rid: 4945720444371599654
+  - rid: 4945720444371599656
+  - rid: 4945720444371599658
+  connectionInfos:
+  - rid: 4945720444371599641
+  - rid: 4945720444371599642
+  - rid: 4945720444371599643
+  - rid: 4945720444371599644
+  - rid: 4945720444371599651
+  - rid: 4945720444371599660
+  - rid: 4945720444371599661
+  - rid: 4945720444371599662
+  - rid: 4945720444371599663
+  - rid: 4945720444371599664
+  - rid: 4945720444371599665
   currentNodeInfo:
     rid: -2
   references:
@@ -21,3 +44,251 @@ MonoBehaviour:
     RefIds:
     - rid: -2
       type: {class: , ns: , asm: }
+    - rid: 4945720444371599632
+      type: {class: ComboGraphStartNodeInfo, ns: Sciphone.ComboGraph, asm: Sciphone.ComboGraph}
+      data:
+        guid: 9ddebb65-15eb-44b0-b293-7b43ef29049e
+        position: {x: 132, y: 196}
+        nodeType: 1
+    - rid: 4945720444371599633
+      type: {class: ComboGraphAttackNodeInfo, ns: Sciphone.ComboGraph, asm: Sciphone.ComboGraph}
+      data:
+        guid: 65c14cb2-a3a7-425c-8b46-624cd53fb6fc
+        position: {x: 452, y: -1208}
+        nodeType: 2
+        attackData:
+          rid: 4945720444371599634
+    - rid: 4945720444371599634
+      type: {class: AttackData, ns: Sciphone.ComboGraph, asm: Sciphone.ComboGraph}
+      data:
+        attackName: NewAttack
+        attackType: 1
+    - rid: 4945720444371599635
+      type: {class: ComboGraphAttackNodeInfo, ns: Sciphone.ComboGraph, asm: Sciphone.ComboGraph}
+      data:
+        guid: 98feaf81-6871-46c1-a432-d7361ee2b0f5
+        position: {x: 813, y: -1208}
+        nodeType: 2
+        attackData:
+          rid: 4945720444371599636
+    - rid: 4945720444371599636
+      type: {class: AttackData, ns: Sciphone.ComboGraph, asm: Sciphone.ComboGraph}
+      data:
+        attackName: NewAttack
+        attackType: 1
+    - rid: 4945720444371599637
+      type: {class: ComboGraphAttackNodeInfo, ns: Sciphone.ComboGraph, asm: Sciphone.ComboGraph}
+      data:
+        guid: bd394ad4-89c2-4c0d-9558-7e9155e6a3ea
+        position: {x: 1120, y: -1208}
+        nodeType: 2
+        attackData:
+          rid: 4945720444371599638
+    - rid: 4945720444371599638
+      type: {class: AttackData, ns: Sciphone.ComboGraph, asm: Sciphone.ComboGraph}
+      data:
+        attackName: NewAttack
+        attackType: 1
+    - rid: 4945720444371599639
+      type: {class: ComboGraphAttackNodeInfo, ns: Sciphone.ComboGraph, asm: Sciphone.ComboGraph}
+      data:
+        guid: 0c25e6f9-2a53-434c-80e2-bbbb8f370ed8
+        position: {x: 1436, y: -1208}
+        nodeType: 2
+        attackData:
+          rid: 4945720444371599640
+    - rid: 4945720444371599640
+      type: {class: AttackData, ns: Sciphone.ComboGraph, asm: Sciphone.ComboGraph}
+      data:
+        attackName: NewAttack
+        attackType: 2
+    - rid: 4945720444371599641
+      type: {class: ComboGraphConnectionInfo, ns: Sciphone.ComboGraph, asm: Sciphone.ComboGraph}
+      data:
+        inputPort:
+          nodeId: 65c14cb2-a3a7-425c-8b46-624cd53fb6fc
+          portIndex: 0
+        outputPort:
+          nodeId: 9ddebb65-15eb-44b0-b293-7b43ef29049e
+          portIndex: 0
+    - rid: 4945720444371599642
+      type: {class: ComboGraphConnectionInfo, ns: Sciphone.ComboGraph, asm: Sciphone.ComboGraph}
+      data:
+        inputPort:
+          nodeId: 98feaf81-6871-46c1-a432-d7361ee2b0f5
+          portIndex: 0
+        outputPort:
+          nodeId: 65c14cb2-a3a7-425c-8b46-624cd53fb6fc
+          portIndex: 0
+    - rid: 4945720444371599643
+      type: {class: ComboGraphConnectionInfo, ns: Sciphone.ComboGraph, asm: Sciphone.ComboGraph}
+      data:
+        inputPort:
+          nodeId: bd394ad4-89c2-4c0d-9558-7e9155e6a3ea
+          portIndex: 0
+        outputPort:
+          nodeId: 98feaf81-6871-46c1-a432-d7361ee2b0f5
+          portIndex: 0
+    - rid: 4945720444371599644
+      type: {class: ComboGraphConnectionInfo, ns: Sciphone.ComboGraph, asm: Sciphone.ComboGraph}
+      data:
+        inputPort:
+          nodeId: 0c25e6f9-2a53-434c-80e2-bbbb8f370ed8
+          portIndex: 0
+        outputPort:
+          nodeId: bd394ad4-89c2-4c0d-9558-7e9155e6a3ea
+          portIndex: 0
+    - rid: 4945720444371599645
+      type: {class: ComboGraphAttackNodeInfo, ns: Sciphone.ComboGraph, asm: Sciphone.ComboGraph}
+      data:
+        guid: 03793463-48c5-4f3f-b5bc-f8b2ac8d1833
+        position: {x: 452, y: -1001}
+        nodeType: 2
+        attackData:
+          rid: 4945720444371599646
+    - rid: 4945720444371599646
+      type: {class: AttackData, ns: Sciphone.ComboGraph, asm: Sciphone.ComboGraph}
+      data:
+        attackName: NewAttack
+        attackType: 2
+    - rid: 4945720444371599647
+      type: {class: ComboGraphAttackNodeInfo, ns: Sciphone.ComboGraph, asm: Sciphone.ComboGraph}
+      data:
+        guid: 87118199-3427-420c-a968-076f2775a21a
+        position: {x: 712, y: -1001}
+        nodeType: 2
+        attackData:
+          rid: 4945720444371599648
+    - rid: 4945720444371599648
+      type: {class: AttackData, ns: Sciphone.ComboGraph, asm: Sciphone.ComboGraph}
+      data:
+        attackName: NewAttack
+        attackType: 2
+    - rid: 4945720444371599649
+      type: {class: ComboGraphAttackNodeInfo, ns: Sciphone.ComboGraph, asm: Sciphone.ComboGraph}
+      data:
+        guid: 3eb423c8-44da-417e-8df3-0f7ad723fbb9
+        position: {x: 955, y: -1001}
+        nodeType: 2
+        attackData:
+          rid: 4945720444371599650
+    - rid: 4945720444371599650
+      type: {class: AttackData, ns: Sciphone.ComboGraph, asm: Sciphone.ComboGraph}
+      data:
+        attackName: NewAttack
+        attackType: 2
+    - rid: 4945720444371599651
+      type: {class: ComboGraphConnectionInfo, ns: Sciphone.ComboGraph, asm: Sciphone.ComboGraph}
+      data:
+        inputPort:
+          nodeId: 87118199-3427-420c-a968-076f2775a21a
+          portIndex: 0
+        outputPort:
+          nodeId: 03793463-48c5-4f3f-b5bc-f8b2ac8d1833
+          portIndex: 0
+    - rid: 4945720444371599652
+      type: {class: ComboGraphAttackNodeInfo, ns: Sciphone.ComboGraph, asm: Sciphone.ComboGraph}
+      data:
+        guid: f3b284f8-9080-4a14-b2c0-251e54329369
+        position: {x: 1217, y: -1001}
+        nodeType: 2
+        attackData:
+          rid: 4945720444371599653
+    - rid: 4945720444371599653
+      type: {class: AttackData, ns: Sciphone.ComboGraph, asm: Sciphone.ComboGraph}
+      data:
+        attackName: NewAttack
+        attackType: 1
+    - rid: 4945720444371599654
+      type: {class: ComboGraphAttackNodeInfo, ns: Sciphone.ComboGraph, asm: Sciphone.ComboGraph}
+      data:
+        guid: 276e9856-b545-4cf4-953c-01d169289852
+        position: {x: 1471, y: -1001}
+        nodeType: 2
+        attackData:
+          rid: 4945720444371599655
+    - rid: 4945720444371599655
+      type: {class: AttackData, ns: Sciphone.ComboGraph, asm: Sciphone.ComboGraph}
+      data:
+        attackName: NewAttack
+        attackType: 1
+    - rid: 4945720444371599656
+      type: {class: ComboGraphAttackNodeInfo, ns: Sciphone.ComboGraph, asm: Sciphone.ComboGraph}
+      data:
+        guid: 592c37b1-eabe-4851-b7cf-620daa35ece6
+        position: {x: 1728, y: -1001}
+        nodeType: 2
+        attackData:
+          rid: 4945720444371599657
+    - rid: 4945720444371599657
+      type: {class: AttackData, ns: Sciphone.ComboGraph, asm: Sciphone.ComboGraph}
+      data:
+        attackName: NewAttack
+        attackType: 2
+    - rid: 4945720444371599658
+      type: {class: ComboGraphAttackNodeInfo, ns: Sciphone.ComboGraph, asm: Sciphone.ComboGraph}
+      data:
+        guid: 498a9f73-b122-470a-a5c1-752593f3c5cd
+        position: {x: 1996, y: -1001}
+        nodeType: 2
+        attackData:
+          rid: 4945720444371599659
+    - rid: 4945720444371599659
+      type: {class: AttackData, ns: Sciphone.ComboGraph, asm: Sciphone.ComboGraph}
+      data:
+        attackName: NewAttack
+        attackType: 2
+    - rid: 4945720444371599660
+      type: {class: ComboGraphConnectionInfo, ns: Sciphone.ComboGraph, asm: Sciphone.ComboGraph}
+      data:
+        inputPort:
+          nodeId: 3eb423c8-44da-417e-8df3-0f7ad723fbb9
+          portIndex: 0
+        outputPort:
+          nodeId: 87118199-3427-420c-a968-076f2775a21a
+          portIndex: 0
+    - rid: 4945720444371599661
+      type: {class: ComboGraphConnectionInfo, ns: Sciphone.ComboGraph, asm: Sciphone.ComboGraph}
+      data:
+        inputPort:
+          nodeId: f3b284f8-9080-4a14-b2c0-251e54329369
+          portIndex: 0
+        outputPort:
+          nodeId: 3eb423c8-44da-417e-8df3-0f7ad723fbb9
+          portIndex: 0
+    - rid: 4945720444371599662
+      type: {class: ComboGraphConnectionInfo, ns: Sciphone.ComboGraph, asm: Sciphone.ComboGraph}
+      data:
+        inputPort:
+          nodeId: 276e9856-b545-4cf4-953c-01d169289852
+          portIndex: 0
+        outputPort:
+          nodeId: f3b284f8-9080-4a14-b2c0-251e54329369
+          portIndex: 0
+    - rid: 4945720444371599663
+      type: {class: ComboGraphConnectionInfo, ns: Sciphone.ComboGraph, asm: Sciphone.ComboGraph}
+      data:
+        inputPort:
+          nodeId: 592c37b1-eabe-4851-b7cf-620daa35ece6
+          portIndex: 0
+        outputPort:
+          nodeId: 276e9856-b545-4cf4-953c-01d169289852
+          portIndex: 0
+    - rid: 4945720444371599664
+      type: {class: ComboGraphConnectionInfo, ns: Sciphone.ComboGraph, asm: Sciphone.ComboGraph}
+      data:
+        inputPort:
+          nodeId: 498a9f73-b122-470a-a5c1-752593f3c5cd
+          portIndex: 0
+        outputPort:
+          nodeId: 592c37b1-eabe-4851-b7cf-620daa35ece6
+          portIndex: 0
+    - rid: 4945720444371599665
+      type: {class: ComboGraphConnectionInfo, ns: Sciphone.ComboGraph, asm: Sciphone.ComboGraph}
+      data:
+        inputPort:
+          nodeId: 03793463-48c5-4f3f-b5bc-f8b2ac8d1833
+          portIndex: 0
+        outputPort:
+          nodeId: 9ddebb65-15eb-44b0-b293-7b43ef29049e
+          portIndex: 0

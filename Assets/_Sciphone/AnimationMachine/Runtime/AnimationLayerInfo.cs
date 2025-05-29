@@ -47,7 +47,6 @@ public class AnimationLayerInfo
         {
             activeMonoBehaviour.StopCoroutine(statesBlendCoroutine);
             statesBlendCoroutine = null;
-            ((Playable)stateMixer).NormalizeWeights();
         }
         activeState = newState;
         statesBlendCoroutine = activeMonoBehaviour.StartCoroutine(BlendStates(newState, activeMonoBehaviour));

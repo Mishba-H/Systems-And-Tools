@@ -85,7 +85,6 @@ public class ParkourController : MonoBehaviour, IControllerModule
             var targetPos = initialPos + Vector3.up * yDisplacement + transform.forward * zDisplacement;
             transform.position = Vector3.Lerp(transform.position, targetPos, 0.2f);
             transform.forward = Vector3.Lerp(transform.forward, -wallHit.normal, 0.2f);
-            character.rb.linearVelocity = Vector3.zero;
         }
     }
 }

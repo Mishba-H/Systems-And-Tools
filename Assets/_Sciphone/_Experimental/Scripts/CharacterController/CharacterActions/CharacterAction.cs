@@ -9,11 +9,11 @@ public abstract class CharacterAction
     public event Action<bool> IsBeingPerformed_OnValueChanged;
 
     [HideInInspector] public Character character;
-    public Func<bool> condition;
 
-    [BeginHorizontalGroup][LeftToggle] public bool enabled = true;
+    [LeftToggle] public bool enabled = true;
     [LeftToggle, SerializeField] private bool canPerform;
-    [EndHorizontalGroup][LeftToggle, SerializeField] private bool isBeingPerformed;
+    [LeftToggle, SerializeField] private bool isBeingPerformed;
+    public Func<bool> condition;
 
     public bool CanPerform
     {

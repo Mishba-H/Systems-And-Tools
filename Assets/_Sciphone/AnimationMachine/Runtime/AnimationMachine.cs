@@ -10,14 +10,15 @@ using UnityEngine.Playables;
 
 public class AnimationMachine : MonoBehaviour
 {
-    public event Action OnGraphEvaluate;
+    public event Action<float> OnGraphEvaluate;
     public event Action OnActiveStateChanged;
 
     public string graphName = "Playable Graph";
 
-    public bool useCustomFrameRate;
+    [Range(0f, 3f)] public float timeScale;
+
+    public bool enableStopMotion;
     [Range(1, 60)] public int frameRate = 60;
-    public float timeScale = 1f;
     private float frameTime;
     private float accumulatedTime = 0f;
 
@@ -42,7 +43,6 @@ public class AnimationMachine : MonoBehaviour
     private float prevNT;
     [FoldoutGroup("Root Motion Properties")] public Vector3 rootDeltaPosition;
     [FoldoutGroup("Root Motion Properties")] public Quaternion rootDeltaRotation;
-    [FoldoutGroup("Root Motion Properties")] public Vector3 rootLinearVelocity;
 
     private void OnAnimatorMove()
     {
@@ -102,8 +102,19 @@ public class AnimationMachine : MonoBehaviour
             layer.stateMixer = AnimationMixerPlayable.Create(playableGraph, 0);
             layerMixer.AddInput(layer.stateMixer, 0);
 
-            if (layer.TryGetProperty<AdditiveLayerProperty>(out AnimationLayerProperty prop))
-                layerMixer.SetLayerAdditive((uint)layers.GetIndexOf(layer), true);
+            if (layer.TryGetProperty<LayerTypeProperty>(out AnimationLayerProperty prop))
+            {
+                switch ((AnimationLayerType)prop.Value)
+                {
+                    case AnimationLayerType.Active:
+                        break;
+                    case AnimationLayerType.Additive:
+                        layerMixer.SetLayerAdditive((uint)layers.GetIndexOf(layer), true);
+                        break;
+                    case AnimationLayerType.Override:
+                        break;
+                }
+            }
             if (layer.TryGetProperty<AvatarMaskProperty>(out prop))
                 layerMixer.SetLayerMaskFromAvatarMask((uint)layers.GetIndexOf(layer), (AvatarMask)prop.Value);
 
@@ -137,7 +148,7 @@ public class AnimationMachine : MonoBehaviour
 
     private void HandleGraphEvaluation(float dt)
     {
-        if (useCustomFrameRate)
+        if (enableStopMotion)
         {
             frameTime = 1f / frameRate;
             accumulatedTime += dt * timeScale;
@@ -146,14 +157,14 @@ public class AnimationMachine : MonoBehaviour
                 accumulatedTime -= frameTime;
                 playableGraph.Evaluate(frameTime);
                 HandleLooping(frameTime);
-                OnGraphEvaluate?.Invoke();
+                OnGraphEvaluate?.Invoke(frameTime);
             }
         }
         else
         {
             playableGraph.Evaluate(dt * timeScale);
             HandleLooping(dt * timeScale);
-            OnGraphEvaluate?.Invoke();
+            OnGraphEvaluate?.Invoke(dt * timeScale);
         }
     }
 
@@ -164,7 +175,7 @@ public class AnimationMachine : MonoBehaviour
         {
             if (activeState.TryGetProperty<LoopProperty>(out _))
             {
-                var overflowTime = PrecidctOverflowTime(activeState, prevNT, useCustomFrameRate ? frameTime : Time.deltaTime * timeScale);
+                var overflowTime = PrecidctOverflowTime(activeState, prevNT, enableStopMotion ? frameTime : Time.deltaTime * timeScale);
                 currNT = overflowTime / activeState.length;
                 activeState.ResetState(currNT);
             }
@@ -385,7 +396,6 @@ public class AnimationMachine : MonoBehaviour
             rootDeltaPosition = Vector3.zero;
             rootDeltaRotation = Quaternion.identity;
         }
-        rootLinearVelocity = rootDeltaPosition / dt;
     }
 
     private float GetCurveDelta(AnimationCurve curve, float currentNormalizedTime, float prevNormalizedTime)
