@@ -25,6 +25,8 @@ public class BaseController : MonoBehaviour, IControllerModule
     [TabGroup("Movement")] public Vector3 worldMoveDir;
     [TabGroup("Movement")] public Vector3 targetForward;
     [TabGroup("Movement")] public Vector3 scaleFactor;
+    private Vector3 rootDeltaPosition;
+    private Quaternion rootDeltaRotation;
     #endregion
 
     #region JUMP_PARAMETERS
@@ -49,7 +51,7 @@ public class BaseController : MonoBehaviour, IControllerModule
                 action.IsBeingPerformed_OnValueChanged += CalculateTargetSpeed;
         }
 
-        character.animMachine.OnActiveStateChanged += CalculateSpeedFactor;
+        character.OnAllActionEvaluate += CalculateSpeedFactor;
         character.animMachine.OnGraphEvaluate += AnimMachine_OnGraphEvaluate;
         character.characterCommand.ChangeMovementModeCommand += CharacterCommand_ChangeMovementModeCommand;
         character.characterCommand.FaceDirCommand += CharacterCommand_FaceDirCommand;
@@ -77,6 +79,7 @@ public class BaseController : MonoBehaviour, IControllerModule
     {
         targetForward = obj;
     }
+
     private void CharacterCommand_MoveDirCommand(Vector3 dir)
     {
         worldMoveDir = Vector3.ProjectOnPlane(dir, transform.up).normalized;
@@ -126,14 +129,12 @@ public class BaseController : MonoBehaviour, IControllerModule
             }
         }
     }
-
-    private Vector3 rootDeltaPosition;
-    private Quaternion rootDeltaRotation;
     
     private void CharacterCommand_ChangeMovementModeCommand(MovementMode obj)
     {
         movementMode = obj;
     }
+
     private void AnimMachine_OnGraphEvaluate(float dt)
     {
         rootDeltaPosition = character.animMachine.rootDeltaPosition;
@@ -165,6 +166,7 @@ public class BaseController : MonoBehaviour, IControllerModule
             return Vector3.RotateTowards(currentDirection, targetDirection, maxAngle * Mathf.Deg2Rad, 0f);
         }
     }
+
     private void HandleMovement(float dt)
     {
         if (character.PerformingAction<Idle>() || character.PerformingAction<Walk>() || character.PerformingAction<Run>() ||
@@ -202,6 +204,7 @@ public class BaseController : MonoBehaviour, IControllerModule
             character.characterMover.SetWorldVelocity(moveAmount / dt);
         }
     }
+
     private void HandleRotation(float dt)
     {
         if (character.PerformingAction<Idle>() || character.PerformingAction<Walk>() || character.PerformingAction<Run>() ||

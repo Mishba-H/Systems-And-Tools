@@ -1,4 +1,3 @@
-using System;
 using Sciphone;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -82,6 +81,18 @@ public class PlayerCommandProcessor : MonoBehaviour
     {
         moveInput = context.ReadValue<Vector2>();
         inputDevice = context.control.device;
+
+        if (context.control.device is Gamepad)
+        {
+            if (moveInput.sqrMagnitude < 0.99f)
+            {
+                walk = true;
+            }
+            else
+            {
+                walk = false;
+            }
+        }
     }
 
     private void ProcessInputs()
@@ -118,14 +129,14 @@ public class PlayerCommandProcessor : MonoBehaviour
             characterCommand.InvokeRun(false);
             characterCommand.InvokeSprint(true);
         }
-        else if (moveInput.sqrMagnitude < 0.99f || walk)
+        else if (walk)
         {
             characterCommand.InvokeMoveDir(worldMoveDir);
             characterCommand.InvokeWalk(true);
             characterCommand.InvokeRun(false);
             characterCommand.InvokeSprint(false);
         }
-        else if (moveInput.sqrMagnitude >= 0.99f)
+        else
         {
             characterCommand.InvokeMoveDir(worldMoveDir);
             characterCommand.InvokeWalk(false);

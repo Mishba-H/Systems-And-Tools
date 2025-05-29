@@ -128,7 +128,6 @@ public class Walk : BaseAction
 [Serializable]
 public class Run : BaseAction
 {
-    private Vector3 moveDir;
     private bool run;
 
     public override void OnEnable()
@@ -377,7 +376,7 @@ public class Jump : BaseAction
     {
         base.EvaluateStatus();
 
-        if (IsBeingPerformed && character.characterMover.isGrounded && 
+        if (IsBeingPerformed && character.characterMover.isGrounded &&
             character.transform.InverseTransformDirection(character.characterMover.worldVelocity).y < 0f)
         {
             controller.jumpDurationCounter = 0f;

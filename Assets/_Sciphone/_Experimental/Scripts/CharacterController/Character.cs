@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Sciphone;
@@ -6,6 +7,8 @@ using UnityEngine;
 [SelectionBase]
 public class Character : MonoBehaviour
 {
+    public Action OnAllActionEvaluate;
+
     [Range(0f, 3f)] public float timeScale;
 
     public List<IControllerModule> modules;
@@ -74,6 +77,8 @@ public class Character : MonoBehaviour
         {
             action.EvaluateStatus();
         }
+        OnAllActionEvaluate?.Invoke();
+
         foreach (var action in actions)
         {
             action.Update();

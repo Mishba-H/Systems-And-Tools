@@ -10977,7 +10977,7 @@ MonoBehaviour:
   targetCheckerHeight: 1.5
   targetLayer:
     serializedVersion: 2
-    m_Bits: 513
+    m_Bits: 1
   climbLayer:
     serializedVersion: 2
     m_Bits: 1
