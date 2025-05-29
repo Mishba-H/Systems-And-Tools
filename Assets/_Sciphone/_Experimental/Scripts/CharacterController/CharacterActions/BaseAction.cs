@@ -12,23 +12,9 @@ public abstract class BaseAction : CharacterAction
 [Serializable]
 public class Idle : BaseAction
 {
-    private Vector3 moveDir;
-
     public override void OnEnable()
     {
         base.OnEnable();
-
-        character.characterCommand.FaceDirCommand += CharacterCommand_FaceDirCommand; ;
-        character.characterCommand.MoveDirCommand += CharacterCommand_MoveDirCommand;
-    }
-    private void CharacterCommand_FaceDirCommand(Vector3 obj)
-    {
-        character.characterMover.SetFaceDir(obj);
-    }
-    private void CharacterCommand_MoveDirCommand(Vector3 dir)
-    {
-        moveDir = dir;
-        character.characterMover.SetMoveDir(moveDir);
     }
     public override void CompileCondition()
     {
@@ -37,8 +23,10 @@ public class Idle : BaseAction
         if (baseController != null)
         {
             var baseExpression = (Expression<Func<bool>>)(() =>
-                character.characterMover.isGrounded  &&
-                !character.PerformingAction<Fall>() &&
+                character.characterMover.isGrounded &&
+                !character.PerformingAction<Walk>() &&
+                !character.PerformingAction<Run>() &&
+                !character.PerformingAction<Sprint>() &&
                 !character.PerformingAction<Jump>() &&
                 !character.PerformingAction<AirJump>());
             condition = CombineExpressions(condition, baseExpression);
@@ -67,49 +55,23 @@ public class Idle : BaseAction
     {
         base.EvaluateStatus();
 
-        if (!CanPerform)
-        {
-            IsBeingPerformed = false;
-            return;
-        }
-
-        if (moveDir.sqrMagnitude == 0f)
-        {
-            IsBeingPerformed = true;
-        }
-        else
-        {
-            IsBeingPerformed = false;
-        }
+        IsBeingPerformed = CanPerform;
     }
 }
 
 [Serializable]
 public class Walk : BaseAction
 {
-    private Vector3 moveDir;
     private bool walk;
 
     public override void OnEnable()
     {
         base.OnEnable();
-
-        character.characterCommand.FaceDirCommand += CharacterCommand_FaceDirCommand;
-        character.characterCommand.MoveDirCommand += CharacterCommand_MoveDirCommand;
         character.characterCommand.WalkCommand += CharacterCommand_WalkCommand;
-    }
-    private void CharacterCommand_FaceDirCommand(Vector3 obj)
-    {
-        character.characterMover.SetFaceDir(obj);
     }
     private void CharacterCommand_WalkCommand(bool obj)
     {
         walk = obj;
-    }
-    private void CharacterCommand_MoveDirCommand(Vector3 dir)
-    {
-        moveDir = dir;
-        character.characterMover.SetMoveDir(moveDir);
     }
     public override void CompileCondition()
     {
@@ -152,7 +114,7 @@ public class Walk : BaseAction
             IsBeingPerformed = false;
             return;
         }
-        if (moveDir.sqrMagnitude > 0f && walk)
+        if (walk)
         {
             IsBeingPerformed = true;
         }
@@ -173,22 +135,11 @@ public class Run : BaseAction
     {
         base.OnEnable();
 
-        character.characterCommand.FaceDirCommand += CharacterCommand_FaceDirCommand;
-        character.characterCommand.MoveDirCommand += CharacterCommand_MoveDirCommand;
         character.characterCommand.RunCommand += CharacterCommand_RunCommand;
-    }
-    private void CharacterCommand_FaceDirCommand(Vector3 obj)
-    {
-        character.characterMover.SetFaceDir(obj);
     }
     private void CharacterCommand_RunCommand(bool obj)
     {
         run = obj;
-    }
-    private void CharacterCommand_MoveDirCommand(Vector3 dir)
-    {
-        moveDir = dir;
-        character.characterMover.SetMoveDir(moveDir);
     }
     public override void CompileCondition()
     {
@@ -246,29 +197,17 @@ public class Run : BaseAction
 [Serializable]
 public class Sprint : BaseAction
 {
-    private Vector3 moveDir;
     private bool sprint;
 
     public override void OnEnable()
     {
         base.OnEnable();
 
-        character.characterCommand.FaceDirCommand += CharacterCommand_FaceDirCommand;
-        character.characterCommand.MoveDirCommand += CharacterCommand_MoveDirCommand;
         character.characterCommand.SprintCommand += CharacterCommand_SprintCommand;
-    }
-    private void CharacterCommand_FaceDirCommand(Vector3 obj)
-    {
-        character.characterMover.SetFaceDir(obj);
     }
     private void CharacterCommand_SprintCommand(bool obj)
     {
         sprint = obj;
-    }
-    private void CharacterCommand_MoveDirCommand(Vector3 dir)
-    {
-        moveDir = dir;
-        character.characterMover.SetMoveDir(moveDir);
     }
     public override void CompileCondition()
     {
@@ -313,7 +252,7 @@ public class Sprint : BaseAction
             IsBeingPerformed = false;
             return;
         }
-        if (moveDir.sqrMagnitude > 0f && sprint)
+        if (sprint)
         {
             IsBeingPerformed = true;
         }
@@ -399,7 +338,6 @@ public class Jump : BaseAction
 
         IsBeingPerformed = true;
         controller.InitiateJump();
-        controller.CalculateJumpDirection();
     }
     public override void CompileCondition()
     {
@@ -439,14 +377,15 @@ public class Jump : BaseAction
     {
         base.EvaluateStatus();
 
-        if (IsBeingPerformed && character.characterMover.isGrounded)
+        if (IsBeingPerformed && character.characterMover.isGrounded && 
+            character.transform.InverseTransformDirection(character.characterMover.worldVelocity).y < 0f)
         {
             controller.jumpDurationCounter = 0f;
         }
 
         if (controller.jumpDurationCounter > 0f)
         {
-            controller.jumpDurationCounter -= Time.deltaTime;
+            controller.jumpDurationCounter -= Time.deltaTime * character.timeScale;
         }
         else
         {
@@ -460,13 +399,6 @@ public class Jump : BaseAction
         else
         {
             IsBeingPerformed = false;
-        }
-    }
-    public override void FixedUpdate()
-    {
-        if (IsBeingPerformed)
-        {
-            controller.HandleAirMovement(Time.fixedDeltaTime);
         }
     }
 }
@@ -485,7 +417,6 @@ public class AirJump : BaseAction
 
         IsBeingPerformed = true;
         controller.InitiateJump();
-        controller.CalculateJumpDirection();
     }
     public override void CompileCondition()
     {
@@ -533,7 +464,7 @@ public class AirJump : BaseAction
         }
         if (controller.airJumpDurationCounter > 0f)
         {
-            controller.airJumpDurationCounter -= Time.deltaTime;
+            controller.airJumpDurationCounter -= Time.deltaTime * character.timeScale;
         }
         else
         {
@@ -547,13 +478,6 @@ public class AirJump : BaseAction
         else
         {
             IsBeingPerformed = false;
-        }
-    }
-    public override void FixedUpdate()
-    {
-        if (IsBeingPerformed)
-        {
-            controller.HandleAirMovement(Time.fixedDeltaTime);
         }
     }
 }
@@ -603,13 +527,5 @@ public class Fall : BaseAction
         base.EvaluateStatus();
 
         IsBeingPerformed = CanPerform;
-    }
-    public override void FixedUpdate()
-    {
-        if (IsBeingPerformed)
-        {
-            controller.CalculateJumpDirection();
-            controller.HandleAirMovement(Time.fixedDeltaTime);
-        }
     }
 }

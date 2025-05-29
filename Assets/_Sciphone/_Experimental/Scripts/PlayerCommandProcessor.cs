@@ -5,20 +5,21 @@ using UnityEngine.InputSystem;
 
 public class PlayerCommandProcessor : MonoBehaviour
 {
-    public CharacterCommand characterCommand;
-    public Transform cameraTransform;
+    private Character character;
+    private CharacterCommand characterCommand;
+    [SerializeField] private Transform cameraTransform;
 
-    public CharacterMover.MovementMode movementMode = CharacterMover.MovementMode.Forward;
+    public BaseController.MovementMode movementMode = BaseController.MovementMode.Forward;
 
     public Vector2 moveInput;
     public InputDevice inputDevice;
 
     public bool sprint = false;
     public bool walk = false;
-    public bool crouch = false;
 
     private void Awake()
     {
+        character = GetComponent<Character>();
         characterCommand = GetComponent<CharacterCommand>();
     }
 
@@ -50,8 +51,7 @@ public class PlayerCommandProcessor : MonoBehaviour
     {
         if (context.performed)
         {
-            crouch = !crouch;
-            characterCommand.InvokeCrouch(crouch);
+            characterCommand.InvokeCrouch(!character.PerformingAction<Crouch>());
         }
     }
 
@@ -90,11 +90,11 @@ public class PlayerCommandProcessor : MonoBehaviour
         Vector3 camRight = Vector3.ProjectOnPlane(cameraTransform.right, transform.up);
         Vector3 worldMoveDir = (camRight * moveInput.x + camForward * moveInput.y).normalized;
 
-        if (movementMode == CharacterMover.MovementMode.Forward)
+        if (movementMode == BaseController.MovementMode.Forward)
         {
             characterCommand.InvokeFaceDir(worldMoveDir);
         }
-        else if (movementMode == CharacterMover.MovementMode.EightWay)
+        else if (movementMode == BaseController.MovementMode.EightWay)
         {
             characterCommand.InvokeFaceDir(camForward);
         }
@@ -137,14 +137,14 @@ public class PlayerCommandProcessor : MonoBehaviour
     [Button(nameof(SwitchMovementMode))]
     public void SwitchMovementMode()
     {
-        if (movementMode == CharacterMover.MovementMode.Forward)
+        if (movementMode == BaseController.MovementMode.Forward)
         {
-            movementMode = CharacterMover.MovementMode.EightWay;
+            movementMode = BaseController.MovementMode.EightWay;
             characterCommand.InvokeChangeMovementMode(movementMode);
         }
-        else if (movementMode == CharacterMover.MovementMode.EightWay)
+        else if (movementMode == BaseController.MovementMode.EightWay)
         {
-            movementMode = CharacterMover.MovementMode.Forward;
+            movementMode = BaseController.MovementMode.Forward;
             characterCommand.InvokeChangeMovementMode(movementMode);
         }
     }

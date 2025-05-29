@@ -10,6 +10,13 @@ using Physics = UnityEngine.Physics;
 
 public class CharacterMover : MonoBehaviour
 {
+    enum CapsuleOrientation
+    {
+        X,
+        Y,
+        Z
+    }
+
     [HideInInspector] public Character character;
 
     [Range(0f, 3f)] public float timeScale;
@@ -30,19 +37,13 @@ public class CharacterMover : MonoBehaviour
     public float maxStepWidth;
 
     [SerializeField] private CapsuleOrientation capsuleOrientation = CapsuleOrientation.Y;
+    public float skinWidth = 0.015f;
     public Vector3 offset;
     public float radius;
     public float size;
-    public float skinWidth = 0.015f;
 
     public float criticalSlopeAngle = 75f;
     public float criticalWallAngle = 30f;
-
-
-    public MovementMode movementMode = MovementMode.Forward;
-    public Vector3 worldMoveDir;
-    public Vector3 faceDir;
-    public float rotateSpeed;
 
     public bool isGrounded;
     public RaycastHit groundHit;
@@ -52,23 +53,6 @@ public class CharacterMover : MonoBehaviour
     public float groundCheckerHeight = 1f;
     public float groundCheckerDepth = 0.3f;
 
-    public Vector3 rootDeltaPosition;
-    public Quaternion rootDeltaRotation;
-    public Vector3 scaleFactor;
-
-    public enum MovementMode
-    {
-        Forward,
-        EightWay
-    }
-
-    enum CapsuleOrientation
-    {
-        X,
-        Y,
-        Z
-    }
-
     private void Awake()
     {
         character = GetComponent<Character>();
@@ -77,13 +61,8 @@ public class CharacterMover : MonoBehaviour
     private void Start()
     {
         character.animMachine.OnGraphEvaluate += AnimMachine_OnGraphEvaluate;
-        character.characterCommand.ChangeMovementModeCommand += CharacterCommand_ChangeMovementModeCommand;
     }
 
-    private void CharacterCommand_ChangeMovementModeCommand(MovementMode obj)
-    {
-        movementMode = obj;
-    }
 
     private void Update()
     {
@@ -92,11 +71,6 @@ public class CharacterMover : MonoBehaviour
 
     private void AnimMachine_OnGraphEvaluate(float dt)
     {
-        rootDeltaPosition = character.animMachine.rootDeltaPosition;
-        rootDeltaRotation = character.animMachine.rootDeltaRotation;
-
-        HandleMovement(dt);
-
         if (simulatePhysics)
         {
             accumulatedTime += dt;
@@ -254,7 +228,7 @@ public class CharacterMover : MonoBehaviour
         return moveVector;
     }
 
-    public void ProcessCollideAndSlide(Vector3 moveVector, bool gravityPass)
+    public Vector3 ProcessCollideAndSlide(Vector3 moveVector, bool gravityPass)
     {
         Vector3 collideAndSlideVector = CollideAndSlide(moveVector, moveVector, transform.position, sweepDistance, gravityPass, 0);
         if (collideAndSlideVector.magnitude < moveVector.magnitude)
@@ -265,30 +239,7 @@ public class CharacterMover : MonoBehaviour
         {
             transform.position += collideAndSlideVector.normalized * moveVector.magnitude;
         }
-    }
-
-    public void RotateTowards(Vector3 targetDirection, float dt)
-    {
-        if (targetDirection == Vector3.zero)
-            return;
-
-        targetDirection.Normalize();
-
-        Vector3 currentDirection = transform.forward;
-
-        float angle = Vector3.Angle(currentDirection, targetDirection);
-
-        float maxAngle = rotateSpeed * dt;
-
-        if (angle <= maxAngle)
-        {
-            transform.rotation = Quaternion.LookRotation(targetDirection);
-        }
-        else
-        {
-            Vector3 newDirection = Vector3.RotateTowards(currentDirection, targetDirection, maxAngle * Mathf.Deg2Rad, 0f);
-            transform.rotation = Quaternion.LookRotation(newDirection);
-        }
+        return collideAndSlideVector;
     }
 
     private void SimulatePhysics()
@@ -320,58 +271,17 @@ public class CharacterMover : MonoBehaviour
         transform.up = gravityDirection;
     }
 
-    public void SetScaleFactor(Vector3 factor)
-    {
-        scaleFactor = factor;
-    }
-
     public void SetFaceDir(Vector3 faceDir)
     {
-        this.faceDir = faceDir;
-    }
-
-    public void SetMoveDir(Vector3 moveDir)
-    {
-        worldMoveDir = Vector3.ProjectOnPlane(moveDir, transform.up).normalized;
-    }
-
-    private void HandleMovement(float dt)
-    {
-        if (movementMode == MovementMode.Forward)
+        faceDir = Vector3.ProjectOnPlane(faceDir, transform.up).normalized;
+        if (faceDir != Vector3.zero)
         {
-            Vector3 up = transform.up;
-            Vector3 forward = transform.forward;
-            Vector3 right = Vector3.Cross(up, forward).normalized;
-
-            Vector3 scaledDeltaPosition = new Vector3(rootDeltaPosition.x * scaleFactor.x, rootDeltaPosition.y * scaleFactor.y,
-                rootDeltaPosition.z * scaleFactor.z);
-
-            Vector3 worldDeltaPostition = scaledDeltaPosition.x * right + scaledDeltaPosition.y * up + scaledDeltaPosition.z * forward;
-
-            RotateTowards(worldMoveDir, dt);
-            ProcessCollideAndSlide(worldDeltaPostition, false);
-        }
-        else if (movementMode == MovementMode.EightWay)
-        {
-            Vector3 up = transform.up;
-            Vector3 forward = worldMoveDir;
-            Vector3 right = Vector3.Cross(up, forward).normalized;
-
-            Vector3 scaledDeltaPosition = new Vector3(rootDeltaPosition.x * scaleFactor.x, rootDeltaPosition.y * scaleFactor.y,
-                rootDeltaPosition.z * scaleFactor.z);
-
-            Vector3 worldDeltaPostition = scaledDeltaPosition.x * right + scaledDeltaPosition.y * up + scaledDeltaPosition.z * forward;
-
-            RotateTowards(faceDir, dt);
-            ProcessCollideAndSlide(worldDeltaPostition, false);
+            transform.forward = faceDir;
         }
     }
 
-    private void SnapToGround()
+    public void SetWorldVelocity(Vector3 vel)
     {
-        if (isGrounded)
-        {
-            transform.position = new Vector3(transform.position.x, groundHit.point.y, transform.position.z);
-        }
+        worldVelocity = vel;
     }
 }

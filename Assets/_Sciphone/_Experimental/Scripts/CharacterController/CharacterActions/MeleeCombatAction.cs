@@ -23,7 +23,6 @@ public class Evade : MeleeCombatAction
         IsBeingPerformed = true;
         controller.evadeInputTime = Time.time;
         controller.InitiateDodge();
-
     }
     public override void CompileCondition()
     {

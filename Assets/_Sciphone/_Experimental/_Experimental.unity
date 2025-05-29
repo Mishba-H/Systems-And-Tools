@@ -10705,15 +10705,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3a9df9928f28fd346beaaad4955f2aed, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  movementMode: 0
   targetSpeed: 0
   baseSpeed: 1
   walkSpeedMultiplier: 2
   runSpeedMultiplier: 4
   sprintSpeedMultiplier: 8
   crouchSpeedMultiplier: 0.6
-  rotateSpeed: 10
-  gravityValue: 35
-  terminalVelocity: -50
+  rotateSpeed: 240
+  worldMoveDir: {x: 0, y: 0, z: 0}
+  targetForward: {x: 0, y: 0, z: 0}
+  scaleFactor: {x: 0, y: 0, z: 0}
   jumpHeight: 2.5
   jumpDistance: 4
   jumpDurationCounter: 0
@@ -11028,7 +11030,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   graphName: Playable Graph
   timeScale: 1
-  useCustomFrameRate: 0
+  enableStopMotion: 0
   frameRate: 24
   layers:
   - rid: 4945720422352290216
@@ -33226,13 +33228,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a0dba2667a5a38149b00bffd775e274e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  characterCommand: {fileID: 371146028}
   cameraTransform: {fileID: 23362794}
-  movementMode: 1
+  movementMode: 0
   moveInput: {x: 0, y: 0}
   sprint: 0
   walk: 0
-  crouch: 0
 --- !u!114 &371146027
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -33249,26 +33249,22 @@ MonoBehaviour:
   timeScale: 1
   maxBounces: 3
   sweepDistance: 1.5
-  simulatePhysics: 1
+  simulatePhysics: 0
   simulationStep: 0.016666668
   accumulatedTime: 0
   worldVelocity: {x: 0, y: 0, z: 0}
   gravityDirection: {x: 0, y: -1, z: 0}
-  gravityMagnitude: 10
+  gravityMagnitude: 35
   terminalVelocity: -50
   maxStepHeight: 0
   maxStepWidth: 0
   capsuleOrientation: 1
+  skinWidth: 0.015
   offset: {x: 0, y: 0.9, z: 0}
   radius: 0.3
   size: 1.8
-  skinWidth: 0.015
   criticalSlopeAngle: 75
   criticalWallAngle: 15
-  movementMode: 1
-  worldMoveDir: {x: 0, y: 0, z: 0}
-  faceDir: {x: 0, y: 0, z: 0}
-  rotateSpeed: 240
   isGrounded: 1
   groundLayer:
     serializedVersion: 2
@@ -33277,9 +33273,6 @@ MonoBehaviour:
   noOfLayers: 3
   groundCheckerHeight: 1
   groundCheckerDepth: 0.3
-  rootDeltaPosition: {x: 0, y: 0, z: 0}
-  rootDeltaRotation: {x: 0, y: 0, z: 0, w: 0}
-  scaleFactor: {x: 0, y: 0, z: 0}
 --- !u!114 &371146028
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -4,7 +4,7 @@ using Sciphone.ComboGraph;
 
 public class CharacterCommand : MonoBehaviour
 {
-    internal event Action<CharacterMover.MovementMode> ChangeMovementModeCommand;
+    internal event Action<BaseController.MovementMode> ChangeMovementModeCommand;
     internal event Action<Vector3> FaceDirCommand;
     internal event Action<Vector3> MoveDirCommand;
 
@@ -22,7 +22,7 @@ public class CharacterCommand : MonoBehaviour
     internal event Action<AttackType> AttackCommand;
     internal event Action BlockCommand;
 
-    public void InvokeChangeMovementMode(CharacterMover.MovementMode value) => ChangeMovementModeCommand?.Invoke(value);
+    public void InvokeChangeMovementMode(BaseController.MovementMode value) => ChangeMovementModeCommand?.Invoke(value);
     public void InvokeFaceDir(Vector3 dir) => FaceDirCommand?.Invoke(dir);
     public void InvokeMoveDir(Vector3 dir) => MoveDirCommand?.Invoke(dir);
 
