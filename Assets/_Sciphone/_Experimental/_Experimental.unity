@@ -10712,7 +10712,7 @@ MonoBehaviour:
   runSpeedMultiplier: 4
   sprintSpeedMultiplier: 8
   crouchSpeedMultiplier: 0.6
-  rotateSpeed: 240
+  rotateSpeed: 480
   worldMoveDir: {x: 0, y: 0, z: 0}
   targetForward: {x: 0, y: 0, z: 0}
   scaleFactor: {x: 0, y: 0, z: 0}
@@ -10724,6 +10724,8 @@ MonoBehaviour:
   airJumpDistance: 5
   currentAirJumpCount: 0
   airJumpDurationCounter: 0
+  error: 0.1
+  blendSpeed: 5
 --- !u!114 &371146016
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10898,7 +10900,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 166a6a0cd03e1a741a91027302df6bea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  currentLayer: Base
+  currentStateName: Idle
   oneShotTest:
     rid: 3049075540678411223
   references:
@@ -11059,6 +11061,7 @@ MonoBehaviour:
         - rid: 4945720422352290220
         - rid: 4945720422352290221
         - rid: 4945720422352290222
+        - rid: 4945720520560607326
         - rid: 4945720422352290223
         - rid: 4945720422352290224
         - rid: 4945720422352290225
@@ -11203,7 +11206,7 @@ MonoBehaviour:
     - rid: 4945720422352290223
       type: {class: EightWayBlendState, ns: , asm: Sciphone}
       data:
-        stateName: Crouch
+        stateName: CrouchMove
         properties:
         - rid: 4945720422352290270
         - rid: 4945720422352290271
@@ -11238,7 +11241,8 @@ MonoBehaviour:
       data:
         stateName: Jump
         properties: []
-        events: []
+        events:
+        - rid: 4945720520560607327
         animMachine: {fileID: 0}
         length: 0
         clip: {fileID: 7400000, guid: e371eb54a5274074cae41f04cdbf5c93, type: 3}
@@ -11248,7 +11252,8 @@ MonoBehaviour:
       data:
         stateName: AirJump
         properties: []
-        events: []
+        events:
+        - rid: 4945720520560607325
         animMachine: {fileID: 0}
         length: 0
         clip: {fileID: 7400000, guid: 78611a5d2de949c4a8e78bd2ad5f361c, type: 3}
@@ -32941,6 +32946,28 @@ MonoBehaviour:
       type: {class: ReadyToAttack, ns: , asm: Sciphone}
       data:
         triggerTime: 0.88
+    - rid: 4945720520560607325
+      type: {class: ChangeAnimationState, ns: , asm: Sciphone}
+      data:
+        triggerTime: 1
+        newState: Fall
+        layerName: Base
+    - rid: 4945720520560607326
+      type: {class: AnimationClipState, ns: , asm: Sciphone}
+      data:
+        stateName: CrouchIdle
+        properties: []
+        events: []
+        animMachine: {fileID: 0}
+        length: 0
+        clip: {fileID: 7400000, guid: b7ac1c9e1c80c1443a30b897367e0d70, type: 2}
+        preview: 1
+    - rid: 4945720520560607327
+      type: {class: ChangeAnimationState, ns: , asm: Sciphone}
+      data:
+        triggerTime: 1
+        newState: Fall
+        layerName: Base
 --- !u!114 &371146025
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -33250,7 +33277,7 @@ MonoBehaviour:
   maxBounces: 3
   sweepDistance: 1.5
   simulatePhysics: 0
-  simulationStep: 0.016666668
+  simulationStep: 0.01
   accumulatedTime: 0
   worldVelocity: {x: 0, y: 0, z: 0}
   gravityDirection: {x: 0, y: -1, z: 0}
@@ -59137,8 +59164,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6916828157668384176}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.1060362, y: -0.058368526, z: -0.9631808, w: 0.24006715}
-  m_LocalPosition: {x: 0.7301039, y: 0.36372218, z: 0.6571531}
+  m_LocalRotation: {x: 0.04640682, y: -0.11635915, z: -0.70901346, w: 0.693979}
+  m_LocalPosition: {x: -0.21625793, y: 0.5473126, z: 0.5266651}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -59153,7 +59180,7 @@ Transform:
   m_GameObject: {fileID: 6916828157668384178}
   serializedVersion: 2
   m_LocalRotation: {x: 0.13352852, y: 0.08175807, z: 0.9876427, w: -0.006900953}
-  m_LocalPosition: {x: 0.0809819, y: -0.03094547, z: -0.013556059}
+  m_LocalPosition: {x: 0.08683291, y: -0.036684263, z: -0.01329174}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -59185,7 +59212,7 @@ Transform:
   m_GameObject: {fileID: 6916828157668384182}
   serializedVersion: 2
   m_LocalRotation: {x: 0.1335226, y: 0.08176508, z: 0.987643, w: 0.0068987054}
-  m_LocalPosition: {x: 0.08192901, y: -0.0312355, z: -0.003323135}
+  m_LocalPosition: {x: 0.087549694, y: -0.03714592, z: -0.0041685486}
   m_LocalScale: {x: 1, y: 0.999999, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:

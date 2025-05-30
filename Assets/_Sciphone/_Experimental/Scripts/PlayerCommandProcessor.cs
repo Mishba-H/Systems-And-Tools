@@ -100,15 +100,7 @@ public class PlayerCommandProcessor : MonoBehaviour
         Vector3 camForward = Vector3.ProjectOnPlane(cameraTransform.forward, transform.up);
         Vector3 camRight = Vector3.ProjectOnPlane(cameraTransform.right, transform.up);
         Vector3 worldMoveDir = (camRight * moveInput.x + camForward * moveInput.y).normalized;
-
-        if (movementMode == BaseController.MovementMode.Forward)
-        {
-            characterCommand.InvokeFaceDir(worldMoveDir);
-        }
-        else if (movementMode == BaseController.MovementMode.EightWay)
-        {
-            characterCommand.InvokeFaceDir(camForward);
-        }
+        characterCommand.InvokeMoveDir(worldMoveDir);
 
         if (moveInput.sqrMagnitude == 0f)
         {
@@ -117,31 +109,36 @@ public class PlayerCommandProcessor : MonoBehaviour
 
         if (moveInput.sqrMagnitude == 0f)
         {
-            characterCommand.InvokeMoveDir(worldMoveDir);
             characterCommand.InvokeWalk(false);
             characterCommand.InvokeRun(false);
             characterCommand.InvokeSprint(false);
         }
         else if (sprint)
         {
-            characterCommand.InvokeMoveDir(worldMoveDir);
             characterCommand.InvokeWalk(false);
             characterCommand.InvokeRun(false);
             characterCommand.InvokeSprint(true);
         }
         else if (walk)
         {
-            characterCommand.InvokeMoveDir(worldMoveDir);
             characterCommand.InvokeWalk(true);
             characterCommand.InvokeRun(false);
             characterCommand.InvokeSprint(false);
         }
         else
         {
-            characterCommand.InvokeMoveDir(worldMoveDir);
             characterCommand.InvokeWalk(false);
             characterCommand.InvokeRun(true);
             characterCommand.InvokeSprint(false);
+        }
+
+        if (movementMode == BaseController.MovementMode.Forward)
+        {
+            characterCommand.InvokeFaceDir(worldMoveDir);
+        }
+        else if (movementMode == BaseController.MovementMode.EightWay)
+        {
+            characterCommand.InvokeFaceDir(camForward);
         }
     }
 

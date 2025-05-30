@@ -9,7 +9,7 @@ public class MeleeCombatController : MonoBehaviour, IControllerModule
 {
     public Character character { get; set; }
 
-    public event Action<bool> OnAttackSelected;
+    public event Action OnAttackSelected;
 
     #region DODGE_VARIABLES
     [TabGroup("Dodge")] public float evadeDistance;
@@ -155,7 +155,7 @@ public class MeleeCombatController : MonoBehaviour, IControllerModule
                 {
                     faceDir = attackDir;
                 }
-                OnAttackSelected?.Invoke(true);
+                OnAttackSelected?.Invoke();
                 return true;
             }
         }

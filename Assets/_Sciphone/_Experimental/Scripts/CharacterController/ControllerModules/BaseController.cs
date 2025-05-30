@@ -1,6 +1,8 @@
 using System;
 using UnityEngine;
 using Sciphone;
+using UnityEditor.PackageManager;
+using System.Collections.Generic;
 
 [Serializable]
 public class BaseController : MonoBehaviour, IControllerModule
@@ -25,8 +27,6 @@ public class BaseController : MonoBehaviour, IControllerModule
     [TabGroup("Movement")] public Vector3 worldMoveDir;
     [TabGroup("Movement")] public Vector3 targetForward;
     [TabGroup("Movement")] public Vector3 scaleFactor;
-    private Vector3 rootDeltaPosition;
-    private Quaternion rootDeltaRotation;
     #endregion
 
     #region JUMP_PARAMETERS
@@ -40,39 +40,32 @@ public class BaseController : MonoBehaviour, IControllerModule
     [TabGroup("Jump"), Disable] public float airJumpDurationCounter;
     private Vector3 jumpVelocity;
     private float timeOfFlight;
-    private Vector3 jumpDir;
     #endregion
+
+
+    List<EightWayBlendState> states;
+    public float error = 0.1f;
+    public float blendSpeed = 0.5f;
 
     private void Start()
     {
+        character.characterCommand.ChangeMovementModeCommand += CharacterCommand_ChangeMovementModeCommand;
+        character.characterCommand.FaceDirCommand += CharacterCommand_FaceDirCommand;
+        character.characterCommand.MoveDirCommand += CharacterCommand_MoveDirCommand;
+
+        character.OnAllActionEvaluate += CalculateSpeedFactor;
+        character.OnAllActionEvaluate += HandlePhysicsSimulation;
+        character.OnAnimationMachineUpdate += Character_OnAnimationMachineUpdate;
         foreach (var action in character.actions)
         {
             if (action is Idle || action is Walk || action is Run || action is Sprint || action is Crouch)
                 action.IsBeingPerformed_OnValueChanged += CalculateTargetSpeed;
         }
 
-        character.OnAllActionEvaluate += CalculateSpeedFactor;
-        character.animMachine.OnGraphEvaluate += AnimMachine_OnGraphEvaluate;
-        character.characterCommand.ChangeMovementModeCommand += CharacterCommand_ChangeMovementModeCommand;
-        character.characterCommand.FaceDirCommand += CharacterCommand_FaceDirCommand;
-        character.characterCommand.MoveDirCommand += CharacterCommand_MoveDirCommand;
-    }
-
-    private void Update()
-    {
-        HandlePhysicsSimulation();
-    }
-
-    private void HandlePhysicsSimulation()
-    {
-        if (character.PerformingAction<Fall>() || character.PerformingAction<Jump>() || character.PerformingAction<AirJump>())
-        {
-            character.characterMover.SetPhysicsSimulation(true);
-        }
-        else
-        {
-            character.characterMover.SetPhysicsSimulation(false);
-        }
+        states = new List<EightWayBlendState>();
+        states.Add(character.animMachine.layers.GetLayerInfo("Base").GetStateInfo("Walk") as EightWayBlendState);
+        states.Add(character.animMachine.layers.GetLayerInfo("Base").GetStateInfo("Run") as EightWayBlendState);
+        states.Add(character.animMachine.layers.GetLayerInfo("Base").GetStateInfo("CrouchMove") as EightWayBlendState);
     }
 
     private void CharacterCommand_FaceDirCommand(Vector3 obj)
@@ -135,36 +128,20 @@ public class BaseController : MonoBehaviour, IControllerModule
         movementMode = obj;
     }
 
-    private void AnimMachine_OnGraphEvaluate(float dt)
+    private void Character_OnAnimationMachineUpdate(float dt)
     {
-        rootDeltaPosition = character.animMachine.rootDeltaPosition;
-        rootDeltaRotation = character.animMachine.rootDeltaRotation;
-
         HandleMovement(dt);
         HandleRotation(dt);
+        HandleBlendParameters(dt);
     }
 
     public Vector3 RotateTowards(Vector3 targetDirection, float dt)
     {
         if (targetDirection == Vector3.zero)
             return transform.forward;
-
         targetDirection.Normalize();
 
-        Vector3 currentDirection = transform.forward;
-
-        float angle = Vector3.Angle(currentDirection, targetDirection);
-
-        float maxAngle = rotateSpeed * dt;
-
-        if (angle <= maxAngle)
-        {
-            return targetDirection;
-        }
-        else
-        {
-            return Vector3.RotateTowards(currentDirection, targetDirection, maxAngle * Mathf.Deg2Rad, 0f);
-        }
+        return Vector3.RotateTowards(transform.forward, targetDirection, rotateSpeed * dt * Mathf.Deg2Rad, 0f);
     }
 
     private void HandleMovement(float dt)
@@ -179,12 +156,12 @@ public class BaseController : MonoBehaviour, IControllerModule
                 Vector3 forward = transform.forward;
                 Vector3 right = Vector3.Cross(up, forward).normalized;
 
+                Vector3 rootDeltaPosition = character.animMachine.rootDeltaPosition;
                 Vector3 scaledDeltaPosition = new Vector3(rootDeltaPosition.x * scaleFactor.x, rootDeltaPosition.y * scaleFactor.y,
                     rootDeltaPosition.z * scaleFactor.z);
 
                 Vector3 worldDeltaPostition = scaledDeltaPosition.x * right + scaledDeltaPosition.y * up + scaledDeltaPosition.z * forward;
 
-                character.characterMover.SetFaceDir(RotateTowards(worldMoveDir, dt));
                 moveAmount = character.characterMover.ProcessCollideAndSlide(worldDeltaPostition, false);
             }
             else if (movementMode == MovementMode.EightWay)
@@ -193,12 +170,12 @@ public class BaseController : MonoBehaviour, IControllerModule
                 Vector3 forward = worldMoveDir;
                 Vector3 right = Vector3.Cross(up, forward).normalized;
 
+                Vector3 rootDeltaPosition = character.animMachine.rootDeltaPosition;
                 Vector3 scaledDeltaPosition = new Vector3(rootDeltaPosition.x * scaleFactor.x, rootDeltaPosition.y * scaleFactor.y,
                     rootDeltaPosition.z * scaleFactor.z);
 
                 Vector3 worldDeltaPostition = scaledDeltaPosition.x * right + scaledDeltaPosition.y * up + scaledDeltaPosition.z * forward;
 
-                character.characterMover.SetFaceDir(RotateTowards(targetForward, dt));
                 moveAmount = character.characterMover.ProcessCollideAndSlide(worldDeltaPostition, false);
             }
             character.characterMover.SetWorldVelocity(moveAmount / dt);
@@ -207,8 +184,7 @@ public class BaseController : MonoBehaviour, IControllerModule
 
     private void HandleRotation(float dt)
     {
-        if (character.PerformingAction<Idle>() || character.PerformingAction<Walk>() || character.PerformingAction<Run>() ||
-            character.PerformingAction<Sprint>() || character.PerformingAction<Crouch>())
+        if (character.PerformingAction<Idle>() || character.PerformingAction<Walk>() || character.PerformingAction<Run>() || character.PerformingAction<Crouch>())
         {
             if (movementMode == MovementMode.Forward)
             {
@@ -218,6 +194,10 @@ public class BaseController : MonoBehaviour, IControllerModule
             {
                 character.characterMover.SetFaceDir(RotateTowards(targetForward, dt));
             }
+        }
+        else if (character.PerformingAction<Sprint>())
+        {
+            character.characterMover.SetFaceDir(RotateTowards(worldMoveDir, dt));
         }
         else if (character.PerformingAction<Jump>() || character.PerformingAction<AirJump>())
         {
@@ -259,12 +239,40 @@ public class BaseController : MonoBehaviour, IControllerModule
         jumpVelocity = right * localJumpVelocity.x + up * localJumpVelocity.y + forward * localJumpVelocity.z;
     }
 
-    public void HandleAirMovement(float dt)
+    private void HandlePhysicsSimulation()
     {
-        /*float gravityValue = this.gravityValue * (float)Math.Pow(character.timeScale, 2);
-        if (character.rb.linearVelocity.y > terminalVelocity)
-            character.rb.AddForce(gravityValue * dt * Vector3.down, ForceMode.VelocityChange);
+        if (character.PerformingAction<Fall>() || character.PerformingAction<Jump>() || character.PerformingAction<AirJump>())
+        {
+            character.characterMover.SetPhysicsSimulation(true);
+        }
         else
-            character.rb.linearVelocity = new Vector3(character.rb.linearVelocity.x, character.timeScale * terminalVelocity, character.rb.linearVelocity.z);*/
+        {
+            character.characterMover.SetPhysicsSimulation(false);
+        }
+    }
+
+    private void HandleBlendParameters(float dt)
+    {
+        Vector3 localMoveDir = transform.InverseTransformDirection(worldMoveDir);
+
+        if (movementMode == MovementMode.Forward)
+        {
+            foreach (var state in states)
+            {
+                state.blendX = 0f;
+                state.blendY = 1f;
+            }
+        }
+        else if (movementMode == MovementMode.EightWay)
+        {
+            foreach (var state in states)
+            {
+                state.blendX = Mathf.Abs(localMoveDir.x - state.blendX) < error ?
+                    localMoveDir.x : Mathf.MoveTowards(state.blendX, localMoveDir.x, blendSpeed * dt);
+                state.blendY = Mathf.Abs(localMoveDir.z - state.blendY) < error ?
+                    localMoveDir.z : Mathf.MoveTowards(state.blendY, localMoveDir.z, blendSpeed * dt);
+            }
+        }
+
     }
 }

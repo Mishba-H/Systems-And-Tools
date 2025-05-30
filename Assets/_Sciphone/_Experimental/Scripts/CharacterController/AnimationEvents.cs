@@ -1,6 +1,20 @@
 using System;
 
 [Serializable]
+public class ChangeAnimationState : TriggerEvent
+{
+    public string newState;
+    public string layerName;
+    public override void TriggerEventBehaviour()
+    {
+        if (GameObject.TryGetComponent(out CharacterAnimator characterAnimator))
+        {
+            characterAnimator.ChangeAnimationState(newState, layerName);
+        }
+    }
+}
+
+[Serializable]
 public class ReadyToAttack : TriggerEvent
 {
     public override void TriggerEventBehaviour()
@@ -11,6 +25,7 @@ public class ReadyToAttack : TriggerEvent
         }
     }
 }
+
 [Serializable]
 public class ReadAttackInput : WindowEvent
 {
@@ -24,6 +39,7 @@ public class ReadAttackInput : WindowEvent
         base.OnEventFinished();
     }
 }
+
 [Serializable]
 public class TriggerNextAttack : TriggerEvent
 {

@@ -60,16 +60,15 @@ public class CharacterMover : MonoBehaviour
 
     private void Start()
     {
-        character.animMachine.OnGraphEvaluate += AnimMachine_OnGraphEvaluate;
+        character.OnAnimationMachineUpdate += Character_OnAnimationMachineUpdate;
     }
-
 
     private void Update()
     {
-        isGrounded = CheckGround(out groundHit);
+        isGrounded = CheckGround(transform.position, out groundHit);
     }
 
-    private void AnimMachine_OnGraphEvaluate(float dt)
+    private void Character_OnAnimationMachineUpdate(float dt)
     {
         if (simulatePhysics)
         {
@@ -99,7 +98,7 @@ public class CharacterMover : MonoBehaviour
         }
     }
 
-    public bool CheckGround(out RaycastHit groundHit)
+    public bool CheckGround(Vector3 pos, out RaycastHit groundHit)
     {
         groundCheckerDepth = GetGroundCheckerDepth();
 
@@ -182,7 +181,66 @@ public class CharacterMover : MonoBehaviour
             return Vector3.zero;
         }
 
-        if (CapsuleSweep(moveVector, distance, out RaycastHit hit))
+        if (gravityPass)
+        {
+
+        }
+        else
+        {
+            if (CheckGround(pos, out RaycastHit groundHit) && Vector3.Angle(groundHit.normal, transform.up) < criticalSlopeAngle)
+            {
+                moveVector = Vector3.ProjectOnPlane(moveVector, groundHit.normal).normalized;
+            }
+            if (CapsuleSweep(moveVector, distance, out RaycastHit hit))
+            {
+                Vector3 distToSurface = (hit.distance - skinWidth) * moveVector.normalized;
+                if (distToSurface.magnitude <= skinWidth)
+                {
+                    distToSurface = Vector3.zero;
+                }
+
+                Vector3 leftOverMovement = distance * moveVector.normalized - distToSurface;
+                float leftOverMagnitude = leftOverMovement.magnitude;
+                leftOverMovement = Vector3.ProjectOnPlane(leftOverMovement, hit.normal).normalized;
+
+                if (gravityPass)
+                {
+                    float groundAngle = Vector3.Angle(hit.normal, transform.up);
+                    if (groundAngle < criticalSlopeAngle)
+                    {
+                        return distToSurface;
+                    }
+                }
+                else if (!gravityPass)
+                {
+                    Vector3 hitNormal = hit.normal;
+                    float groundAngle = Vector3.Angle(hit.normal, transform.up);
+                    if (groundAngle >= criticalSlopeAngle)
+                    {
+                        hitNormal = Vector3.ProjectOnPlane(hit.normal, transform.up).normalized;
+                    }
+                    float wallAngle = Vector3.Angle(moveVector, -hitNormal);
+                    if (wallAngle <= criticalWallAngle)
+                    {
+                        return distToSurface;
+                    }
+                    else
+                    {
+                        float scale = 1 - Vector3.Dot(hitNormal, initialMoveVector.normalized);
+                        leftOverMagnitude *= scale;
+                    }
+                }
+
+                return distToSurface + CollideAndSlide(leftOverMovement, initialMoveVector, pos + distToSurface, leftOverMagnitude, gravityPass, depth + 1);
+            }
+        }
+
+
+        /*if (CheckGround(pos, out groundHit) && Vector3.Angle(groundHit.normal, transform.up) < criticalSlopeAngle && !gravityPass)
+        {
+            moveVector = Vector3.ProjectOnPlane(moveVector, groundHit.normal).normalized;
+        }*/
+        /*if (CapsuleSweep(moveVector, distance, out RaycastHit hit))
         {
             Vector3 distToSurface = (hit.distance - skinWidth) * moveVector.normalized;
             if (distToSurface.magnitude <= skinWidth)
@@ -223,7 +281,7 @@ public class CharacterMover : MonoBehaviour
             }
 
             return distToSurface + CollideAndSlide(leftOverMovement, initialMoveVector, pos + distToSurface, leftOverMagnitude, gravityPass, depth + 1);
-        }
+        }*/
 
         return moveVector;
     }

@@ -57,6 +57,13 @@ public class Idle : BaseAction
 
         IsBeingPerformed = CanPerform;
     }
+    public override void OnPerform()
+    {
+        if (character.PerformingAction<Crouch>())
+            character.characterAnimator.ChangeAnimationState("CrouchIdle", "Base");
+        else
+            character.characterAnimator.ChangeAnimationState("Idle", "Base");
+    }
 }
 
 [Serializable]
@@ -122,6 +129,13 @@ public class Walk : BaseAction
         {
             IsBeingPerformed = false;
         }
+    }
+    public override void OnPerform()
+    {
+        if (character.PerformingAction<Crouch>())
+            character.characterAnimator.ChangeAnimationState("CrouchMove", "Base");
+        else
+            character.characterAnimator.ChangeAnimationState("Walk", "Base");
     }
 }
 
@@ -190,6 +204,13 @@ public class Run : BaseAction
         {
             IsBeingPerformed = false;
         }
+    }
+    public override void OnPerform()
+    {
+        if (character.PerformingAction<Crouch>())
+            character.characterAnimator.ChangeAnimationState("CrouchMove", "Base");
+        else
+            character.characterAnimator.ChangeAnimationState("Run", "Base");
     }
 }
 
@@ -260,6 +281,10 @@ public class Sprint : BaseAction
             IsBeingPerformed = false;
         }
     }
+    public override void OnPerform()
+    {
+        character.characterAnimator.ChangeAnimationState("Sprint", "Base");
+    }
 }
 
 [Serializable]
@@ -319,6 +344,32 @@ public class Crouch : BaseAction
         {
             IsBeingPerformed = false;
             return;
+        }
+    }
+    public override void OnPerform()
+    {
+        if (character.PerformingAction<Idle>())
+        {
+            character.characterAnimator.ChangeAnimationState("CrouchIdle", "Base");
+        }
+        else if (character.PerformingAction<Walk>() || character.PerformingAction<Run>())
+        {
+            character.characterAnimator.ChangeAnimationState("CrouchMove", "Base");
+        }
+    }
+    public override void OnStop()
+    {
+        if (character.PerformingAction<Idle>())
+        {
+            character.characterAnimator.ChangeAnimationState("Idle", "Base");
+        }
+        else if (character.PerformingAction<Walk>())
+        {
+            character.characterAnimator.ChangeAnimationState("Walk", "Base");
+        }
+        else if (character.PerformingAction<Run>())
+        {
+            character.characterAnimator.ChangeAnimationState("Run", "Base");
         }
     }
 }
@@ -400,6 +451,10 @@ public class Jump : BaseAction
             IsBeingPerformed = false;
         }
     }
+    public override void OnPerform()
+    {
+        character.characterAnimator.ChangeAnimationState("Jump", "Base");
+    }
 }
 
 [Serializable]
@@ -479,6 +534,10 @@ public class AirJump : BaseAction
             IsBeingPerformed = false;
         }
     }
+    public override void OnPerform()
+    {
+        character.characterAnimator.ChangeAnimationState("AirJump", "Base");
+    }
 }
 
 [Serializable]
@@ -526,5 +585,16 @@ public class Fall : BaseAction
         base.EvaluateStatus();
 
         IsBeingPerformed = CanPerform;
+    }
+    public override void OnPerform()
+    {
+        if (character.characterAnimator.currentStateName == "AirJump" || character.characterAnimator.currentStateName == "Jump")
+        {
+            return;
+        }
+        else
+        {
+            character.characterAnimator.ChangeAnimationState("Fall", "Base");
+        }
     }
 }

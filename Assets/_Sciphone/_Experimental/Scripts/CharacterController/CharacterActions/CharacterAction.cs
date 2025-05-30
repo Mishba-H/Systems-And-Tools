@@ -36,6 +36,10 @@ public abstract class CharacterAction
             {
                 isBeingPerformed = value;
                 IsBeingPerformed_OnValueChanged?.Invoke(isBeingPerformed);
+                if (value == true)
+                    OnPerform();
+                else
+                    OnStop();
             }
         }
     }
@@ -56,6 +60,8 @@ public abstract class CharacterAction
     }
     public virtual void Update() { }
     public virtual void FixedUpdate() { }
+    public virtual void OnPerform() { }
+    public virtual void OnStop() { }
     public virtual void OnDisable() { }
     public static Expression<Func<bool>> CombineExpressions(Expression<Func<bool>> left, Expression<Func<bool>> right)
     {

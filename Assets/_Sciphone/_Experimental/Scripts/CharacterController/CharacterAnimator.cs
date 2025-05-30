@@ -6,27 +6,40 @@ public class CharacterAnimator : MonoBehaviour
     private AnimationMachine animMachine;
     private Character character;
 
-    public string currentLayer = "Base";
+    private float error = 0.1f;
+    private float lerpSpeed = 10f;
+
+    public string currentStateName = "Idle";
 
     private void Awake()
     {
         character = GetComponent<Character>();
         animMachine = GetComponent<AnimationMachine>();
     }
-    private void Start()
-    {
-        foreach (var action in character.actions)
-        {
-            action.IsBeingPerformed_OnValueChanged += HandleCharacterAnimation;
-        }
-        character.GetControllerModule<MeleeCombatController>().OnAttackSelected += HandleCharacterAnimation;
-    }
 
     private void Update()
     {
-        HandleBlendParameters();
     }
-    private void HandleCharacterAnimation(bool _)
+
+    public void ChangeAnimationState(string newStateName, string layerName)
+    {
+        if (CheckTransitions(currentStateName, newStateName))
+        {
+
+        }
+        else
+        {
+            currentStateName = newStateName;
+            animMachine.PlayActive(currentStateName, layerName);
+        }
+    }
+
+    public bool CheckTransitions(string currentStateName, string newStateName)
+    {
+        return false;
+    }
+
+    /*private void HandleCharacterAnimation()
     {
         if (character.PerformingAction<Attack>())
         {
@@ -37,47 +50,47 @@ public class CharacterAnimator : MonoBehaviour
         else if (character.PerformingAction<Idle>())
         {
             if (character.PerformingAction<Crouch>())
-                animMachine.PlayActive("Crouch", currentLayer);
+                animMachine.PlayActive("Crouch", "Base");
             else
-                animMachine.PlayActive("Idle", currentLayer);
+                animMachine.PlayActive("Idle", "Base");
         }
         else if (character.PerformingAction<Walk>())
         {
             if (character.PerformingAction<Crouch>())
-                animMachine.PlayActive("Crouch", currentLayer);
+                animMachine.PlayActive("Crouch", "Base");
             else
-                animMachine.PlayActive("Walk", currentLayer);
+                animMachine.PlayActive("Walk", "Base");
         }
         else if (character.PerformingAction<Run>())
         {
             if (character.PerformingAction<Crouch>())
-                animMachine.PlayActive("Crouch", currentLayer);
+                animMachine.PlayActive("Crouch", "Base");
             else
-                animMachine.PlayActive("Run", currentLayer);
+                animMachine.PlayActive("Run", "Base");
         }
         else if (character.PerformingAction<Sprint>())
         {
-            animMachine.PlayActive("Sprint", currentLayer);
+            animMachine.PlayActive("Sprint", "Base");
         }
         else if (character.PerformingAction<Jump>())
         {
-            animMachine.PlayActive("Jump", currentLayer);
+            animMachine.PlayActive("Jump", "Base");
         }
         else if (character.PerformingAction<AirJump>())
         {
-            animMachine.PlayActive("AirJump", currentLayer);
+            animMachine.PlayActive("AirJump", "Base");
         }
         else if (character.PerformingAction<Fall>())
         {
-            animMachine.PlayActive("Fall", currentLayer);
+            animMachine.PlayActive("Fall", "Base");
         }
         else if (character.PerformingAction<Evade>())
         {
-            animMachine.PlayActive("Evade", currentLayer);
+            animMachine.PlayActive("Evade", "Base");
         }
         else if (character.PerformingAction<Roll>())
         {
-            animMachine.PlayActive("Roll", currentLayer);
+            animMachine.PlayActive("Roll", "Base");
         }
         else if (character.PerformingAction<ClimbOverLow>())
         {
@@ -87,10 +100,8 @@ public class CharacterAnimator : MonoBehaviour
         {
             animMachine.PlayActive("ClimbOverHigh", "Parkour");
         }
-    }
+    }*/
 
-    private float error = 0.1f;
-    private float lerpSpeed = 10f;
     private void HandleBlendParameters()
     {
         Vector2 moveInput = new Vector2(0f, 1f);
@@ -124,7 +135,7 @@ public class CharacterAnimator : MonoBehaviour
             float moveDirX = moveDir.x > error ? 1 : moveDir.x < -error ? -1 : 0;
             float moveDirZ = moveDir.y > error ? 1 : moveDir.y < -error ? -1 : 0;
 
-            var state = (EightWayBlendState)animMachine.layers.GetLayerInfo("Base").GetStateInfo("Crouch");
+            var state = (EightWayBlendState)animMachine.layers.GetLayerInfo("Base").GetStateInfo("CrouchMove");
             state.blendX = Mathf.Abs(moveDirX - state.blendX) < error ?
                 moveDirX : Mathf.Lerp(state.blendX, moveDirX, lerpSpeed * Time.deltaTime);
             state.blendY = Mathf.Abs(moveDirZ - state.blendY) < error ?
