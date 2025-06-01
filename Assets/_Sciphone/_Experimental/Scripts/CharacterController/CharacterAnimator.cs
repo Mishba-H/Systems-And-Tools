@@ -6,19 +6,12 @@ public class CharacterAnimator : MonoBehaviour
     private AnimationMachine animMachine;
     private Character character;
 
-    private float error = 0.1f;
-    private float lerpSpeed = 10f;
-
     public string currentStateName = "Idle";
 
     private void Awake()
     {
         character = GetComponent<Character>();
         animMachine = GetComponent<AnimationMachine>();
-    }
-
-    private void Update()
-    {
     }
 
     public void ChangeAnimationState(string newStateName, string layerName)
@@ -38,70 +31,7 @@ public class CharacterAnimator : MonoBehaviour
     {
         return false;
     }
-
-    /*private void HandleCharacterAnimation()
-    {
-        if (character.PerformingAction<Attack>())
-        {
-            var attacks = character.GetControllerModule<MeleeCombatController>().attacksPerformed;
-            if (attacks.Count > 0)
-                animMachine.PlayActive(attacks[attacks.Count - 1].attackName, "GreatSword");
-        }
-        else if (character.PerformingAction<Idle>())
-        {
-            if (character.PerformingAction<Crouch>())
-                animMachine.PlayActive("Crouch", "Base");
-            else
-                animMachine.PlayActive("Idle", "Base");
-        }
-        else if (character.PerformingAction<Walk>())
-        {
-            if (character.PerformingAction<Crouch>())
-                animMachine.PlayActive("Crouch", "Base");
-            else
-                animMachine.PlayActive("Walk", "Base");
-        }
-        else if (character.PerformingAction<Run>())
-        {
-            if (character.PerformingAction<Crouch>())
-                animMachine.PlayActive("Crouch", "Base");
-            else
-                animMachine.PlayActive("Run", "Base");
-        }
-        else if (character.PerformingAction<Sprint>())
-        {
-            animMachine.PlayActive("Sprint", "Base");
-        }
-        else if (character.PerformingAction<Jump>())
-        {
-            animMachine.PlayActive("Jump", "Base");
-        }
-        else if (character.PerformingAction<AirJump>())
-        {
-            animMachine.PlayActive("AirJump", "Base");
-        }
-        else if (character.PerformingAction<Fall>())
-        {
-            animMachine.PlayActive("Fall", "Base");
-        }
-        else if (character.PerformingAction<Evade>())
-        {
-            animMachine.PlayActive("Evade", "Base");
-        }
-        else if (character.PerformingAction<Roll>())
-        {
-            animMachine.PlayActive("Roll", "Base");
-        }
-        else if (character.PerformingAction<ClimbOverLow>())
-        {
-            animMachine.PlayActive("ClimbOverLow", "Parkour");
-        }
-        else if (character.PerformingAction<ClimbOverHigh>())
-        {
-            animMachine.PlayActive("ClimbOverHigh", "Parkour");
-        }
-    }*/
-
+/*
     private void HandleBlendParameters()
     {
         Vector2 moveInput = new Vector2(0f, 1f);
@@ -153,7 +83,7 @@ public class CharacterAnimator : MonoBehaviour
             state.blendX = character.GetControllerModule<MeleeCombatController>().dodgeDir.x;
             state.blendY = character.GetControllerModule<MeleeCombatController>().dodgeDir.y;
         }
-    }
+    }*/
 
     [SerializeReference, Polymorphic] public AnimationClipState oneShotTest;
     [Button(nameof(PlayOneShot))]

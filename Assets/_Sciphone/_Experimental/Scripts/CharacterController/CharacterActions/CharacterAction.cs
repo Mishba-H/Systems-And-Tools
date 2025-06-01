@@ -35,11 +35,11 @@ public abstract class CharacterAction
             if (isBeingPerformed != value)
             {
                 isBeingPerformed = value;
-                IsBeingPerformed_OnValueChanged?.Invoke(isBeingPerformed);
                 if (value == true)
                     OnPerform();
                 else
                     OnStop();
+                IsBeingPerformed_OnValueChanged?.Invoke(isBeingPerformed);
             }
         }
     }

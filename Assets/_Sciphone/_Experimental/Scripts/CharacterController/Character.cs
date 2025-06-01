@@ -8,7 +8,6 @@ using UnityEngine;
 public class Character : MonoBehaviour
 {
     public Action OnAllActionEvaluate;
-    public Action<float> OnAnimationMachineUpdate;
 
     [Range(0f, 3f)] public float timeScale;
 
@@ -55,8 +54,6 @@ public class Character : MonoBehaviour
 
     private void Start()
     {
-        animMachine.OnGraphEvaluate += (float dt) => OnAnimationMachineUpdate?.Invoke(dt);
-
         foreach (CharacterAction characterAction in actions)
         {
             characterAction.OnEnable();

@@ -283,6 +283,9 @@ public class Sprint : BaseAction
     }
     public override void OnPerform()
     {
+        if (controller.movementMode == BaseController.MovementMode.EightWay)
+            character.characterMover.SetFaceDir(controller.worldMoveDir);
+
         character.characterAnimator.ChangeAnimationState("Sprint", "Base");
     }
 }

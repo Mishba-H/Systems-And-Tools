@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Sciphone;
-using UnityEditor.VersionControl;
 using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
@@ -12,6 +11,8 @@ public class AnimationMachine : MonoBehaviour
 {
     public event Action<float> OnGraphEvaluate;
     public event Action OnActiveStateChanged;
+
+    private Animator animator;
 
     public string graphName = "Playable Graph";
 
@@ -35,28 +36,13 @@ public class AnimationMachine : MonoBehaviour
     public AnimationStateInfo oneShotState;
     public Coroutine playOneShotCoroutine;
 
-    private Animator animator;
-    [FoldoutGroup("Root Motion Properties")] public Vector3 animatorDeltaPosition;
-    [FoldoutGroup("Root Motion Properties")] public Quaternion animatorDeltaRotation;
-
     private float currNT;
     private float prevNT;
     [FoldoutGroup("Root Motion Properties")] public Vector3 rootDeltaPosition;
     [FoldoutGroup("Root Motion Properties")] public Quaternion rootDeltaRotation;
+    [FoldoutGroup("Root Motion Properties")] public Vector3 rootLinearVelocity;
+    [FoldoutGroup("Root Motion Properties")] public Vector3 rootAngularVelocity;
 
-    private void OnAnimatorMove()
-    {
-        if (activeState.TryGetProperty<ApplyRootMotionProperty>(out AnimationStateProperty property) && (bool)property.Value)
-        {
-            animatorDeltaPosition = animator.deltaPosition;
-            animatorDeltaRotation = animator.deltaRotation;
-        }
-        else
-        {
-            animatorDeltaPosition = Vector3.zero;
-            animatorDeltaRotation = Quaternion.identity;
-        }
-    }
 
     private void Awake()
     {
@@ -143,6 +129,21 @@ public class AnimationMachine : MonoBehaviour
         if (activeState == newState) return;
         
         activeState = newState;
+
+
+        if (enableStopMotion)
+        {
+            var currNT = frameTime / activeState.length;
+            var prevNT = 0f;
+            EvaluateRootMotionData(frameTime, currNT, prevNT);
+        }
+        else
+        {
+            var currNT = Time.deltaTime / activeState.length;
+            var prevNT = 0f;
+            EvaluateRootMotionData(Time.deltaTime, currNT, prevNT);
+        }
+
         OnActiveStateChanged?.Invoke();
     }
 
@@ -180,7 +181,7 @@ public class AnimationMachine : MonoBehaviour
                 activeState.ResetState(currNT);
             }
         }
-        EvaluateRootMotionData(evaluationTime / timeScale);
+        EvaluateRootMotionData(evaluationTime, currNT, prevNT);
         prevNT = currNT;
     }
 
@@ -375,7 +376,7 @@ public class AnimationMachine : MonoBehaviour
         ChangeActiveState(activeLayer.activeState);
     }
 
-    private void EvaluateRootMotionData(float dt)
+    private void EvaluateRootMotionData(float dt, float currNT, float prevNT)
     {
         if (activeState.TryGetProperty<RootMotionCurvesProperty>(out AnimationStateProperty property))
         {
@@ -396,6 +397,14 @@ public class AnimationMachine : MonoBehaviour
             rootDeltaPosition = Vector3.zero;
             rootDeltaRotation = Quaternion.identity;
         }
+
+        rootLinearVelocity = rootDeltaPosition / dt;
+
+        rootDeltaRotation.ToAngleAxis(out float angleInDegrees, out Vector3 axis); 
+        if (angleInDegrees > 180f)
+            angleInDegrees -= 360f;
+        float angleInRadians = angleInDegrees * Mathf.Deg2Rad;
+        rootAngularVelocity = axis * angleInRadians / dt;
     }
 
     private float GetCurveDelta(AnimationCurve curve, float currentNormalizedTime, float prevNormalizedTime)

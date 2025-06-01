@@ -35,17 +35,6 @@ public class PlayWindowProperty : AnimationStateProperty
 }
 
 [Serializable]
-public class ApplyRootMotionProperty : AnimationStateProperty
-{
-    public bool applyRootMotion = true;
-    public override object Value
-    {
-        get => applyRootMotion;
-        set => applyRootMotion = (bool)value;
-    }
-}
-
-[Serializable]
 public class NotCancellableProperty : AnimationStateProperty
 {
     public bool notCancellable = true;
