@@ -55,8 +55,8 @@ public class BaseController : MonoBehaviour, IControllerModule
         character.characterCommand.FaceDirCommand += CharacterCommand_FaceDirCommand;
         character.characterCommand.MoveDirCommand += CharacterCommand_MoveDirCommand;
 
-        character.OnAllActionEvaluate += Character_OnAllActionsEvaluate;
-        character.OnAllActionEvaluate += CalculateSpeedFactor;
+        character.CharacterUpdateEvent += OnCharacterUpdate;
+        character.CharacterUpdateEvent += CalculateSpeedFactor;
         foreach (var action in character.actions)
         {
             if (action is Idle || action is Walk || action is Run || action is Sprint || action is Crouch)
@@ -89,7 +89,7 @@ public class BaseController : MonoBehaviour, IControllerModule
         worldMoveDir = Vector3.ProjectOnPlane(dir, transform.up).normalized;
     }
 
-    private void Character_OnAllActionsEvaluate()
+    private void OnCharacterUpdate()
     {
         CalculateTargetSpeed();
 
@@ -97,6 +97,7 @@ public class BaseController : MonoBehaviour, IControllerModule
         HandleRotation(Time.deltaTime * character.timeScale);
         HandleBlendParameters(Time.deltaTime * character.timeScale);
         HandlePhysicsSimulation();
+        HandleSnapToGround();
     }
 
     private void CalculateSpeedFactor()
@@ -255,11 +256,27 @@ public class BaseController : MonoBehaviour, IControllerModule
     {
         if (character.PerformingAction<Fall>() || character.PerformingAction<Jump>() || character.PerformingAction<AirJump>())
         {
-            character.characterMover.SetPhysicsSimulation(true);
+            character.characterMover.SetGravitySimulation(true);
         }
         else
         {
-            character.characterMover.SetPhysicsSimulation(false);
+            character.characterMover.SetGravitySimulation(false);
+        }
+    }
+
+    private void HandleSnapToGround()
+    {
+        if (character.characterMover.isGrounded)
+        {
+            if ((character.PerformingAction<Jump>() || character.PerformingAction<AirJump>()) &&
+                transform.InverseTransformDirection(character.characterMover.GetWorldVelocity()).y > 0f)
+            {
+                return;
+            }
+            else
+            {
+                character.characterMover.SnapToGround();
+            }
         }
     }
 
@@ -285,6 +302,5 @@ public class BaseController : MonoBehaviour, IControllerModule
                     localMoveDir.z : Mathf.MoveTowards(state.blendY, localMoveDir.z, blendSpeed * dt);
             }
         }
-
     }
 }

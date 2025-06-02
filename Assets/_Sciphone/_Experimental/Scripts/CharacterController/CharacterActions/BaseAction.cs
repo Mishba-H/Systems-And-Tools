@@ -137,6 +137,13 @@ public class Walk : BaseAction
         else
             character.characterAnimator.ChangeAnimationState("Walk", "Base");
     }
+    public override void OnStop()
+    {
+        if (character.TryGetAction<Idle>(out var idleAction))
+        {
+            idleAction.EvaluateStatus();
+        }
+    }
 }
 
 [Serializable]
@@ -211,6 +218,13 @@ public class Run : BaseAction
             character.characterAnimator.ChangeAnimationState("CrouchMove", "Base");
         else
             character.characterAnimator.ChangeAnimationState("Run", "Base");
+    }
+    public override void OnStop()
+    {
+        if (character.TryGetAction<Idle>(out var idleAction))
+        {
+            idleAction.EvaluateStatus();
+        }
     }
 }
 
@@ -287,6 +301,13 @@ public class Sprint : BaseAction
             character.characterMover.SetFaceDir(controller.worldMoveDir);
 
         character.characterAnimator.ChangeAnimationState("Sprint", "Base");
+    }
+    public override void OnStop()
+    {
+        if (character.TryGetAction<Idle>(out var idleAction))
+        {
+            idleAction.EvaluateStatus();
+        }
     }
 }
 
@@ -390,7 +411,6 @@ public class Jump : BaseAction
         if (!CanPerform) return;
 
         IsBeingPerformed = true;
-        controller.InitiateJump();
     }
     public override void CompileCondition()
     {
@@ -431,7 +451,7 @@ public class Jump : BaseAction
         base.EvaluateStatus();
 
         if (IsBeingPerformed && character.characterMover.isGrounded &&
-            character.transform.InverseTransformDirection(character.characterMover.worldVelocity).y < 0f)
+            character.transform.InverseTransformDirection(character.characterMover.GetWorldVelocity()).y <= 0f)
         {
             controller.jumpDurationCounter = 0f;
         }
@@ -456,6 +476,10 @@ public class Jump : BaseAction
     }
     public override void OnPerform()
     {
+        controller.InitiateJump();
+        character.characterMover.isGrounded = false;
+        character.EvaluateAllActions();
+
         character.characterAnimator.ChangeAnimationState("Jump", "Base");
     }
 }

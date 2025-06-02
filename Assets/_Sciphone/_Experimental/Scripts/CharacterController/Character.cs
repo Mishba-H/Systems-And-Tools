@@ -7,7 +7,10 @@ using UnityEngine;
 [SelectionBase]
 public class Character : MonoBehaviour
 {
-    public Action OnAllActionEvaluate;
+    public event Action OnAllActionsEvaluateEvent;
+    public event Action CharacterUpdateEvent;
+    public event Action CharacterFixedUpdateEvent;
+
 
     [Range(0f, 3f)] public float timeScale;
 
@@ -70,19 +73,33 @@ public class Character : MonoBehaviour
 
     private void Update()
     {
-        animMachine.timeScale = timeScale;
-        characterMover.timeScale = timeScale;
+        SynchronizeTimeScales();
 
-        foreach (var action in actions)
-        {
-            action.EvaluateStatus();
-        }
-        OnAllActionEvaluate?.Invoke();
+        EvaluateAllActions();
+
+        CharacterUpdateEvent?.Invoke();
 
         foreach (var action in actions)
         {
             action.Update();
         }
+    }
+
+    private void SynchronizeTimeScales()
+    {
+        animMachine.timeScale = timeScale;
+        characterMover.timeScale = timeScale;
+    }
+
+    public void EvaluateAllActions()
+    {
+        CharacterFixedUpdateEvent?.Invoke();
+
+        foreach (var action in actions)
+        {
+            action.EvaluateStatus();
+        }
+        OnAllActionsEvaluateEvent?.Invoke();
     }
 
     private void FixedUpdate()
