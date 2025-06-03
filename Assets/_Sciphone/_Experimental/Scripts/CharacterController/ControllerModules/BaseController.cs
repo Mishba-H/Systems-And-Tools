@@ -97,7 +97,6 @@ public class BaseController : MonoBehaviour, IControllerModule
         HandleRotation(Time.deltaTime * character.timeScale);
         HandleBlendParameters(Time.deltaTime * character.timeScale);
         HandlePhysicsSimulation();
-        HandleSnapToGround();
     }
 
     private void CalculateSpeedFactor()
@@ -261,22 +260,6 @@ public class BaseController : MonoBehaviour, IControllerModule
         else
         {
             character.characterMover.SetGravitySimulation(false);
-        }
-    }
-
-    private void HandleSnapToGround()
-    {
-        if (character.characterMover.isGrounded)
-        {
-            if ((character.PerformingAction<Jump>() || character.PerformingAction<AirJump>()) &&
-                transform.InverseTransformDirection(character.characterMover.GetWorldVelocity()).y > 0f)
-            {
-                return;
-            }
-            else
-            {
-                character.characterMover.SnapToGround();
-            }
         }
     }
 
