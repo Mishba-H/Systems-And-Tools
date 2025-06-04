@@ -59,8 +59,7 @@ public class CharacterMover : MonoBehaviour
     [TabGroup("Checker Settings")] public float groundCheckerRadius = 0.3f;
     [TabGroup("Checker Settings")] public float groundCheckerHeight = 1f;
 
-    [TabGroup("Checker Settings")] public RaycastHit stairHit;
-    [TabGroup("Checker Settings")] public int stairCheckerCount;
+    [TabGroup("Checker Settings")] public int stepCheckerCount;
     #endregion
 
     private void Awake()
@@ -153,18 +152,66 @@ public class CharacterMover : MonoBehaviour
         return false;
     }
 
-    public bool CheckStairs(Vector3 pos, Vector3 moveDir, out RaycastHit stairHit, float distance)
+    public bool CheckStep(Vector3 pos, Vector3 moveDir, float distance, out float stepHeight, out float stepWidth, out RaycastHit lowerStepHit)
     {
-        float seperation = maxStepHeight / stairCheckerCount;
-        for (int i = 0; i < stairCheckerCount + 1; i++)
+        stepHeight = 0f;
+        stepWidth = 0f;
+
+        float upwardsRoom;
+        if (CapsuleSweep(pos, transform.up, maxStepHeight, out RaycastHit upHit))
+            upwardsRoom = upHit.distance - skinWidth;
+        else
+            upwardsRoom = maxStepHeight - skinWidth;
+
+        RaycastHit upperStepHit = new RaycastHit();
+        if (Physics.Raycast(pos, moveDir, out lowerStepHit, distance) &&
+            Vector3.Angle(lowerStepHit.normal, transform.up) > criticalSlopeAngle)
         {
-            if (Physics.Raycast(pos + i * seperation * transform.up, moveDir, out stairHit, distance) &&
-                Vector3.Angle(stairHit.normal, transform.up) > criticalSlopeAngle)
+            bool allRaysHit = true;
+            float seperation = (upwardsRoom + skinWidth) / stepCheckerCount;
+            int notHitIndex = -1;
+            Vector3 lowerStepNormal = Vector3.ProjectOnPlane(lowerStepHit.normal, transform.up);
+            for (int i = 0; i <= stepCheckerCount; i++)
             {
-                return true;
+                if (!(Physics.Raycast(lowerStepHit.point + i * seperation * transform.up + lowerStepNormal * skinWidth,
+                    -lowerStepNormal, out upperStepHit, distance - lowerStepHit.distance + skinWidth) &&
+                    Vector3.Angle(upperStepHit.normal, transform.up) > criticalSlopeAngle))
+                {
+                    allRaysHit = false;
+                    notHitIndex = i;
+                    break;
+                }
+            }
+
+            if (allRaysHit)
+            {
+                if (Physics.Raycast(upperStepHit.point + lowerStepNormal * skinWidth, -transform.up, out RaycastHit stepSurfaceHit, maxStepHeight + skinWidth) &&
+                    Vector3.Angle(stepSurfaceHit.normal, transform.up) <= criticalSlopeAngle)
+                {
+                    stepHeight = Vector3.Dot(stepSurfaceHit.point - lowerStepHit.point, transform.up);
+                    stepWidth = Vector3.Dot(stepSurfaceHit.point - lowerStepHit.point, -lowerStepNormal);
+                    float stepAngle = Mathf.Atan(stepHeight / stepWidth) * Mathf.Rad2Deg;
+                    if (stepAngle < criticalSlopeAngle && stepWidth > 0f)
+                    {
+                        return true;
+                    }
+                }
+            }
+            else
+            {
+                if (Physics.Raycast(lowerStepHit.point + notHitIndex * seperation * transform.up - lowerStepNormal * skinWidth,
+                    -transform.up, out RaycastHit stepSurfaceHit, maxStepHeight + skinWidth * 2f) &&
+                    Vector3.Angle(stepSurfaceHit.normal, transform.up) <= criticalSlopeAngle)
+                {
+                    stepHeight = Vector3.Dot(stepSurfaceHit.point - lowerStepHit.point, transform.up);
+                    stepWidth = stepHeight / Mathf.Tan(criticalSlopeAngle * Mathf.Deg2Rad); // Min Required width to be a step
+                    if (!Physics.Raycast(stepSurfaceHit.point, -lowerStepNormal, stepWidth - skinWidth))
+                    {
+                        return true;
+                    }
+                }
             }
         }
-        stairHit = new RaycastHit();
         return false;
     }
 
@@ -229,52 +276,15 @@ public class CharacterMover : MonoBehaviour
         {
             if (depth == 0 && CheckGround(pos, out RaycastHit groundHit))
             {
-                moveDir = Vector3.ProjectOnPlane(moveDir, groundHit.normal);
+                moveDir = Vector3.ProjectOnPlane(moveDir, groundHit.normal).normalized;
             }
 
-            if (CheckStairs(pos, Vector3.ProjectOnPlane(moveDir, transform.up), out RaycastHit lowerStairHit, distance + capsuleRadius))
+            if (distance > capsuleRadius &&
+                CheckStep(pos, moveDir, distance + capsuleRadius, out float stepHeight, out float stepWidth, out RaycastHit lowerStairHit))
             {
-                float upwardsRoom;
-                if (CapsuleSweep(pos, transform.up, maxStepHeight, out RaycastHit upHit))
-                    upwardsRoom = upHit.distance - skinWidth;
-                else
-                    upwardsRoom = maxStepHeight;
-
-                if (upwardsRoom > 0f)
-                {
-                    if (CheckStairs(pos + transform.up * upwardsRoom, Vector3.ProjectOnPlane(moveDir, transform.up),
-                        out RaycastHit upperStairHit, distance + capsuleRadius))
-                    {
-                        float stepWidth = (upperStairHit.distance - lowerStairHit.distance) *
-                                Mathf.Cos(Vector3.Angle(-upperStairHit.normal, Vector3.ProjectOnPlane(moveDir, transform.up)) * Mathf.Deg2Rad);
-                        if (Physics.Raycast(pos + transform.up * upwardsRoom +
-                            upperStairHit.distance * Vector3.ProjectOnPlane(moveDir, transform.up),
-                            -transform.up, out RaycastHit stairHeightHit, maxStepHeight))
-                        {
-                            float stepHeight = upwardsRoom - stairHeightHit.distance;
-                            float stepAngle = Mathf.Atan(stepHeight / stepWidth) * Mathf.Rad2Deg;
-                            if (stepAngle <= criticalSlopeAngle && stepWidth > 0f)
-                            {
-                                return upperStairHit.distance * moveDir +
-                                    CollideAndSlide(moveDir, initialMoveDir, pos + transform.up * stepHeight + lowerStairHit.distance * moveDir,
-                                    distance - upperStairHit.distance, gravityPass, depth + 1);
-                            }
-                            //Debug.Log($"step height : {stepHeight}, step width : {stepWidth}, step angle : {Mathf.Atan(stepHeight / stepWidth) * Mathf.Rad2Deg}");
-                        }
-                    }
-                    else
-                    {
-                        if (Physics.Raycast(pos + transform.up * upwardsRoom + Vector3.ProjectOnPlane(moveDir, transform.up) * (lowerStairHit.distance + skinWidth),
-                            -transform.up, out RaycastHit stairHeightHit, maxStepHeight))
-                        {
-                            float stepHeight = upwardsRoom - stairHeightHit.distance;
-
-                            return lowerStairHit.distance * moveDir +
-                                CollideAndSlide(moveDir, initialMoveDir, pos + transform.up * stepHeight + lowerStairHit.distance * moveDir,
-                                distance - lowerStairHit.distance, gravityPass, depth + 1);
-                        }
-                    }
-                }
+                Debug.Log(depth + "Can move up step");
+                return lowerStairHit.distance * moveDir +
+                    CollideAndSlide(moveDir, initialMoveDir, lowerStairHit.point + transform.up * (stepHeight + skinWidth), distance - lowerStairHit.distance, gravityPass, depth + 1);
             }
 
             if (CapsuleSweep(pos, moveDir, distance, out RaycastHit capsuleHit))
@@ -288,71 +298,37 @@ public class CharacterMover : MonoBehaviour
                 Vector3 leftOverMovement = distance * moveDir - distToSurface;
                 float leftOverMagnitude = leftOverMovement.magnitude;
 
+                Vector3 capsuleCenter = pos + capsuleHit.distance * moveDir;
+
                 Vector3 flatCapsuleHitDir = Vector3.ProjectOnPlane(-capsuleHit.normal, transform.up).normalized;
-                if (CheckStairs(pos + distToSurface, flatCapsuleHitDir, out lowerStairHit, capsuleRadius))
+                if (CheckStep(pos + distToSurface, flatCapsuleHitDir, capsuleRadius + skinWidth, out stepHeight, out stepWidth, out lowerStairHit))
                 {
-                    float upwardsRoom;
-                    if (CapsuleSweep(pos, transform.up, maxStepHeight, out RaycastHit upHit))
-                        upwardsRoom = upHit.distance - skinWidth;
-                    else
-                        upwardsRoom = maxStepHeight;
-
-                    if (upwardsRoom > 0f)
-                    {
-                        if (CheckStairs(pos + distToSurface + transform.up * upwardsRoom, flatCapsuleHitDir, out RaycastHit upperStairHit, 
-                            capsuleRadius + maxStepHeight / Mathf.Tan(criticalSlopeAngle * Mathf.Deg2Rad)))
-                        {
-                            float stepWidth = upperStairHit.distance - lowerStairHit.distance;
-                            if (Physics.Raycast(pos + transform.up * upwardsRoom +
-                                upperStairHit.distance * flatCapsuleHitDir,
-                                -transform.up, out RaycastHit stairHeightHit, maxStepHeight))
-                            {
-                                float stepHeight = upwardsRoom - stairHeightHit.distance;   
-                                float stepAngle = Mathf.Atan(stepHeight / stepWidth) * Mathf.Rad2Deg;
-                                if (stepAngle <= criticalSlopeAngle && stepWidth > 0f)
-                                {
-                                    return distToSurface +
-                                        CollideAndSlide(moveDir, initialMoveDir, pos + transform.up * stepHeight + lowerStairHit.distance * moveDir,
-                                        leftOverMagnitude, gravityPass, depth + 1);
-                                }
-                            }
-                        }
-                        else
-                        {
-                            if (Physics.Raycast(pos + distToSurface + transform.up * upwardsRoom + (lowerStairHit.distance + skinWidth) * flatCapsuleHitDir,
-                                -transform.up, out RaycastHit stairHeightHit, maxStepHeight))
-                            {
-                                float stepHeight = upwardsRoom - stairHeightHit.distance;
-
-                                return distToSurface +
-                                    CollideAndSlide(moveDir, initialMoveDir, pos + transform.up * stepHeight + lowerStairHit.distance * moveDir,
-                                        leftOverMagnitude, gravityPass, depth + 1);
-                            }
-                        }
-                    }
+                    Debug.Log(depth + "move up step after close capsule sweep");
+                    return distToSurface +
+                        CollideAndSlide(moveDir, initialMoveDir, pos + distToSurface + transform.up * (stepHeight + skinWidth), leftOverMagnitude, gravityPass, depth + 1);
                 }
-
-                Physics.Raycast(pos, moveDir, out RaycastHit groundWallHit, distance + capsuleRadius);
-                float groundWallAngle = Vector3.Angle(groundWallHit.normal, transform.up);
-                Debug.Log($"groundWallAngle : {groundWallAngle}");
-                if (groundWallAngle >= criticalSlopeAngle)
+                else if (Physics.Raycast(capsuleCenter, capsuleHit.point - capsuleCenter, out RaycastHit groundWallHit,
+                    Vector3.Distance(capsuleHit.point, capsuleCenter) + skinWidth) &&
+                    Vector3.Angle(groundWallHit.normal, transform.up) > criticalSlopeAngle)
                 {
-                    Vector3 hitNormal = Vector3.ProjectOnPlane(capsuleHit.normal, transform.up).normalized;
-                    float wallAngle = Vector3.Angle(Vector3.ProjectOnPlane(moveDir, transform.up), -hitNormal);
+                    Vector3 wallNormal = Vector3.ProjectOnPlane(groundWallHit.normal, transform.up).normalized;
+                    float wallAngle = Vector3.Angle(Vector3.ProjectOnPlane(moveDir, transform.up), -wallNormal);
                     if (wallAngle <= criticalWallAngle)
                     {
+                        Debug.Log(depth + "will stop against wall");
                         return distToSurface;
                     }
                     else
                     {
-                        leftOverMovement = Vector3.ProjectOnPlane(leftOverMovement, hitNormal);
+                        Debug.Log(depth + "will move along wall");
+                        leftOverMovement = Vector3.ProjectOnPlane(leftOverMovement, wallNormal);
                         leftOverMovement = Vector3.ProjectOnPlane(leftOverMovement, transform.up);
-
                         return distToSurface + CollideAndSlide(leftOverMovement, initialMoveDir, pos + distToSurface, leftOverMagnitude, gravityPass, depth + 1);
                     }
                 }
                 else
                 {
+                    Debug.Log(depth + "will move along ground");
                     leftOverMovement = Vector3.ProjectOnPlane(leftOverMovement, capsuleHit.normal);
                     return distToSurface + CollideAndSlide(leftOverMovement, initialMoveDir, pos + distToSurface, leftOverMagnitude, gravityPass, depth + 1);
                 }
