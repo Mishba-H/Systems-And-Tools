@@ -158,13 +158,13 @@ public class CharacterMover : MonoBehaviour
         stepWidth = 0f;
 
         float upwardsRoom;
-        if (CapsuleSweep(pos, transform.up, maxStepHeight, out RaycastHit upHit))
+        if (CapsuleSweep(pos, transform.up, maxStepHeight, out RaycastHit upHit, out _))
             upwardsRoom = upHit.distance - skinWidth;
         else
             upwardsRoom = maxStepHeight - skinWidth;
 
         RaycastHit upperStepHit = new RaycastHit();
-        if (Physics.Raycast(pos, moveDir, out lowerStepHit, distance) &&
+        if (Physics.Raycast(pos + transform.up * skinWidth, moveDir, out lowerStepHit, distance) &&
             Vector3.Angle(lowerStepHit.normal, transform.up) > criticalSlopeAngle)
         {
             bool allRaysHit = true;
@@ -215,7 +215,7 @@ public class CharacterMover : MonoBehaviour
         return false;
     }
 
-    public bool CapsuleSweep(Vector3 startPos, Vector3 sweepDir, float sweepDistance, out RaycastHit capsuleHit)
+    public bool CapsuleSweep(Vector3 startPos, Vector3 sweepDir, float sweepDistance, out RaycastHit capsuleHit, out Vector3 capsuleCenter)
     {
         Vector3 localOffset = transform.TransformDirection(capsuleOffset);
 
@@ -237,6 +237,8 @@ public class CharacterMover : MonoBehaviour
         Vector3 point1 = startPos + localOffset + capsuleDir * (capsuleSize / 2f - capsuleRadius);
         Vector3 point2 = startPos + localOffset - capsuleDir * (capsuleSize / 2f - capsuleRadius);
 
+        capsuleCenter = (point1 + point2) / 2f;
+
         return Physics.CapsuleCast(point1, point2, capsuleRadius - skinWidth, sweepDir.normalized, out capsuleHit, sweepDistance);
     }
 
@@ -252,24 +254,39 @@ public class CharacterMover : MonoBehaviour
 
         if (gravityPass)
         {
-            if (CapsuleSweep(pos, moveDir, distance, out RaycastHit hit))
+            if (CapsuleSweep(pos, moveDir, distance, out RaycastHit capsuleHit, out Vector3 capsuleCenter))
             {
-                float groundAngle = Vector3.Angle(hit.normal, transform.up);
-                Vector3 distToSurface = (hit.distance - skinWidth) * moveDir;
+                Vector3 distToSurface = (capsuleHit.distance - skinWidth) * moveDir;
                 if (distToSurface.magnitude <= skinWidth)
                 {
-                    distToSurface = Vector3.zero;
+                    if (Physics.Raycast(capsuleCenter + moveDir * capsuleHit.distance, -capsuleHit.normal, out RaycastHit groundWallHit,
+                        Vector3.Distance(capsuleHit.point, capsuleCenter + moveDir * capsuleHit.distance) + skinWidth) && 
+                        Vector3.Angle(groundWallHit.normal, transform.up) <= criticalSlopeAngle)
+                    {
+                        Debug.Log(depth + "force grounding");
+                        isGrounded = true;
+                        CheckGround(transform.position, out groundHit);
+                        SnapToGround();
+                        character.EvaluateAllActions();
+                        return distToSurface;
+                    }
                 }
-                if (groundAngle <= criticalSlopeAngle)
+                else if (Vector3.Angle(capsuleHit.normal, transform.up) <= criticalSlopeAngle)
                 {
+                    Debug.Log(depth + "will hit ground");
                     return distToSurface;
                 }
 
+                Debug.Log(depth + "sliding along vel");
                 Vector3 leftOverMovement = distance * moveDir - distToSurface;
                 float leftOverMagnitude = leftOverMovement.magnitude;
-                leftOverMovement = Vector3.ProjectOnPlane(leftOverMovement, hit.normal).normalized;
+                leftOverMovement = Vector3.ProjectOnPlane(leftOverMovement, capsuleHit.normal).normalized;
 
                 return distToSurface + CollideAndSlide(leftOverMovement, initialMoveDir, pos + distToSurface, leftOverMagnitude, gravityPass, depth + 1);
+            }
+            else
+            {
+                return moveDir * distance;
             }
         }
         else
@@ -282,12 +299,12 @@ public class CharacterMover : MonoBehaviour
             if (distance > capsuleRadius &&
                 CheckStep(pos, moveDir, distance + capsuleRadius, out float stepHeight, out float stepWidth, out RaycastHit lowerStairHit))
             {
-                Debug.Log(depth + "Can move up step");
+                //Debug.Log(depth + "Can move up step");
                 return lowerStairHit.distance * moveDir +
                     CollideAndSlide(moveDir, initialMoveDir, lowerStairHit.point + transform.up * (stepHeight + skinWidth), distance - lowerStairHit.distance, gravityPass, depth + 1);
             }
 
-            if (CapsuleSweep(pos, moveDir, distance, out RaycastHit capsuleHit))
+            if (CapsuleSweep(pos, moveDir, distance, out RaycastHit capsuleHit, out Vector3 capsuleCenter))
             {
                 Vector3 distToSurface = (capsuleHit.distance - skinWidth) * moveDir;
                 if (distToSurface.magnitude <= skinWidth)
@@ -298,29 +315,27 @@ public class CharacterMover : MonoBehaviour
                 Vector3 leftOverMovement = distance * moveDir - distToSurface;
                 float leftOverMagnitude = leftOverMovement.magnitude;
 
-                Vector3 capsuleCenter = pos + capsuleHit.distance * moveDir;
-
                 Vector3 flatCapsuleHitDir = Vector3.ProjectOnPlane(-capsuleHit.normal, transform.up).normalized;
                 if (CheckStep(pos + distToSurface, flatCapsuleHitDir, capsuleRadius + skinWidth, out stepHeight, out stepWidth, out lowerStairHit))
                 {
-                    Debug.Log(depth + "move up step after close capsule sweep");
+                    //Debug.Log(depth + "move up step after close capsule sweep");
                     return distToSurface +
                         CollideAndSlide(moveDir, initialMoveDir, pos + distToSurface + transform.up * (stepHeight + skinWidth), leftOverMagnitude, gravityPass, depth + 1);
                 }
-                else if (Physics.Raycast(capsuleCenter, capsuleHit.point - capsuleCenter, out RaycastHit groundWallHit,
-                    Vector3.Distance(capsuleHit.point, capsuleCenter) + skinWidth) &&
+                else if (Physics.Raycast(capsuleCenter + moveDir * capsuleHit.distance, -capsuleHit.normal, out RaycastHit groundWallHit,
+                    Vector3.Distance(capsuleHit.point, capsuleCenter + moveDir * capsuleHit.distance) + skinWidth) &&
                     Vector3.Angle(groundWallHit.normal, transform.up) > criticalSlopeAngle)
                 {
                     Vector3 wallNormal = Vector3.ProjectOnPlane(groundWallHit.normal, transform.up).normalized;
                     float wallAngle = Vector3.Angle(Vector3.ProjectOnPlane(moveDir, transform.up), -wallNormal);
                     if (wallAngle <= criticalWallAngle)
                     {
-                        Debug.Log(depth + "will stop against wall");
+                        //Debug.Log(depth + "will stop against wall");
                         return distToSurface;
                     }
                     else
                     {
-                        Debug.Log(depth + "will move along wall");
+                        //Debug.Log(depth + "will move along wall");
                         leftOverMovement = Vector3.ProjectOnPlane(leftOverMovement, wallNormal);
                         leftOverMovement = Vector3.ProjectOnPlane(leftOverMovement, transform.up);
                         return distToSurface + CollideAndSlide(leftOverMovement, initialMoveDir, pos + distToSurface, leftOverMagnitude, gravityPass, depth + 1);
@@ -328,14 +343,13 @@ public class CharacterMover : MonoBehaviour
                 }
                 else
                 {
-                    Debug.Log(depth + "will move along ground");
+                    //Debug.Log(depth + "will move along ground");
                     leftOverMovement = Vector3.ProjectOnPlane(leftOverMovement, capsuleHit.normal);
                     return distToSurface + CollideAndSlide(leftOverMovement, initialMoveDir, pos + distToSurface, leftOverMagnitude, gravityPass, depth + 1);
                 }
             }
+            return moveDir * distance;
         }
-
-        return moveDir * distance;
     }
 
     public void SnapToGround()
