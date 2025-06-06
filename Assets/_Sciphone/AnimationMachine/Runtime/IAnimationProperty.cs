@@ -86,6 +86,15 @@ public struct RootMotionData
     public AnimationCurve rootQY;
     public AnimationCurve rootQZ;
     public AnimationCurve rootQW;
+
+    public float totalTime;
+    public float totalTXDelta;
+    public float totalTYDelta;
+    public float totalTZDelta;
+    public float totalQXDelta;
+    public float totalQYDelta;
+    public float totalQZDelta;
+    public float totalQWDelta;
 }
 #endregion
 

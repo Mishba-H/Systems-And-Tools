@@ -14,7 +14,7 @@ public class ClimbOverLow : ParkourAction
     public override void OnEnable()
     {
         base.OnEnable();
-        InputReader.instance.Subscribe("Jump", OnJumpPressed);
+        //InputReader.instance.Subscribe("Jump", OnJumpPressed);
     }
     private void OnJumpPressed(InputAction.CallbackContext context)
     {
@@ -71,7 +71,7 @@ public class ClimbOverHigh : ParkourAction
     public override void OnEnable()
     {
         base.OnEnable();
-        InputReader.instance.Subscribe("Jump", OnJumpPressed);
+        //InputReader.instance.Subscribe("Jump", OnJumpPressed);
     }
     private void OnJumpPressed(InputAction.CallbackContext context)
     {

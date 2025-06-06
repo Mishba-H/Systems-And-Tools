@@ -42,12 +42,12 @@ public class BaseController : MonoBehaviour, IControllerModule
     private float timeOfFlight;
     #endregion
 
-    List<EightWayBlendState> states;
+    List<EightWayBlendState> movementStates;
     public float error = 0.1f;
     public float blendSpeed = 0.5f;
 
     private float moveRatio;
-    private bool recalculateSpeedFactor;
+    private bool recalculateScaleFactor;
 
     private void Start()
     {
@@ -56,22 +56,23 @@ public class BaseController : MonoBehaviour, IControllerModule
         character.characterCommand.MoveDirCommand += CharacterCommand_MoveDirCommand;
 
         character.CharacterUpdateEvent += OnCharacterUpdate;
-        character.CharacterUpdateEvent += CalculateSpeedFactor;
         foreach (var action in character.actions)
         {
             if (action is Idle || action is Walk || action is Run || action is Sprint || action is Crouch)
             {
                 action.IsBeingPerformed_OnValueChanged += (bool value) =>
                 {
-                    if (value) recalculateSpeedFactor = true;
+                    if (value) recalculateScaleFactor = true;
                 };
             }
         }
 
-        states = new List<EightWayBlendState>();
-        states.Add(character.animMachine.layers.GetLayerInfo("Base").GetStateInfo("Walk") as EightWayBlendState);
-        states.Add(character.animMachine.layers.GetLayerInfo("Base").GetStateInfo("Run") as EightWayBlendState);
-        states.Add(character.animMachine.layers.GetLayerInfo("Base").GetStateInfo("CrouchMove") as EightWayBlendState);
+        movementStates = new List<EightWayBlendState>
+        {
+            character.animMachine.layers.GetLayerInfo("Base").GetStateInfo("Walk") as EightWayBlendState,
+            character.animMachine.layers.GetLayerInfo("Base").GetStateInfo("Run") as EightWayBlendState,
+            character.animMachine.layers.GetLayerInfo("Base").GetStateInfo("CrouchMove") as EightWayBlendState
+        };
     }
 
     private void CharacterCommand_ChangeMovementModeCommand(MovementMode obj)
@@ -91,17 +92,17 @@ public class BaseController : MonoBehaviour, IControllerModule
 
     private void OnCharacterUpdate()
     {
-        CalculateTargetSpeed();
+        CalculateScaleFactor();
 
         HandleMovement(Time.deltaTime * character.timeScale);
         HandleRotation(Time.deltaTime * character.timeScale);
-        HandleBlendParameters(Time.deltaTime * character.timeScale);
+        HandleAnimationParameters(Time.deltaTime * character.timeScale);
         HandlePhysicsSimulation();
     }
 
-    private void CalculateSpeedFactor()
+    private void CalculateScaleFactor()
     {
-        if (recalculateSpeedFactor)
+        if (recalculateScaleFactor)
         {
             if (character.PerformingAction<Idle>())
             {
@@ -119,6 +120,7 @@ public class BaseController : MonoBehaviour, IControllerModule
                     scaleFactor = new Vector3(1f, 0f, targetSpeed / (totalZDisp / totalTime));
                 }
             }
+            CalculateTargetSpeed();
         }
     }
 
@@ -187,10 +189,10 @@ public class BaseController : MonoBehaviour, IControllerModule
                 Vector3 scaledDeltaPosition = new Vector3(rootDeltaPosition.x * scaleFactor.x, rootDeltaPosition.y * scaleFactor.y,
                     rootDeltaPosition.z * scaleFactor.z);
 
-                Vector3 worldDeltaPostition = scaledDeltaPosition.x * right + scaledDeltaPosition.y * up + scaledDeltaPosition.z * forward;
+                Vector3 worldDeltaPosition = scaledDeltaPosition.x * right + scaledDeltaPosition.y * up + scaledDeltaPosition.z * forward;
 
-                moveAmount = character.characterMover.ProcessCollideAndSlide(worldDeltaPostition, false);
-                moveRatio = worldDeltaPostition == Vector3.zero ? 0 : moveAmount.sqrMagnitude / worldDeltaPostition.sqrMagnitude;
+                moveAmount = character.characterMover.ProcessCollideAndSlide(worldDeltaPosition, false);
+                moveRatio = worldDeltaPosition == Vector3.zero ? 0 : moveAmount.sqrMagnitude / worldDeltaPosition.sqrMagnitude;
             }
             character.characterMover.SetWorldVelocity(moveAmount / dt);
         }
@@ -263,13 +265,13 @@ public class BaseController : MonoBehaviour, IControllerModule
         }
     }
 
-    private void HandleBlendParameters(float dt)
+    private void HandleAnimationParameters(float dt)
     {
         Vector3 localMoveDir = transform.InverseTransformDirection(worldMoveDir) * moveRatio;
 
         if (movementMode == MovementMode.Forward)
         {
-            foreach (var state in states)
+            foreach (var state in movementStates)
             {
                 state.blendX = 0f;
                 state.blendY = Mathf.MoveTowards(state.blendY, moveRatio, blendSpeed * dt);
@@ -277,7 +279,7 @@ public class BaseController : MonoBehaviour, IControllerModule
         }
         else if (movementMode == MovementMode.EightWay)
         {
-            foreach (var state in states)
+            foreach (var state in movementStates)
             {
                 state.blendX = Mathf.Abs(localMoveDir.x - state.blendX) < error ?
                     localMoveDir.x : Mathf.MoveTowards(state.blendX, localMoveDir.x, blendSpeed * dt);

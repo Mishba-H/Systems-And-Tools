@@ -1,12 +1,19 @@
+using System;
 using Sciphone;
+using Sciphone.ComboGraph;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.XR;
 
 public class PlayerCommandProcessor : MonoBehaviour
 {
+    [SerializeField] private GameObject characterGameObject;
+    [SerializeField] private Transform cameraTransform;
+
+    private InputReader inputReader;
+    private InputProcessor inputProcessor;
     private Character character;
     private CharacterCommand characterCommand;
-    [SerializeField] private Transform cameraTransform;
 
     public BaseController.MovementMode movementMode = BaseController.MovementMode.Forward;
 
@@ -18,19 +25,25 @@ public class PlayerCommandProcessor : MonoBehaviour
 
     private void Awake()
     {
-        character = GetComponent<Character>();
-        characterCommand = GetComponent<CharacterCommand>();
+        inputReader = GetComponent<InputReader>();
+        inputProcessor = GetComponent<InputProcessor>();
+
+        character = characterGameObject.GetComponent<Character>();
+        characterCommand = characterGameObject.GetComponent<CharacterCommand>();
     }
 
     private void Start()
     {
-        InputReader.instance.Subscribe("Move", OnMoveInput);
-        InputReader.instance.Subscribe("Walk", OnWalkInput);
-        InputReader.instance.Subscribe("Sprint", OnSprintInput);
-        InputReader.instance.Subscribe("Crouch", OnCrouchInput);
-        InputReader.instance.Subscribe("Jump", OnJumpInput);
+        inputReader.Subscribe("Move", OnMoveInput);
+        inputReader.Subscribe("Walk", OnWalkInput);
+        inputReader.Subscribe("Sprint", OnSprintInput);
+        inputReader.Subscribe("Crouch", OnCrouchInput);
+        inputReader.Subscribe("Jump", OnJumpInput);
+        inputReader.Subscribe("Dodge", OnDodgeInput);
 
-        characterCommand.InvokeChangeMovementMode(movementMode);
+        inputProcessor.OnProcessInput += OnAttackInput;
+
+        characterCommand.InvokeChangeMovementModeCommand(movementMode);
     }
 
     private void Update()
@@ -38,42 +51,50 @@ public class PlayerCommandProcessor : MonoBehaviour
         ProcessInputs();
     }
 
-    private void OnJumpInput(InputAction.CallbackContext context)
+    private void ProcessInputs()
     {
-        if (context.performed)
-        {
-            characterCommand.InvokeJump();
-        }
-    }
+        Vector3 camForward = Vector3.ProjectOnPlane(cameraTransform.forward, transform.up);
+        Vector3 camRight = Vector3.ProjectOnPlane(cameraTransform.right, transform.up);
+        Vector3 worldMoveDir = (camRight * moveInput.x + camForward * moveInput.y).normalized;
+        characterCommand.InvokeMoveDirCommand(worldMoveDir);
 
-    private void OnCrouchInput(InputAction.CallbackContext context)
-    {
-        if (context.performed)
+        if (moveInput.sqrMagnitude == 0f)
         {
-            characterCommand.InvokeCrouch(!character.PerformingAction<Crouch>());
+            sprint = false;
         }
-    }
 
-    private void OnSprintInput(InputAction.CallbackContext context)
-    {
-        if (context.performed)
+        if (moveInput.sqrMagnitude == 0f)
         {
-            sprint = !sprint;
+            characterCommand.InvokeWalkCommand(false);
+            characterCommand.InvokeRunCommand(false);
+            characterCommand.InvokeSprintCommand(false);
         }
-    }
-
-    private void OnWalkInput(InputAction.CallbackContext context)
-    {
-        if (context.control.device is Keyboard)
+        else if (sprint)
         {
-            if (context.performed)
-            {
-                walk = true;
-            }
-            else if (context.canceled)
-            {
-                walk = false;
-            }
+            characterCommand.InvokeWalkCommand(false);
+            characterCommand.InvokeRunCommand(false);
+            characterCommand.InvokeSprintCommand(true);
+        }
+        else if (walk)
+        {
+            characterCommand.InvokeWalkCommand(true);
+            characterCommand.InvokeRunCommand(false);
+            characterCommand.InvokeSprintCommand(false);
+        }
+        else
+        {
+            characterCommand.InvokeWalkCommand(false);
+            characterCommand.InvokeRunCommand(true);
+            characterCommand.InvokeSprintCommand(false);
+        }
+
+        if (movementMode == BaseController.MovementMode.Forward)
+        {
+            characterCommand.InvokeFaceDirCommand(worldMoveDir);
+        }
+        else if (movementMode == BaseController.MovementMode.EightWay)
+        {
+            characterCommand.InvokeFaceDirCommand(camForward);
         }
     }
 
@@ -95,52 +116,94 @@ public class PlayerCommandProcessor : MonoBehaviour
         }
     }
 
-    private void ProcessInputs()
+    private void OnWalkInput(InputAction.CallbackContext context)
     {
-        Vector3 camForward = Vector3.ProjectOnPlane(cameraTransform.forward, transform.up);
-        Vector3 camRight = Vector3.ProjectOnPlane(cameraTransform.right, transform.up);
-        Vector3 worldMoveDir = (camRight * moveInput.x + camForward * moveInput.y).normalized;
-        characterCommand.InvokeMoveDir(worldMoveDir);
-
-        if (moveInput.sqrMagnitude == 0f)
+        if (context.control.device is Keyboard)
         {
-            sprint = false;
-        }
-
-        if (moveInput.sqrMagnitude == 0f)
-        {
-            characterCommand.InvokeWalk(false);
-            characterCommand.InvokeRun(false);
-            characterCommand.InvokeSprint(false);
-        }
-        else if (sprint)
-        {
-            characterCommand.InvokeWalk(false);
-            characterCommand.InvokeRun(false);
-            characterCommand.InvokeSprint(true);
-        }
-        else if (walk)
-        {
-            characterCommand.InvokeWalk(true);
-            characterCommand.InvokeRun(false);
-            characterCommand.InvokeSprint(false);
-        }
-        else
-        {
-            characterCommand.InvokeWalk(false);
-            characterCommand.InvokeRun(true);
-            characterCommand.InvokeSprint(false);
-        }
-
-        if (movementMode == BaseController.MovementMode.Forward)
-        {
-            characterCommand.InvokeFaceDir(worldMoveDir);
-        }
-        else if (movementMode == BaseController.MovementMode.EightWay)
-        {
-            characterCommand.InvokeFaceDir(camForward);
+            if (context.performed)
+            {
+                walk = true;
+            }
+            else if (context.canceled)
+            {
+                walk = false;
+            }
         }
     }
+
+    private void OnSprintInput(InputAction.CallbackContext context)
+    {
+        if (context.performed)
+        {
+            sprint = !sprint;
+        }
+    }
+
+    private void OnCrouchInput(InputAction.CallbackContext context)
+    {
+        if (context.performed)
+        {
+            characterCommand.InvokeCrouchCommand(!character.PerformingAction<Crouch>());
+        }
+    }
+
+    private void OnJumpInput(InputAction.CallbackContext context)
+    {
+        if (context.performed)
+        {
+            characterCommand.InvokeJumpCommand();
+        }
+    }
+
+    private void OnDodgeInput(InputAction.CallbackContext context)
+    {
+        if (context.performed)
+        {
+            characterCommand.InvokeDodgeCommand();
+        }
+    }
+
+    private void OnAttackInput(InputSequenceType sequenceType)
+    {
+        switch (sequenceType)
+        {
+            case InputSequenceType.AttackTap:
+                if (character.PerformingAction<Sprint>())
+                    characterCommand.InvokeAttackCommand(AttackType.SprintLightAttack);
+                else if ((character.PerformingAction<Roll>() && character.GetControllerModule<MeleeCombatController>().relativeDodgeDir == Vector2.up))
+                    characterCommand.InvokeAttackCommand(AttackType.DodgeAttack);
+                else
+                    characterCommand.InvokeAttackCommand(AttackType.LightAttack);
+                break;
+            case InputSequenceType.AltAttackTap:
+                if (character.PerformingAction<Sprint>())
+                    characterCommand.InvokeAttackCommand(AttackType.SprintHeavyAttack);
+                else if (character.PerformingAction<Evade>() || character.PerformingAction<Roll>())
+                    characterCommand.InvokeAttackCommand(AttackType.DodgeAttack);
+                else
+                    characterCommand.InvokeAttackCommand(AttackType.HeavyAttack);
+                break;
+            case InputSequenceType.AttackHold:
+                characterCommand.InvokeAttackCommand(AttackType.LightHoldAttack);
+                break;
+            case InputSequenceType.AltAttackHold:
+                characterCommand.InvokeAttackCommand(AttackType.HeavyHoldAttack);
+                break;
+            case InputSequenceType.BackFrontAttack:
+                characterCommand.InvokeAttackCommand(AttackType.BackFrontLightAttack);
+                break;
+            case InputSequenceType.BackFrontAltAttack:
+                characterCommand.InvokeAttackCommand(AttackType.BackFrontHeavyAttack);
+                break;
+            case InputSequenceType.FrontFrontAttack:
+                characterCommand.InvokeAttackCommand(AttackType.FrontFrontLightAttack);
+                break;
+            case InputSequenceType.FrontFrontAltAttack:
+                characterCommand.InvokeAttackCommand(AttackType.FrontFrontHeavyAttack);
+                break;
+        }
+    }
+
 
     [Button(nameof(SwitchMovementMode))]
     public void SwitchMovementMode()
@@ -148,12 +211,12 @@ public class PlayerCommandProcessor : MonoBehaviour
         if (movementMode == BaseController.MovementMode.Forward)
         {
             movementMode = BaseController.MovementMode.EightWay;
-            characterCommand.InvokeChangeMovementMode(movementMode);
+            characterCommand.InvokeChangeMovementModeCommand(movementMode);
         }
         else if (movementMode == BaseController.MovementMode.EightWay)
         {
             movementMode = BaseController.MovementMode.Forward;
-            characterCommand.InvokeChangeMovementMode(movementMode);
+            characterCommand.InvokeChangeMovementModeCommand(movementMode);
         }
     }
 }

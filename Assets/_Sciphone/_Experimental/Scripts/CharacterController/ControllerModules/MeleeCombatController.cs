@@ -3,41 +3,53 @@ using UnityEngine;
 using System.Collections.Generic;
 using Sciphone.ComboGraph;
 using Sciphone;
+using Nomnom.RaycastVisualization;
 
 [Serializable]
 public class MeleeCombatController : MonoBehaviour, IControllerModule
 {
-    public Character character { get; set; }
-
     public event Action OnAttackSelected;
 
-    #region DODGE_VARIABLES
-    [TabGroup("Dodge")] public float evadeDistance;
-    [TabGroup("Dodge")] public float rollDistance;
-    [TabGroup("Dodge")] public float dodgeInterval;
-    [TabGroup("Dodge")] public float rollWindowTime;
-    [TabGroup("Dodge"), Disable] public float evadeInputTime;
-    [TabGroup("Dodge"), Disable] public float rollInputTime;
-    [TabGroup("Dodge"), Disable] public float lastEvadeTime;
-    [TabGroup("Dodge"), Disable] public float lastRollTime;
-    [TabGroup("Dodge")] public Vector2 dodgeDir;
-    private Vector3 cachedDodgeDir;
+    public Character character { get; set; }
+
+    public Vector3 worldMoveDir;
+
+    #region DODGE_PARAMETERS
+    [TabGroup("Dodge")] public float evadeDistance = 2f;
+    [TabGroup("Dodge")] public float rollDistance = 4f;
+    [TabGroup("Dodge")] public float dodgeInterval = 0.15f;
+    [TabGroup("Dodge")] public float rollWindowTime = 0.1f;
+    [TabGroup("Dodge"), Disable] public float evadePerformTime;
+    [TabGroup("Dodge"), Disable] public float rollPerformTime;
+    [TabGroup("Dodge"), Disable] public float evadeStopTime;
+    [TabGroup("Dodge"), Disable] public float rollStopTime;
+    [TabGroup("Dodge")] public Vector3 worldDodgeDir;
+    [TabGroup("Dodge")] public Vector2 relativeDodgeDir;
     #endregion
 
+    #region ATTACK_PARAMETERS
     [TabGroup("Attack")][SerializeReference, Polymorphic] public List<ComboData> activeCombos;
     [TabGroup("Attack")] public float comboEndTime;
     [TabGroup("Attack")] public List<AttackData> attacksPerformed;
     [TabGroup("Attack")] public float lastAttackTime;
     [TabGroup("Attack")] public bool readyToAttack;
     [TabGroup("Attack")] public float attackCacheDuration;
-    [TabGroup("Attack")] public float attackInputTime;
+    [TabGroup("Attack")] public float attackCommandTime;
     [TabGroup("Attack")] public AttackType cachedAttack;
     [TabGroup("Attack")] public Vector3 attackDir;
-    [TabGroup("Attack")] public Vector3 faceDir;
-    internal float attackDirTimer;
+    
+    [TabGroup("Attack")][Header("Detector Settings")] public int noOfRays;
+    [TabGroup("Attack")] public int seperationAngle;
+    [TabGroup("Attack")] public float targetCheckerHeight;
+    [TabGroup("Attack")] public LayerMask targetLayer;
+    #endregion
 
-    private float speedFactor;
+    bool recalculateScaleFactor;
+    public Vector3 scaleFactor;
 
+    List<FourWayBlendState> dodgeStates;
+    public float error = 0.1f;
+    public float blendSpeed = 0.5f;
 
     private void Awake()
     {
@@ -46,77 +58,206 @@ public class MeleeCombatController : MonoBehaviour, IControllerModule
 
     private void Start()
     {
-        character.animMachine.OnActiveStateChanged += CalculateSpeedFactor;
+        character.characterCommand.MoveDirCommand += OnMoveDirCommand;
+
+        character.CharacterUpdateEvent += OnCharacterUpdate;
+        foreach (var action in character.actions)
+        {
+            if (action is Evade || action is Roll || action is Attack)
+            {
+                action.IsBeingPerformed_OnValueChanged += (bool value) =>
+                {
+                    if (value) recalculateScaleFactor = true;
+                };
+            }
+        }
+
+        dodgeStates = new List<FourWayBlendState>
+        {
+            character.animMachine.layers.GetLayerInfo("Base").GetStateInfo("Evade") as FourWayBlendState,
+            character.animMachine.layers.GetLayerInfo("Base").GetStateInfo("Roll") as FourWayBlendState
+        };
     }
 
-    private void CalculateSpeedFactor()
+    private void OnCharacterUpdate()
     {
-        if (character.animMachine.activeState.TryGetProperty<RootMotionCurvesProperty>(out AnimationStateProperty property))
-        {
-            var curves = (RootMotionData)property.Value;
-            float totalTime = curves.rootTZ.keys[curves.rootTZ.length - 1].time;
-            float totalDisplacement = curves.rootTZ.Evaluate(totalTime) - curves.rootTZ.Evaluate(0f);
-            totalDisplacement = Mathf.Abs(totalDisplacement) < 0.1f? curves.rootTZ.GetMaxValue() : totalDisplacement;
+        CalculateScaleFactor();
 
-            float targetDist = 0f;
-            if (character.PerformingAction<Evade>() ||  character.PerformingAction<Roll>())
+        HandleMotion(Time.deltaTime * character.timeScale);
+        HandleRotation(Time.deltaTime * character.timeScale);
+
+        HandleAnimationParameters(Time.deltaTime * character.timeScale);
+    }
+
+    private void OnMoveDirCommand(Vector3 vector)
+    {
+        worldMoveDir = vector;
+    }
+
+    private void CalculateScaleFactor()
+    {
+        if (recalculateScaleFactor)
+        {
+            if (character.animMachine.activeState.TryGetProperty<RootMotionCurvesProperty>(out AnimationStateProperty property))
             {
-                targetDist = character.PerformingAction<Evade>() ? evadeDistance : rollDistance;
+                var curves = (RootMotionData)property.Value;
+                float totalTime = curves.rootTZ.keys[curves.rootTZ.length - 1].time;
+                float totalDisplacement = curves.rootTZ.Evaluate(totalTime) - curves.rootTZ.Evaluate(0f);
+                totalDisplacement = Mathf.Abs(totalDisplacement) < 0.1f ? curves.rootTZ.GetMaxValue() : totalDisplacement;
+
+                if (character.PerformingAction<Evade>())
+                {
+                    scaleFactor = new Vector3(0f, 0f, evadeDistance / totalDisplacement);
+                }
+                else if (character.PerformingAction<Roll>())
+                {
+                    scaleFactor = new Vector3(0f, 0f, rollDistance / totalDisplacement);
+                }
+                else if (character.PerformingAction<Attack>())
+                {
+                    scaleFactor = new Vector3(1f, 0f, 1f);
+                }
             }
-            else if (character.PerformingAction<Attack>())
-            {
-                targetDist = totalDisplacement;
-            }
-            speedFactor = targetDist / totalDisplacement;
         }
     }
+
+    public void HandleMotion(float dt)
+    {
+        if (character.PerformingAction<Evade>() || character.PerformingAction<Roll>())
+        {
+            Vector3 up = transform.up;
+            Vector3 forward = transform.forward;
+            Vector3 right = Vector3.Cross(up, forward).normalized;
+
+            Vector3 rootDeltaPosition = character.animMachine.rootLinearVelocity * dt;
+            Vector3 scaledDeltaPosition = new Vector3(rootDeltaPosition.x * scaleFactor.x, rootDeltaPosition.y * scaleFactor.y,
+                rootDeltaPosition.z * scaleFactor.z);
+
+            Vector3 worldDeltaPosition = Vector3.zero;
+            Vector3 moveAmount = Vector3.zero;
+
+            if (relativeDodgeDir == Vector2.up)
+            {
+                worldDeltaPosition = scaledDeltaPosition.x * right + scaledDeltaPosition.y * up + scaledDeltaPosition.z * forward;
+                moveAmount = character.characterMover.ProcessCollideAndSlide(worldDeltaPosition, false);
+            }
+            else if (relativeDodgeDir == Vector2.down)
+            {
+                worldDeltaPosition = scaledDeltaPosition.x * -right + scaledDeltaPosition.y * up + scaledDeltaPosition.z * -forward;
+                moveAmount = character.characterMover.ProcessCollideAndSlide(worldDeltaPosition, false);
+            }
+            else if (relativeDodgeDir == Vector2.right)
+            {
+                worldDeltaPosition = scaledDeltaPosition.x * -forward + scaledDeltaPosition.y * up + scaledDeltaPosition.z * right;
+                moveAmount = character.characterMover.ProcessCollideAndSlide(worldDeltaPosition, false);
+            }
+            else if (relativeDodgeDir == Vector2.left)
+            {
+                worldDeltaPosition = scaledDeltaPosition.x * forward + scaledDeltaPosition.y * up + scaledDeltaPosition.z * -right;
+                moveAmount = character.characterMover.ProcessCollideAndSlide(worldDeltaPosition, false);
+            }
+
+            character.characterMover.SetWorldVelocity(moveAmount / dt);
+        }
+        if (character.PerformingAction<Attack>())
+        {
+            Vector3 up = transform.up;
+            Vector3 forward = transform.forward;
+            Vector3 right = Vector3.Cross(up, forward).normalized;
+
+            Vector3 rootDeltaPosition = character.animMachine.rootLinearVelocity * dt;
+            Vector3 scaledDeltaPosition = new Vector3(rootDeltaPosition.x * scaleFactor.x, rootDeltaPosition.y * scaleFactor.y,
+                rootDeltaPosition.z * scaleFactor.z);
+
+            Vector3 worldDeltaPosition = Vector3.zero;
+            Vector3 moveAmount = Vector3.zero;
+
+            worldDeltaPosition = scaledDeltaPosition.x * right + scaledDeltaPosition.y * up + scaledDeltaPosition.z * forward;
+            moveAmount = character.characterMover.ProcessCollideAndSlide(worldDeltaPosition, false);
+
+            character.characterMover.SetWorldVelocity(moveAmount / dt);
+        }
+    }
+
+    public void HandleRotation(float dt)
+    {
+        if (character.PerformingAction<Evade>() || character.PerformingAction<Roll>())
+        {
+            if (relativeDodgeDir.y == 1f)
+            {
+                character.characterMover.SetFaceDir(worldDodgeDir);
+            }
+            else if (relativeDodgeDir.y == -1f)
+            {
+                character.characterMover.SetFaceDir(-worldDodgeDir);
+            }
+            else if (relativeDodgeDir.x == 1f)
+            {
+                character.characterMover.SetFaceDir(Vector3.Cross(worldDodgeDir, transform.up));
+            }
+            else if (relativeDodgeDir.x == -1f)
+            {
+                character.characterMover.SetFaceDir(Vector3.Cross(-worldDodgeDir, transform.up));
+            }
+        }
+        if (character.PerformingAction<Attack>())
+        {
+            character.characterMover.SetFaceDir(attackDir);
+        }
+    }
+
     public void InitiateDodge()
     {
-        /*cachedDodgeDir = character.moveDir == Vector3.zero ? transform.forward : character.moveDir;
+        if (character.PerformingAction<Evade>()) 
+            worldDodgeDir = worldMoveDir == Vector3.zero ? transform.forward : worldMoveDir;
+        else if (character.PerformingAction<Roll>())
+            worldDodgeDir = worldMoveDir == Vector3.zero ? worldDodgeDir : worldMoveDir;
+
         if (character.PerformingAction<Sprint>())
         {
-            dodgeDir = Vector2.up;
-        }
-        else if (character.moveInput != Vector2.zero)
-        {
-            if (Mathf.Abs(character.moveInput.x) > Mathf.Abs(character.moveInput.y))
-            {
-                dodgeDir = character.moveInput.x > 0 ? Vector2.right : Vector2.left;
-            }
-            else
-            {
-                dodgeDir = character.moveInput.y > 0 ? Vector2.up : Vector2.down;
-            }
+            relativeDodgeDir = Vector2.up;
         }
         else
         {
-            dodgeDir = Vector2.up;
-        }*/
+            if (Vector3.Angle(transform.forward, worldDodgeDir) <= 45)
+            {
+                relativeDodgeDir = Vector2.up;
+            }
+            else if (Vector3.Angle(transform.right, worldDodgeDir) <= 45)
+            {
+                relativeDodgeDir = Vector2.right;
+            }
+            else if (Vector3.Angle(-transform.right, worldDodgeDir) <= 45)
+            {
+                relativeDodgeDir = Vector2.left;
+            }
+            else if (Vector3.Angle(-transform.forward, worldDodgeDir) <= 45)
+            {
+                relativeDodgeDir = Vector2.down;
+            }
+        }
     }
-    public void HandleDodgeMotion()
+
+    public bool TrySelectTarget(Vector3 checkDir, float range, out RaycastHit attackHit)
     {
-        /*if (dodgeDir == Vector2.up)
+        for (int i = 0; i < noOfRays; i++)
         {
-            character.rb.linearVelocity = Quaternion.LookRotation(transform.forward, Vector3.up) *
-                character.animMachine.rootLinearVelocity.With(y: 0f, z: speedFactor * character.animMachine.rootLinearVelocity.z);
+            var index = i % 2 == 0 ? i / 2 : -(i / 2 + 1);
+            var dir = Quaternion.AngleAxis(index * seperationAngle, Vector3.up) * checkDir;
+            Vector3 startPoint = transform.position + targetCheckerHeight * Vector3.up;
+            using (VisualLifetime.Create(1f))
+            {
+                if (Physics.Raycast(startPoint, dir, out attackHit, range, targetLayer))
+                {
+                    return true;
+                }
+            }
         }
-        else if (dodgeDir == Vector2.down)
-        {
-            character.rb.linearVelocity = Quaternion.LookRotation(-transform.forward, Vector3.up) *
-                character.animMachine.rootLinearVelocity.With(y: 0f, z: speedFactor * character.animMachine.rootLinearVelocity.z);
-        }
-        else if (dodgeDir == Vector2.right)
-        {
-            character.rb.linearVelocity = Quaternion.LookRotation(transform.right, Vector3.up) *
-                character.animMachine.rootLinearVelocity.With(y: 0f, z: speedFactor * character.animMachine.rootLinearVelocity.z);
-        }
-        else if (dodgeDir == Vector2.left)
-        {
-            character.rb.linearVelocity = Quaternion.LookRotation(-transform.right, Vector3.up) *
-                character.animMachine.rootLinearVelocity.With(y: 0f, z: speedFactor * character.animMachine.rootLinearVelocity.z);
-        }*/
+        attackHit = new RaycastHit();
+        return false;
     }
-    public bool SelectAttack(AttackType attackType, int depth = 1)
+
+    public bool TrySelectAttack(AttackType attackType, int depth = 1)
     {
         if (depth > 2) return false;
 
@@ -147,71 +288,25 @@ public class MeleeCombatController : MonoBehaviour, IControllerModule
             {
                 lastAttackTime = Time.time;
                 attacksPerformed.Add(attackData);
-                if (character.characterDetector.TrySelectTarget(attackDir, attackData.attackRange, out RaycastHit attackHit))
+                if (TrySelectTarget(attackDir, attackData.attackRange, out RaycastHit attackHit))
                 {
-                    faceDir = attackHit.point.With(y: 0f) - transform.position;
-                }
-                else
-                {
-                    faceDir = attackDir;
+                    attackDir = Vector3.ProjectOnPlane(attackHit.point - transform.position, transform.up).normalized;
                 }
                 OnAttackSelected?.Invoke();
                 return true;
             }
         }
         attacksPerformed.Clear();
-        return SelectAttack(attackType, ++depth);
+        return TrySelectAttack(attackType, ++depth);
     }
-    public void CalculateAttackDir(float dt)
+    
+    public void HandleAnimationParameters(float dt)
     {
-        /*if (character.moveInput.magnitude > 0.7f)
+        foreach (var state in dodgeStates)
         {
-            attackDir = character.moveDir;
-            attackDirTimer = 0f;
+            state.blendX = relativeDodgeDir.x;
+            state.blendY = relativeDodgeDir.y;
         }
-        else
-        {
-            attackDirTimer += dt;
-            if (attackDirTimer > attackCacheDuration)
-            {
-                attackDir = character.transform.forward;
-            }
-        }*/
-    }
-    public void HandleAttackMotion()
-    {
-        /*character.rb.linearVelocity = Quaternion.LookRotation(transform.forward, Vector3.up) *
-                character.animMachine.rootLinearVelocity.With(y: 0f, z: speedFactor * character.animMachine.rootLinearVelocity.z);*/
-    }
-    public void HandleRotation(float dt)
-    {
-        if (character.PerformingAction<Attack>())
-        {
-            transform.forward = Vector3.Slerp(transform.forward, faceDir, 10 * dt);
-        }
-        else if (character.PerformingAction<Evade>() || character.PerformingAction<Roll>())
-        {
-            if (dodgeDir.y == 1f)
-            {
-                transform.forward = cachedDodgeDir;
-            }
-            else if (dodgeDir.y == -1f)
-            {
-                transform.forward = -cachedDodgeDir;
-            }
-            else if (dodgeDir.x == 1f)
-            {
-                transform.right = cachedDodgeDir;
-            }
-            else if (dodgeDir.x == -1f)
-            {
-                transform.right = -cachedDodgeDir;
-            }
-        }
-    }
-    public void SnapToGround()
-    {
-        /*transform.position = new Vector3(transform.position.x, character.groundHit.point.y, transform.position.z);*/
     }
 }
 
@@ -228,4 +323,7 @@ public class AttackData
     public string attackName;
     public AttackType attackType;
     public float attackRange = 3f;
+
+    // Place a try select target method here 
+    // Each attack can then have different settings
 }

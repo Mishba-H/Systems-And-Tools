@@ -16,29 +16,6 @@ public class CharacterDetector : MonoBehaviour
         character = GetComponent<Character>();
     }
 
-    [TabGroup("Attack")] public int noOfRays;
-    [TabGroup("Attack")] public int seperationAngle;
-    [TabGroup("Attack")] public float targetCheckerHeight;
-    [TabGroup("Attack")] public LayerMask targetLayer;
-    public bool TrySelectTarget(Vector3 checkDir, float range, out RaycastHit attackHit)
-    {
-        for (int i = 0; i < noOfRays; i++)
-        {
-            var index = i % 2 == 0 ? i / 2 : -(i / 2 + 1);
-            var dir = Quaternion.AngleAxis(index * seperationAngle, Vector3.up) * checkDir;
-            Vector3 startPoint = transform.position + targetCheckerHeight * Vector3.up;
-            using (VisualLifetime.Create(1f))
-            {
-                if (Physics.Raycast(startPoint, dir, out attackHit, range, targetLayer))
-                {
-                    return true;
-                }
-            }
-        }
-        attackHit = new RaycastHit();
-        return false;
-    }
-
     [TabGroup("Climb")] public LayerMask climbLayer;
     [TabGroup("Climb")] public int climbCheckerCount = 3;
     [TabGroup("Climb")] public float climbCheckerInterval = 0.1f;

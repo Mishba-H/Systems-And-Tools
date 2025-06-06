@@ -131,7 +131,7 @@ public static class AnimationMachineExtensions
     public static float GetMaxValue(this AnimationCurve curve, float precision = 0.01f)
     {
         if (curve == null || curve.length == 0)
-            return float.MinValue; // Return a very low value if the curve is empty
+            return 0f; // Return a very low value if the curve is empty
 
         float startTime = curve.keys[0].time;
         float endTime = curve.keys[curve.length - 1].time;

@@ -6,12 +6,36 @@ using static PlayerInputActions;
 
 public class InputReader : MonoBehaviour, IPlayerActions
 {
-    public static InputReader instance;
-
-    PlayerInput playerInput;
-    PlayerInputActions inputActions;
-
     public Dictionary<string, Action<InputAction.CallbackContext>> inputTable;
+    private PlayerInputActions inputActions;
+
+    private void Awake()
+    {
+        inputActions = new PlayerInputActions();
+
+        inputTable = new();
+        inputTable.Add("Look", null);
+        inputTable.Add("Move", null);
+        inputTable.Add("Walk", null);
+        inputTable.Add("Sprint", null);
+        inputTable.Add("Crouch", null);
+        inputTable.Add("Jump", null);
+        inputTable.Add("Dodge", null);
+        inputTable.Add("Block", null);
+        inputTable.Add("Attack", null);
+        inputTable.Add("AttackAlt", null);
+    }
+
+    private void OnEnable()
+    {
+        inputActions.Player.Enable();
+        inputActions.Player.SetCallbacks(this);
+    }
+
+    private void OnDisable()
+    {
+        inputActions.Player.Disable();
+    }
 
     public void Subscribe(string inputName, Action<InputAction.CallbackContext> callback)
     {
@@ -35,41 +59,6 @@ public class InputReader : MonoBehaviour, IPlayerActions
         {
             action?.Invoke(context);
         }
-    }
-
-    private void Awake()
-    {
-        if (instance != null && instance != this)
-        {
-            Debug.LogError("Multiple InputReader instances detected.");
-        }
-        instance = this;
-
-        playerInput = GetComponent<PlayerInput>();
-        inputActions = new PlayerInputActions();
-
-        inputTable = new();
-        inputTable.Add("Look", null);
-        inputTable.Add("Move", null);
-        inputTable.Add("Walk", null);
-        inputTable.Add("Sprint", null);
-        inputTable.Add("Crouch", null);
-        inputTable.Add("Jump", null);
-        inputTable.Add("Dodge", null);
-        inputTable.Add("Block", null);
-        inputTable.Add("Attack", null);
-        inputTable.Add("AltAttack", null);
-    }
-
-    private void OnEnable()
-    {
-        inputActions.Player.Enable();
-        inputActions.Player.SetCallbacks(this);
-    }
-
-    private void OnDisable()
-    {
-        inputActions.Player.Disable();
     }
 
     public void OnLook(InputAction.CallbackContext context)

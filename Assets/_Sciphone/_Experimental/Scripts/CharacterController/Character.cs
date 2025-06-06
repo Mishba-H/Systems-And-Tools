@@ -15,7 +15,7 @@ public class Character : MonoBehaviour
     [Range(0f, 3f)] public float timeScale;
 
     public List<IControllerModule> modules;
-    [ReorderableList(Foldable = true), SerializeReference, Polymorphic] public List<CharacterAction> actions;
+    [SerializeReference, Polymorphic] public List<CharacterAction> actions;
 
     [HideInInspector] public AnimationMachine animMachine;
     [HideInInspector] public CharacterCommand characterCommand;

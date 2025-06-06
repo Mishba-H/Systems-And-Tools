@@ -8,9 +8,9 @@ using System.Linq;
 
 public class InputProcessor : MonoBehaviour
 {
-    public static InputProcessor instance;
-
     public Action<InputSequenceType> OnProcessInput { get; internal set; }
+
+    private InputReader inputReader;
 
     public List<InputSequence> allSequences;
 
@@ -24,13 +24,7 @@ public class InputProcessor : MonoBehaviour
 
     private void Awake()
     {
-        if (instance != null && instance != this)
-        {
-            Debug.LogError("Multiple InputProcessor instances detected.");
-            return;
-        }
-        instance = this;
-
+        inputReader = GetComponent<InputReader>();
 
         allSequences = allSequences.OrderByDescending(seq => seq.sequence.Count).ToList();
 
@@ -39,9 +33,9 @@ public class InputProcessor : MonoBehaviour
 
     private void Start()
     {
-        InputReader.instance.Subscribe("Move", OnMoveInput);
-        InputReader.instance.Subscribe("Attack", OnAttackInput);
-        InputReader.instance.Subscribe("AttackAlt", OnAttackAltInput);
+        inputReader.Subscribe("Move", OnMoveInput);
+        inputReader.Subscribe("Attack", OnAttackInput);
+        inputReader.Subscribe("AttackAlt", OnAttackAltInput);
     }
 
     private void Update()
@@ -56,25 +50,31 @@ public class InputProcessor : MonoBehaviour
 
     private void OnAttackInput(InputAction.CallbackContext context)
     {
-        if (context.interaction is TapInteraction)
+        if (context.performed)
         {
-            RegisterInput(InputType.AttackTap);
-        }
-        else if (context.interaction is HoldInteraction)
-        {
-            RegisterInput(InputType.AttackHold);
+            if (context.interaction is TapInteraction)
+            {
+                RegisterInput(InputType.AttackTap);
+            }
+            else if (context.interaction is HoldInteraction)
+            {
+                RegisterInput(InputType.AttackHold);
+            }
         }
     }
 
     private void OnAttackAltInput(InputAction.CallbackContext context)
     {
-        if (context.interaction is TapInteraction)
+        if (context.performed)
         {
-            RegisterInput(InputType.AltAttackTap);
-        }
-        else if (context.interaction is HoldInteraction)
-        {
-            RegisterInput(InputType.AltAttackHold);
+            if (context.interaction is TapInteraction)
+            {
+                RegisterInput(InputType.AltAttackTap);
+            }
+            else if (context.interaction is HoldInteraction)
+            {
+                RegisterInput(InputType.AltAttackHold);
+            }
         }
     }
 
@@ -132,24 +132,24 @@ public class InputProcessor : MonoBehaviour
 
     private void CheckSequences()
     {
-        foreach (InputSequence seq in allSequences)
+        foreach (InputSequence inputSequence in allSequences)
         {
-            if (seq.sequence.Count > inputBuffer.Count)
+            if (inputSequence.sequence.Count > inputBuffer.Count)
             {
                 continue;
             }
             bool sequenceMatched = true;
-            for (int i = 0; i < seq.sequence.Count; i++)
+            for (int i = 0; i < inputSequence.sequence.Count; i++)
             {
-                if (seq.sequence[i] != inputBuffer[inputBuffer.Count - seq.sequence.Count + i].inputType ||
-                    Time.time - inputBuffer[inputBuffer.Count - seq.sequence.Count + i].inputTime > seq.time)
+                if (inputSequence.sequence[i] != inputBuffer[inputBuffer.Count - inputSequence.sequence.Count + i].inputType ||
+                    Time.time - inputBuffer[inputBuffer.Count - inputSequence.sequence.Count + i].inputTime > inputSequence.time)
                 {
                     sequenceMatched = false;
                 }
             }
             if (sequenceMatched)
             {
-                OnProcessInput?.Invoke(seq.sequenceType);
+                OnProcessInput?.Invoke(inputSequence.sequenceType);
                 break;
             }
         }

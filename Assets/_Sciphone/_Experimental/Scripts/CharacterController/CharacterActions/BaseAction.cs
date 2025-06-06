@@ -23,7 +23,7 @@ public class Idle : BaseAction
         if (baseController != null)
         {
             var baseExpression = (Expression<Func<bool>>)(() =>
-                character.characterMover.isGrounded &&
+                character.characterMover.IsGrounded &&
                 !character.PerformingAction<Walk>() &&
                 !character.PerformingAction<Run>() &&
                 !character.PerformingAction<Sprint>() &&
@@ -71,14 +71,14 @@ public class Walk : BaseAction
 {
     private bool walk;
 
+    private void CharacterCommand_WalkCommand(bool obj)
+    {
+        walk = obj;
+    }
     public override void OnEnable()
     {
         base.OnEnable();
         character.characterCommand.WalkCommand += CharacterCommand_WalkCommand;
-    }
-    private void CharacterCommand_WalkCommand(bool obj)
-    {
-        walk = obj;
     }
     public override void CompileCondition()
     {
@@ -87,7 +87,7 @@ public class Walk : BaseAction
         if (baseController != null)
         {
             var baseExpression = (Expression<Func<bool>>)(() =>
-                character.characterMover.isGrounded &&
+                character.characterMover.IsGrounded &&
                 !character.PerformingAction<Jump>() &&
                 !character.PerformingAction<AirJump>());
             condition = CombineExpressions(condition, baseExpression);
@@ -151,15 +151,15 @@ public class Run : BaseAction
 {
     private bool run;
 
+    private void CharacterCommand_RunCommand(bool obj)
+    {
+        run = obj;
+    }
     public override void OnEnable()
     {
         base.OnEnable();
 
         character.characterCommand.RunCommand += CharacterCommand_RunCommand;
-    }
-    private void CharacterCommand_RunCommand(bool obj)
-    {
-        run = obj;
     }
     public override void CompileCondition()
     {
@@ -169,7 +169,7 @@ public class Run : BaseAction
         if (baseController != null)
         {
             var baseExpression = (Expression<Func<bool>>)(() =>
-                character.characterMover.isGrounded &&
+                character.characterMover.IsGrounded &&
                 !character.PerformingAction<Jump>() &&
                 !character.PerformingAction<AirJump>());
             condition = CombineExpressions(condition, baseExpression);
@@ -233,15 +233,15 @@ public class Sprint : BaseAction
 {
     private bool sprint;
 
+    private void CharacterCommand_SprintCommand(bool obj)
+    {
+        sprint = obj;
+    }
     public override void OnEnable()
     {
         base.OnEnable();
 
         character.characterCommand.SprintCommand += CharacterCommand_SprintCommand;
-    }
-    private void CharacterCommand_SprintCommand(bool obj)
-    {
-        sprint = obj;
     }
     public override void CompileCondition()
     {
@@ -251,7 +251,7 @@ public class Sprint : BaseAction
         if (baseController != null)
         {
             var baseExpression = (Expression<Func<bool>>)(() =>
-                character.characterMover.isGrounded &&
+                character.characterMover.IsGrounded &&
                 !character.PerformingAction<Jump>() &&
                 !character.PerformingAction<AirJump>() &&
                 !character.PerformingAction<Fall>());
@@ -314,11 +314,6 @@ public class Sprint : BaseAction
 [Serializable]
 public class Crouch : BaseAction
 {
-    public override void OnEnable()
-    {
-        base.OnEnable();
-        character.characterCommand.CrouchCommand += CharacterCommand_CrouchCommand;
-    }
     private void CharacterCommand_CrouchCommand(bool crouch)
     {
         if (!CanPerform)
@@ -327,6 +322,11 @@ public class Crouch : BaseAction
         }
         IsBeingPerformed = crouch;
     }
+    public override void OnEnable()
+    {
+        base.OnEnable();
+        character.characterCommand.CrouchCommand += CharacterCommand_CrouchCommand;
+    }
     public override void CompileCondition()
     {
         Expression<Func<bool>> condition = () => true;
@@ -334,7 +334,7 @@ public class Crouch : BaseAction
         if (baseController != null)
         {
             var baseExpression = (Expression<Func<bool>>)(() =>
-                character.characterMover.isGrounded &&
+                character.characterMover.IsGrounded &&
                 !character.PerformingAction<Sprint>() &&
                 !character.PerformingAction<Jump>() &&
                 !character.PerformingAction<AirJump>());
@@ -401,16 +401,16 @@ public class Crouch : BaseAction
 [Serializable]
 public class Jump : BaseAction
 {
-    public override void OnEnable()
-    {
-        base.OnEnable();
-        character.characterCommand.JumpCommand += OnJumpInput;
-    }
-    private void OnJumpInput()
+    private void OnJumpCommand()
     {
         if (!CanPerform) return;
 
         IsBeingPerformed = true;
+    }
+    public override void OnEnable()
+    {
+        base.OnEnable();
+        character.characterCommand.JumpCommand += OnJumpCommand;
     }
     public override void CompileCondition()
     {
@@ -420,7 +420,7 @@ public class Jump : BaseAction
         if (baseController != null)
         {
             var baseExpression = (Expression<Func<bool>>)(() =>
-                character.characterMover.isGrounded &&
+                character.characterMover.IsGrounded &&
                 baseController.jumpDurationCounter <= 0f);
             condition = CombineExpressions(condition, baseExpression);
         }
@@ -450,7 +450,7 @@ public class Jump : BaseAction
     {
         base.EvaluateStatus();
 
-        if (IsBeingPerformed && character.characterMover.isGrounded &&
+        if (IsBeingPerformed && character.characterMover.IsGrounded &&
             character.transform.InverseTransformDirection(character.characterMover.GetWorldVelocity()).y <= 0f)
         {
             controller.jumpDurationCounter = 0f;
@@ -477,7 +477,7 @@ public class Jump : BaseAction
     public override void OnPerform()
     {
         controller.InitiateJump();
-        character.characterMover.isGrounded = false;
+        character.characterMover.IsGrounded = false;
         character.EvaluateAllActions();
 
         character.characterAnimator.ChangeAnimationState("Jump", "Base");
@@ -487,17 +487,17 @@ public class Jump : BaseAction
 [Serializable]
 public class AirJump : BaseAction
 {
-    public override void OnEnable()
-    {
-        base.OnEnable();
-        character.characterCommand.JumpCommand += OnJumpInput;
-    }
-    private void OnJumpInput()
+    private void OnJumpCommand()
     {
         if (!CanPerform) return;
 
         IsBeingPerformed = true;
         controller.InitiateJump();
+    }
+    public override void OnEnable()
+    {
+        base.OnEnable();
+        character.characterCommand.JumpCommand += OnJumpCommand;
     }
     public override void CompileCondition()
     {
@@ -538,7 +538,7 @@ public class AirJump : BaseAction
     {
         base.EvaluateStatus();
 
-        if (character.characterMover.isGrounded)
+        if (character.characterMover.IsGrounded)
         {
             controller.airJumpDurationCounter = 0f;
             controller.currentAirJumpCount = controller.airJumpCount;
@@ -582,7 +582,7 @@ public class Fall : BaseAction
         if (baseController != null)
         {
             var baseExpression = (Expression<Func<bool>>)(() =>
-                !character.characterMover.isGrounded &&
+                !character.characterMover.IsGrounded &&
                 !character.PerformingAction<Jump>() &&
                 !character.PerformingAction<AirJump>());
             condition = CombineExpressions(condition, baseExpression);
@@ -599,9 +599,7 @@ public class Fall : BaseAction
         if (meleeCombatController != null)
         {
             var meleeCombatExpression = (Expression<Func<bool>>)(() =>
-                !character.PerformingAction<Evade>() &&
-                !character.PerformingAction<Roll>() &&
-                !character.PerformingAction<Attack>());
+                true);
             condition = CombineExpressions(condition, meleeCombatExpression);
         }
 

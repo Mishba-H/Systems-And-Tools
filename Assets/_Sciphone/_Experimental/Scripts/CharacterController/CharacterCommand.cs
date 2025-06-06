@@ -13,7 +13,6 @@ public class CharacterCommand : MonoBehaviour
     internal event Action<bool> SprintCommand;
     internal event Action<bool> CrouchCommand;
     internal event Action JumpCommand;
-    internal event Action AirJumpCommand;
 
     internal event Action ParkourUpCommand;
     internal event Action ParkourDownCommand;
@@ -22,22 +21,20 @@ public class CharacterCommand : MonoBehaviour
     internal event Action<AttackType> AttackCommand;
     internal event Action BlockCommand;
 
-    public void InvokeChangeMovementMode(BaseController.MovementMode value) => ChangeMovementModeCommand?.Invoke(value);
-    public void InvokeFaceDir(Vector3 dir) => FaceDirCommand?.Invoke(dir);
-    public void InvokeMoveDir(Vector3 dir) => MoveDirCommand?.Invoke(dir);
+    public void InvokeChangeMovementModeCommand(BaseController.MovementMode value) => ChangeMovementModeCommand?.Invoke(value);
+    public void InvokeFaceDirCommand(Vector3 dir) => FaceDirCommand?.Invoke(dir);
+    public void InvokeMoveDirCommand(Vector3 dir) => MoveDirCommand?.Invoke(dir);
 
-    public void InvokeWalk(bool value) => WalkCommand?.Invoke(value);
-    public void InvokeRun(bool value) => RunCommand?.Invoke(value);
-    public void InvokeSprint(bool value) => SprintCommand?.Invoke(value);
-    public void InvokeCrouch(bool value) => CrouchCommand?.Invoke(value);
+    public void InvokeWalkCommand(bool value) => WalkCommand?.Invoke(value);
+    public void InvokeRunCommand(bool value) => RunCommand?.Invoke(value);
+    public void InvokeSprintCommand(bool value) => SprintCommand?.Invoke(value);
+    public void InvokeCrouchCommand(bool value) => CrouchCommand?.Invoke(value);
+    public void InvokeJumpCommand() => JumpCommand?.Invoke();
 
-    public void InvokeJump() => JumpCommand?.Invoke();
-    public void InvokeAirJump() => AirJumpCommand?.Invoke();
+    public void InvokeParkourUpCommand() => ParkourUpCommand?.Invoke();
+    public void InvokeParkourDownCommand() => ParkourDownCommand?.Invoke();
 
-    public void InvokeParkourUp() => ParkourUpCommand?.Invoke();
-    public void InvokeParkourDown() => ParkourDownCommand?.Invoke();
-
-    public void InvokeDodge() => DodgeCommand?.Invoke();
-    public void InvokeAttack(AttackType type) => AttackCommand?.Invoke(type);
-    public void InvokeBlock() => BlockCommand?.Invoke();
+    public void InvokeDodgeCommand() => DodgeCommand?.Invoke();
+    public void InvokeAttackCommand(AttackType type) => AttackCommand?.Invoke(type);
+    public void InvokeBlockCommand() => BlockCommand?.Invoke();
 }

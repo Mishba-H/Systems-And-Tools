@@ -2,6 +2,7 @@ using System;
 using System.Linq.Expressions;
 using UnityEngine;
 using Sciphone.ComboGraph;
+using System.Linq;
 
 [Serializable]
 public abstract class MeleeCombatAction : CharacterAction
@@ -11,18 +12,16 @@ public abstract class MeleeCombatAction : CharacterAction
 [Serializable]
 public class Evade : MeleeCombatAction
 {
-    public override void OnEnable()
-    {
-        base.OnEnable();
-        character.characterCommand.DodgeCommand += OnDodgeCommand;
-    }
     private void OnDodgeCommand()
     {
         if (!CanPerform) return;
 
         IsBeingPerformed = true;
-        controller.evadeInputTime = Time.time;
-        controller.InitiateDodge();
+    }
+    public override void OnEnable()
+    {
+        base.OnEnable();
+        character.characterCommand.DodgeCommand += OnDodgeCommand;
     }
     public override void CompileCondition()
     {
@@ -40,7 +39,7 @@ public class Evade : MeleeCombatAction
         if (parkourController != null)
         {
             var parkourExpression = (Expression<Func<bool>>)(() =>
-                !character.PerformingAction<ClimbOverLow>() &&
+                !character.PerformingAction<ParkourAction>() &&
                 !character.PerformingAction<ClimbOverHigh>());
             condition = CombineExpressions(condition, parkourExpression);
         }
@@ -48,7 +47,7 @@ public class Evade : MeleeCombatAction
         if (meleeCombatController != null)
         {
             var meleeCombatExpression = (Expression<Func<bool>>)(() =>
-                Time.time - meleeCombatController.lastEvadeTime > meleeCombatController.dodgeInterval &&
+                Time.time - meleeCombatController.evadeStopTime > meleeCombatController.dodgeInterval &&
                 !character.PerformingAction<Evade>() &&
                 !character.PerformingAction<Roll>() &&
                 !character.PerformingAction<Attack>());
@@ -70,39 +69,32 @@ public class Evade : MeleeCombatAction
             IsBeingPerformed = false;
         }
     }
-    public override void Update()
+    public override void OnPerform()
     {
-        if (IsBeingPerformed)
-        {
-            controller.lastEvadeTime = Time.time;
-        }
+        controller.evadePerformTime = Time.time;
+        controller.InitiateDodge();
+
+        character.characterAnimator.ChangeAnimationState("Evade", "Base");
     }
-    public override void FixedUpdate()
+    public override void OnStop()
     {
-        if (IsBeingPerformed)
-        {
-            controller.HandleRotation(Time.fixedDeltaTime);
-            controller.HandleDodgeMotion();
-            controller.SnapToGround();
-        }
+        controller.evadeStopTime = Time.time;
     }
 }
 [Serializable]
 public class Roll : MeleeCombatAction
 {
-    public override void OnEnable()
-    {
-        base.OnEnable();
-        character.characterCommand.DodgeCommand += OnDodgeInput;
-    }
-    private void OnDodgeInput()
+    private void OnDodgeCommand()
     {
         if (!CanPerform) return;
 
         IsBeingPerformed = true;
-        controller.rollInputTime = Time.time;
-        controller.InitiateDodge();
 
+    }
+    public override void OnEnable()
+    {
+        base.OnEnable();
+        character.characterCommand.DodgeCommand += OnDodgeCommand;
     }
     public override void CompileCondition()
     {
@@ -111,7 +103,6 @@ public class Roll : MeleeCombatAction
         if (baseController != null)
         {
             var baseExpression = (Expression<Func<bool>>)(() =>
-                !character.PerformingAction<Roll>() &&
                 !character.PerformingAction<Jump>() &&
                 !character.PerformingAction<Fall>());
             condition = CombineExpressions(condition, baseExpression);
@@ -128,8 +119,8 @@ public class Roll : MeleeCombatAction
         if (meleeCombatController != null)
         {
             var meleeCombatExpression = (Expression<Func<bool>>)(() =>
-                Time.time - meleeCombatController.lastRollTime > meleeCombatController.dodgeInterval &&
-                ((character.PerformingAction<Evade>() && Time.time - controller.evadeInputTime > controller.rollWindowTime) ||
+                Time.time - meleeCombatController.rollStopTime > meleeCombatController.dodgeInterval &&
+                ((character.PerformingAction<Evade>() && Time.time - controller.evadePerformTime > controller.rollWindowTime) ||
                 character.PerformingAction<Sprint>()) &&
                 !character.PerformingAction<Attack>());
             condition = CombineExpressions(condition, meleeCombatExpression);
@@ -150,76 +141,48 @@ public class Roll : MeleeCombatAction
             IsBeingPerformed = false;
         }
     }
-    public override void Update()
+    public override void OnPerform()
     {
-        if (IsBeingPerformed)
+        if (character.TryGetAction<Evade>(out var evadeAction))
         {
-            controller.lastRollTime = Time.time;
+            evadeAction.EvaluateStatus();
         }
+        controller.rollPerformTime = Time.time;
+        controller.InitiateDodge();
+
+        character.characterAnimator.ChangeAnimationState("Roll", "Base");
     }
-    public override void FixedUpdate()
+    public override void OnStop()
     {
-        if (IsBeingPerformed)
-        {
-            controller.HandleRotation(Time.fixedDeltaTime);
-            controller.HandleDodgeMotion();
-            controller.SnapToGround();
-        }
+        controller.rollStopTime = Time.time;
     }
 }
 [Serializable]
 public class Attack : MeleeCombatAction
 {
+    private void OnAttackCommand(AttackType attackType)
+    {
+        if (!CanPerform) return;
+        
+        controller.cachedAttack = attackType;
+        controller.attackCommandTime = Time.time;
+        if (controller.readyToAttack)
+            controller.attackDir = controller.worldMoveDir == Vector3.zero ? controller.transform.forward : controller.worldMoveDir;
+    }
+    private void Controller_OnAttackSelected()
+    {
+        controller.readyToAttack = false;
+        controller.cachedAttack = AttackType.None;
+
+        character.characterAnimator.ChangeAnimationState(controller.attacksPerformed.Last().attackName, "GreatSword");
+    }
+
     public override void OnEnable()
     {
         base.OnEnable();
-        InputProcessor.instance.OnProcessInput += OnRecieveProcessedInput;
+        character.characterCommand.AttackCommand += OnAttackCommand;
+        controller.OnAttackSelected += Controller_OnAttackSelected;
     }
-
-    private void OnRecieveProcessedInput(InputSequenceType sequenceType)
-    {
-        if (!CanPerform) return;
-
-        switch (sequenceType)
-        {
-            case InputSequenceType.AttackTap:
-                if (character.PerformingAction<Sprint>())
-                    controller.cachedAttack = AttackType.SprintLightAttack;
-                else if (character.PerformingAction<Evade>() || character.PerformingAction<Roll>())
-                    controller.cachedAttack = AttackType.DodgeAttack;
-                else
-                    controller.cachedAttack = AttackType.LightAttack;
-                break;
-            case InputSequenceType.AltAttackTap:
-                if (character.PerformingAction<Sprint>())
-                    controller.cachedAttack = AttackType.SprintHeavyAttack;
-                else if (character.PerformingAction<Evade>() || character.PerformingAction<Roll>())
-                    controller.cachedAttack = AttackType.DodgeAttack;
-                else
-                    controller.cachedAttack = AttackType.HeavyAttack;
-                break;
-            case InputSequenceType.AttackHold:
-                controller.cachedAttack = AttackType.LightHoldAttack;
-                break;
-            case InputSequenceType.AltAttackHold:
-                controller.cachedAttack = AttackType.HeavyHoldAttack;
-                break;
-            case InputSequenceType.BackFrontAttack:
-                controller.cachedAttack = AttackType.BackFrontLightAttack;
-                break;
-            case InputSequenceType.BackFrontAltAttack:
-                controller.cachedAttack = AttackType.BackFrontHeavyAttack;
-                break;
-            case InputSequenceType.FrontFrontAttack:
-                controller.cachedAttack = AttackType.FrontFrontLightAttack;
-                break;
-            case InputSequenceType.FrontFrontAltAttack:
-                controller.cachedAttack = AttackType.FrontFrontHeavyAttack;
-                break;
-        }
-        controller.attackInputTime = Time.time;
-    }
-
     public override void CompileCondition()
     {
         Expression<Func<bool>> condition = () => true;
@@ -244,13 +207,12 @@ public class Attack : MeleeCombatAction
         if (meleeCombatController != null)
         {
             var meleeCombatExpression = (Expression<Func<bool>>)(() =>
-            true);
+            !character.PerformingAction<Evade>());
             condition = CombineExpressions(condition, meleeCombatExpression);
         }
 
         this.condition = condition.Compile();
     }
-
     public override void EvaluateStatus()
     {
         base.EvaluateStatus();
@@ -260,11 +222,10 @@ public class Attack : MeleeCombatAction
             IsBeingPerformed = false;
         }
 
-        if (controller.cachedAttack != AttackType.None && Time.time - controller.attackInputTime < controller.attackCacheDuration && controller.readyToAttack)
+        if (controller.readyToAttack && controller.cachedAttack != AttackType.None && 
+            Time.time - controller.attackCommandTime < controller.attackCacheDuration)
         {
-            IsBeingPerformed = controller.SelectAttack(controller.cachedAttack);
-            if (IsBeingPerformed) controller.readyToAttack = false;
-            controller.cachedAttack = AttackType.None;
+            IsBeingPerformed = controller.TrySelectAttack(controller.cachedAttack);
         }
 
         if (IsBeingPerformed && character.animMachine.activeState.GetNormalizedTime() >= 1f)
@@ -276,28 +237,22 @@ public class Attack : MeleeCombatAction
             controller.readyToAttack = true;
         }
     }
-
     public override void Update()
     {
-        controller.CalculateAttackDir(Time.deltaTime);
-
-        if (IsBeingPerformed)
+        if (!IsBeingPerformed && Time.time - controller.lastAttackTime > controller.comboEndTime)
         {
-            controller.lastAttackTime = Time.time;
-        }
-        if (Time.time - controller.lastAttackTime > controller.comboEndTime)
-        {
+            controller.readyToAttack = true;
             controller.attacksPerformed.Clear();
         }
     }
-
-    public override void FixedUpdate()
+    public override void OnPerform()
     {
-        if (IsBeingPerformed)
-        {
-            controller.HandleAttackMotion();
-            controller.HandleRotation(Time.fixedDeltaTime);
-        }
+        character.EvaluateAllActions();
+    }
+    public override void OnStop()
+    {
+        controller.lastAttackTime = Time.time;
+        character.EvaluateAllActions();
     }
 }
 [Serializable]

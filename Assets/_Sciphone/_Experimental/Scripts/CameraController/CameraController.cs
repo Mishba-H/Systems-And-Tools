@@ -18,6 +18,8 @@ public class CameraController : MonoBehaviour
     public Transform playerTransform;
     public LayerMask collisionLayer;
 
+    [SerializeField] internal InputReader inputReader;
+
     [SerializeReference, Polymorphic] public BaseCameraMode[] cameraModes;
     public ICameraMode currentCameraMode;
 
@@ -91,8 +93,8 @@ public abstract class BaseCameraMode : ICameraMode
 
     public virtual void Initialize(CameraController controller)
     {
-        InputReader.instance.Subscribe("Look", OnLookInput);
-        InputReader.instance.Subscribe("Move", OnMoveInput);
+        controller.inputReader.Subscribe("Look", OnLookInput);
+        controller.inputReader.Subscribe("Move", OnMoveInput);
 
         cameraTransform = controller.cameraTransform;
         followTarget = controller.playerTransform;
