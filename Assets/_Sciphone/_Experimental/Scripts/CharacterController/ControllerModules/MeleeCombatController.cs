@@ -12,8 +12,6 @@ public class MeleeCombatController : MonoBehaviour, IControllerModule
 
     public Character character { get; set; }
 
-    public Vector3 worldMoveDir;
-
     #region DODGE_PARAMETERS
     [TabGroup("Dodge")] public float evadeDistance = 2f;
     [TabGroup("Dodge")] public float rollDistance = 4f;
@@ -37,6 +35,7 @@ public class MeleeCombatController : MonoBehaviour, IControllerModule
     [TabGroup("Attack")] public float attackCommandTime;
     [TabGroup("Attack")] public AttackType cachedAttack;
     [TabGroup("Attack")] public Vector3 attackDir;
+    [TabGroup("Attack")] public float rotateSpeed;
     
     [TabGroup("Attack")][Header("Detector Settings")] public int noOfRays;
     [TabGroup("Attack")] public int seperationAngle;
@@ -44,6 +43,7 @@ public class MeleeCombatController : MonoBehaviour, IControllerModule
     [TabGroup("Attack")] public LayerMask targetLayer;
     #endregion
 
+    public Vector3 worldMoveDir;
     bool recalculateScaleFactor;
     public Vector3 scaleFactor;
 
@@ -60,7 +60,7 @@ public class MeleeCombatController : MonoBehaviour, IControllerModule
     {
         character.characterCommand.MoveDirCommand += OnMoveDirCommand;
 
-        character.CharacterUpdateEvent += OnCharacterUpdate;
+        character.OnCharacterUpdate += OnCharacterUpdate;
         foreach (var action in character.actions)
         {
             if (action is Evade || action is Roll || action is Attack)
@@ -81,11 +81,6 @@ public class MeleeCombatController : MonoBehaviour, IControllerModule
 
     private void OnCharacterUpdate()
     {
-        CalculateScaleFactor();
-
-        HandleMotion(Time.deltaTime * character.timeScale);
-        HandleRotation(Time.deltaTime * character.timeScale);
-
         HandleAnimationParameters(Time.deltaTime * character.timeScale);
     }
 
@@ -94,7 +89,7 @@ public class MeleeCombatController : MonoBehaviour, IControllerModule
         worldMoveDir = vector;
     }
 
-    private void CalculateScaleFactor()
+    public void CalculateScaleFactor()
     {
         if (recalculateScaleFactor)
         {
@@ -121,62 +116,60 @@ public class MeleeCombatController : MonoBehaviour, IControllerModule
         }
     }
 
-    public void HandleMotion(float dt)
+    public void HandleDodgeMotion(float dt)
     {
-        if (character.PerformingAction<Evade>() || character.PerformingAction<Roll>())
+        Vector3 up = transform.up;
+        Vector3 forward = transform.forward;
+        Vector3 right = Vector3.Cross(up, forward).normalized;
+
+        Vector3 rootDeltaPosition = character.animMachine.rootLinearVelocity * dt;
+        Vector3 scaledDeltaPosition = new Vector3(rootDeltaPosition.x * scaleFactor.x, rootDeltaPosition.y * scaleFactor.y,
+            rootDeltaPosition.z * scaleFactor.z);
+
+        Vector3 worldDeltaPosition;
+        Vector3 moveAmount = Vector3.zero;
+
+        if (relativeDodgeDir == Vector2.up)
         {
-            Vector3 up = transform.up;
-            Vector3 forward = transform.forward;
-            Vector3 right = Vector3.Cross(up, forward).normalized;
-
-            Vector3 rootDeltaPosition = character.animMachine.rootLinearVelocity * dt;
-            Vector3 scaledDeltaPosition = new Vector3(rootDeltaPosition.x * scaleFactor.x, rootDeltaPosition.y * scaleFactor.y,
-                rootDeltaPosition.z * scaleFactor.z);
-
-            Vector3 worldDeltaPosition = Vector3.zero;
-            Vector3 moveAmount = Vector3.zero;
-
-            if (relativeDodgeDir == Vector2.up)
-            {
-                worldDeltaPosition = scaledDeltaPosition.x * right + scaledDeltaPosition.y * up + scaledDeltaPosition.z * forward;
-                moveAmount = character.characterMover.ProcessCollideAndSlide(worldDeltaPosition, false);
-            }
-            else if (relativeDodgeDir == Vector2.down)
-            {
-                worldDeltaPosition = scaledDeltaPosition.x * -right + scaledDeltaPosition.y * up + scaledDeltaPosition.z * -forward;
-                moveAmount = character.characterMover.ProcessCollideAndSlide(worldDeltaPosition, false);
-            }
-            else if (relativeDodgeDir == Vector2.right)
-            {
-                worldDeltaPosition = scaledDeltaPosition.x * -forward + scaledDeltaPosition.y * up + scaledDeltaPosition.z * right;
-                moveAmount = character.characterMover.ProcessCollideAndSlide(worldDeltaPosition, false);
-            }
-            else if (relativeDodgeDir == Vector2.left)
-            {
-                worldDeltaPosition = scaledDeltaPosition.x * forward + scaledDeltaPosition.y * up + scaledDeltaPosition.z * -right;
-                moveAmount = character.characterMover.ProcessCollideAndSlide(worldDeltaPosition, false);
-            }
-
-            character.characterMover.SetWorldVelocity(moveAmount / dt);
-        }
-        if (character.PerformingAction<Attack>())
-        {
-            Vector3 up = transform.up;
-            Vector3 forward = transform.forward;
-            Vector3 right = Vector3.Cross(up, forward).normalized;
-
-            Vector3 rootDeltaPosition = character.animMachine.rootLinearVelocity * dt;
-            Vector3 scaledDeltaPosition = new Vector3(rootDeltaPosition.x * scaleFactor.x, rootDeltaPosition.y * scaleFactor.y,
-                rootDeltaPosition.z * scaleFactor.z);
-
-            Vector3 worldDeltaPosition = Vector3.zero;
-            Vector3 moveAmount = Vector3.zero;
-
             worldDeltaPosition = scaledDeltaPosition.x * right + scaledDeltaPosition.y * up + scaledDeltaPosition.z * forward;
             moveAmount = character.characterMover.ProcessCollideAndSlide(worldDeltaPosition, false);
-
-            character.characterMover.SetWorldVelocity(moveAmount / dt);
         }
+        else if (relativeDodgeDir == Vector2.down)
+        {
+            worldDeltaPosition = scaledDeltaPosition.x * -right + scaledDeltaPosition.y * up + scaledDeltaPosition.z * -forward;
+            moveAmount = character.characterMover.ProcessCollideAndSlide(worldDeltaPosition, false);
+        }
+        else if (relativeDodgeDir == Vector2.right)
+        {
+            worldDeltaPosition = scaledDeltaPosition.x * -forward + scaledDeltaPosition.y * up + scaledDeltaPosition.z * right;
+            moveAmount = character.characterMover.ProcessCollideAndSlide(worldDeltaPosition, false);
+        }
+        else if (relativeDodgeDir == Vector2.left)
+        {
+            worldDeltaPosition = scaledDeltaPosition.x * forward + scaledDeltaPosition.y * up + scaledDeltaPosition.z * -right;
+            moveAmount = character.characterMover.ProcessCollideAndSlide(worldDeltaPosition, false);
+        }
+
+        character.characterMover.SetWorldVelocity(moveAmount / dt);
+    }
+
+    public void HandleAttackMotion(float dt)
+    {
+        Vector3 up = transform.up;
+        Vector3 forward = transform.forward;
+        Vector3 right = Vector3.Cross(up, forward).normalized;
+
+        Vector3 rootDeltaPosition = character.animMachine.rootLinearVelocity * dt;
+        Vector3 scaledDeltaPosition = new Vector3(rootDeltaPosition.x * scaleFactor.x, rootDeltaPosition.y * scaleFactor.y,
+            rootDeltaPosition.z * scaleFactor.z);
+
+        Vector3 worldDeltaPosition = Vector3.zero;
+        Vector3 moveAmount = Vector3.zero;
+
+        worldDeltaPosition = scaledDeltaPosition.x * right + scaledDeltaPosition.y * up + scaledDeltaPosition.z * forward;
+        moveAmount = character.characterMover.ProcessCollideAndSlide(worldDeltaPosition, false);
+
+        character.characterMover.SetWorldVelocity(moveAmount / dt);
     }
 
     public void HandleRotation(float dt)
@@ -202,7 +195,7 @@ public class MeleeCombatController : MonoBehaviour, IControllerModule
         }
         if (character.PerformingAction<Attack>())
         {
-            character.characterMover.SetFaceDir(attackDir);
+            character.characterMover.SetFaceDir(Vector3.RotateTowards(transform.forward, attackDir, rotateSpeed * dt * Mathf.Deg2Rad, 0f));
         }
     }
 

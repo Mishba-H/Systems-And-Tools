@@ -23,12 +23,12 @@ public class Idle : BaseAction
         if (baseController != null)
         {
             var baseExpression = (Expression<Func<bool>>)(() =>
-                character.characterMover.IsGrounded &&
                 !character.PerformingAction<Walk>() &&
                 !character.PerformingAction<Run>() &&
                 !character.PerformingAction<Sprint>() &&
                 !character.PerformingAction<Jump>() &&
-                !character.PerformingAction<AirJump>());
+                !character.PerformingAction<AirJump>() &&
+                !character.PerformingAction<Fall>());
             condition = CombineExpressions(condition, baseExpression);
         }
         var parkourController = character.GetControllerModule<ParkourController>();
@@ -56,6 +56,15 @@ public class Idle : BaseAction
         base.EvaluateStatus();
 
         IsBeingPerformed = CanPerform;
+    }
+    public override void Update()
+    {
+        if (IsBeingPerformed)
+        {
+            controller.CalculateScaleFactor();
+            controller.HandleMotion(Time.deltaTime * character.timeScale);
+            controller.HandleRotation(Time.deltaTime * character.timeScale);
+        }
     }
     public override void OnPerform()
     {
@@ -87,9 +96,9 @@ public class Walk : BaseAction
         if (baseController != null)
         {
             var baseExpression = (Expression<Func<bool>>)(() =>
-                character.characterMover.IsGrounded &&
                 !character.PerformingAction<Jump>() &&
-                !character.PerformingAction<AirJump>());
+                !character.PerformingAction<AirJump>() &&
+                !character.PerformingAction<Fall>());
             condition = CombineExpressions(condition, baseExpression);
         }
         var parkourController = character.GetControllerModule<ParkourController>();
@@ -130,6 +139,15 @@ public class Walk : BaseAction
             IsBeingPerformed = false;
         }
     }
+    public override void Update()
+    {
+        if (IsBeingPerformed)
+        {
+            controller.CalculateScaleFactor();
+            controller.HandleMotion(Time.deltaTime * character.timeScale);
+            controller.HandleRotation(Time.deltaTime * character.timeScale);
+        }
+    }
     public override void OnPerform()
     {
         if (character.PerformingAction<Crouch>())
@@ -137,13 +155,13 @@ public class Walk : BaseAction
         else
             character.characterAnimator.ChangeAnimationState("Walk", "Base");
     }
-    public override void OnStop()
-    {
-        if (character.TryGetAction<Idle>(out var idleAction))
-        {
-            idleAction.EvaluateStatus();
-        }
-    }
+    //public override void OnStop()
+    //{
+    //    if (character.TryGetAction<Idle>(out var idleAction))
+    //    {
+    //        idleAction.EvaluateStatus();
+    //    }
+    //}
 }
 
 [Serializable]
@@ -169,9 +187,9 @@ public class Run : BaseAction
         if (baseController != null)
         {
             var baseExpression = (Expression<Func<bool>>)(() =>
-                character.characterMover.IsGrounded &&
                 !character.PerformingAction<Jump>() &&
-                !character.PerformingAction<AirJump>());
+                !character.PerformingAction<AirJump>() &&
+                !character.PerformingAction<Fall>());
             condition = CombineExpressions(condition, baseExpression);
         }
         var parkourController = character.GetControllerModule<ParkourController>();
@@ -212,6 +230,15 @@ public class Run : BaseAction
             IsBeingPerformed = false;
         }
     }
+    public override void Update()
+    {
+        if (IsBeingPerformed)
+        {
+            controller.CalculateScaleFactor();
+            controller.HandleMotion(Time.deltaTime * character.timeScale);
+            controller.HandleRotation(Time.deltaTime * character.timeScale);
+        }
+    }
     public override void OnPerform()
     {
         if (character.PerformingAction<Crouch>())
@@ -219,13 +246,13 @@ public class Run : BaseAction
         else
             character.characterAnimator.ChangeAnimationState("Run", "Base");
     }
-    public override void OnStop()
-    {
-        if (character.TryGetAction<Idle>(out var idleAction))
-        {
-            idleAction.EvaluateStatus();
-        }
-    }
+    //public override void OnStop()
+    //{
+    //    if (character.TryGetAction<Idle>(out var idleAction))
+    //    {
+    //        idleAction.EvaluateStatus();
+    //    }
+    //}
 }
 
 [Serializable]
@@ -295,6 +322,15 @@ public class Sprint : BaseAction
             IsBeingPerformed = false;
         }
     }
+    public override void Update()
+    {
+        if (IsBeingPerformed)
+        {
+            controller.CalculateScaleFactor();
+            controller.HandleMotion(Time.deltaTime * character.timeScale);
+            controller.HandleRotation(Time.deltaTime * character.timeScale);
+        }
+    }
     public override void OnPerform()
     {
         if (controller.movementMode == BaseController.MovementMode.EightWay)
@@ -302,13 +338,13 @@ public class Sprint : BaseAction
 
         character.characterAnimator.ChangeAnimationState("Sprint", "Base");
     }
-    public override void OnStop()
-    {
-        if (character.TryGetAction<Idle>(out var idleAction))
-        {
-            idleAction.EvaluateStatus();
-        }
-    }
+    //public override void OnStop()
+    //{
+    //    if (character.TryGetAction<Idle>(out var idleAction))
+    //    {
+    //        idleAction.EvaluateStatus();
+    //    }
+    //}
 }
 
 [Serializable]
@@ -474,13 +510,29 @@ public class Jump : BaseAction
             IsBeingPerformed = false;
         }
     }
+    public override void Update()
+    {
+        if (IsBeingPerformed)
+        {
+            controller.HandlePhysicsSimulation();
+            controller.HandleRotation(Time.deltaTime * character.timeScale);
+        }
+    }
     public override void OnPerform()
     {
         controller.InitiateJump();
         character.characterMover.IsGrounded = false;
-        character.EvaluateAllActions();
+        character.EvaluateAndUpdateAllActions();
 
         character.characterAnimator.ChangeAnimationState("Jump", "Base");
+    }
+    public override void OnStop()
+    {
+        character.characterMover.SetGravitySimulation(false);
+        if (character.TryGetAction<Fall>(out var fallAction))
+        {
+            fallAction.EvaluateStatus();
+        }
     }
 }
 
@@ -561,18 +613,48 @@ public class AirJump : BaseAction
             IsBeingPerformed = false;
         }
     }
+    public override void Update()
+    {
+        if (IsBeingPerformed)
+        {
+            controller.HandlePhysicsSimulation();
+            controller.HandleRotation(Time.deltaTime * character.timeScale);
+        }
+    }
     public override void OnPerform()
     {
         character.characterAnimator.ChangeAnimationState("AirJump", "Base");
+    }
+    public override void OnStop()
+    {
+        character.characterMover.SetGravitySimulation(false);
+        if (character.TryGetAction<Fall>(out var fallAction))
+        {
+            fallAction.EvaluateStatus();
+        }
     }
 }
 
 [Serializable]
 public class Fall : BaseAction
 {
+    private void CharacterMover_OnIsGroundedValueChanged(bool obj)
+    {
+        if (obj && CanPerform)
+        {
+            IsBeingPerformed = true;
+        }
+        else
+        {
+            IsBeingPerformed = false;
+        }
+    }
+
     public override void OnEnable()
     {
         base.OnEnable();
+
+        character.characterMover.OnIsGroundedValueChanged += CharacterMover_OnIsGroundedValueChanged;
     }
     public override void CompileCondition()
     {
@@ -582,7 +664,6 @@ public class Fall : BaseAction
         if (baseController != null)
         {
             var baseExpression = (Expression<Func<bool>>)(() =>
-                !character.characterMover.IsGrounded &&
                 !character.PerformingAction<Jump>() &&
                 !character.PerformingAction<AirJump>());
             condition = CombineExpressions(condition, baseExpression);
@@ -609,7 +690,21 @@ public class Fall : BaseAction
     {
         base.EvaluateStatus();
 
-        IsBeingPerformed = CanPerform;
+        if (!CanPerform)
+        {
+            IsBeingPerformed = false;
+            return;
+        }
+
+        IsBeingPerformed = !character.characterMover.IsGrounded;
+    }
+    public override void Update()
+    {
+        if (IsBeingPerformed)
+        {
+            controller.HandlePhysicsSimulation();
+            controller.HandleRotation(Time.deltaTime * character.timeScale);
+        }
     }
     public override void OnPerform()
     {
@@ -621,5 +716,9 @@ public class Fall : BaseAction
         {
             character.characterAnimator.ChangeAnimationState("Fall", "Base");
         }
+    }
+    public override void OnStop()
+    {
+        character.characterMover.SetGravitySimulation(false);
     }
 }

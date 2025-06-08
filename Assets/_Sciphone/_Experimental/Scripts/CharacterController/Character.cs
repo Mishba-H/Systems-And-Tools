@@ -7,12 +7,11 @@ using UnityEngine;
 [SelectionBase]
 public class Character : MonoBehaviour
 {
-    public event Action OnAllActionsEvaluateEvent;
-    public event Action CharacterUpdateEvent;
-    public event Action CharacterFixedUpdateEvent;
+    public event Action OnCharacterUpdate;
+    public event Action OnCharacterFixedUpdate;
 
-
-    [Range(0f, 3f)] public float timeScale;
+    public float time = 0.0f;
+    [Range(0f, 3f)] public float timeScale = 1f;
 
     public List<IControllerModule> modules;
     [SerializeReference, Polymorphic] public List<CharacterAction> actions;
@@ -73,39 +72,38 @@ public class Character : MonoBehaviour
 
     private void Update()
     {
-        SynchronizeTimeScales();
-
-        EvaluateAllActions();
-
-        CharacterUpdateEvent?.Invoke();
-
-        foreach (var action in actions)
-        {
-            action.Update();
-        }
-    }
-
-    private void SynchronizeTimeScales()
-    {
-        animMachine.timeScale = timeScale;
-        characterMover.timeScale = timeScale;
-    }
-
-    public void EvaluateAllActions()
-    {
-        CharacterFixedUpdateEvent?.Invoke();
-
-        foreach (var action in actions)
-        {
-            action.EvaluateStatus();
-        }
-        OnAllActionsEvaluateEvent?.Invoke();
+        SynchronizeTime();
+        EvaluateAndUpdateAllActions();
+        OnCharacterUpdate?.Invoke();
     }
 
     private void FixedUpdate()
     {
+        EvaluateAndFixedUpdateAllActions();
+        OnCharacterFixedUpdate?.Invoke();
+    }
+
+    private void SynchronizeTime()
+    {
+        time += Time.deltaTime * timeScale;
+
+        animMachine.timeScale = timeScale;
+    }
+
+    public void EvaluateAndUpdateAllActions()
+    {
         foreach (var action in actions)
         {
+            action.EvaluateStatus();
+            action.Update();
+        }
+    }
+
+    public void EvaluateAndFixedUpdateAllActions()
+    {
+        foreach (var action in actions)
+        {
+            action.EvaluateStatus();
             action.FixedUpdate();
         }
     }

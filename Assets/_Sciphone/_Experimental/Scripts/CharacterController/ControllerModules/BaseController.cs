@@ -55,7 +55,7 @@ public class BaseController : MonoBehaviour, IControllerModule
         character.characterCommand.FaceDirCommand += CharacterCommand_FaceDirCommand;
         character.characterCommand.MoveDirCommand += CharacterCommand_MoveDirCommand;
 
-        character.CharacterUpdateEvent += OnCharacterUpdate;
+        character.OnCharacterUpdate += OnCharacterUpdate;
         foreach (var action in character.actions)
         {
             if (action is Idle || action is Walk || action is Run || action is Sprint || action is Crouch)
@@ -92,15 +92,10 @@ public class BaseController : MonoBehaviour, IControllerModule
 
     private void OnCharacterUpdate()
     {
-        CalculateScaleFactor();
-
-        HandleMovement(Time.deltaTime * character.timeScale);
-        HandleRotation(Time.deltaTime * character.timeScale);
         HandleAnimationParameters(Time.deltaTime * character.timeScale);
-        HandlePhysicsSimulation();
     }
 
-    private void CalculateScaleFactor()
+    public void CalculateScaleFactor()
     {
         if (recalculateScaleFactor)
         {
@@ -149,67 +144,54 @@ public class BaseController : MonoBehaviour, IControllerModule
         }
     }
 
-    public Vector3 RotateTowards(Vector3 targetDirection, float angularVelocity, float dt)
+    public void HandleMotion(float dt)
     {
-        if (targetDirection == Vector3.zero)
-            return transform.forward;
-        targetDirection.Normalize();
-
-        return Vector3.RotateTowards(transform.forward, targetDirection, angularVelocity * dt * Mathf.Deg2Rad, 0f);
-    }
-
-    private void HandleMovement(float dt)
-    {
-        if (character.PerformingAction<Idle>() || character.PerformingAction<Walk>() || character.PerformingAction<Run>() ||
-            character.PerformingAction<Sprint>() || character.PerformingAction<Crouch>())
+        Vector3 moveAmount = Vector3.zero;
+        if (movementMode == MovementMode.Forward || character.PerformingAction<Sprint>())
         {
-            Vector3 moveAmount = Vector3.zero;
-            if (movementMode == MovementMode.Forward || character.PerformingAction<Sprint>())
-            {
-                Vector3 up = transform.up;
-                Vector3 forward = transform.forward;
-                Vector3 right = Vector3.Cross(up, forward).normalized;
+            Vector3 up = transform.up;
+            Vector3 forward = transform.forward;
+            Vector3 right = Vector3.Cross(up, forward).normalized;
 
-                Vector3 rootDeltaPosition = character.animMachine.rootLinearVelocity * dt;
-                Vector3 scaledDeltaPosition = new Vector3(rootDeltaPosition.x * scaleFactor.x, rootDeltaPosition.y * scaleFactor.y,
-                    rootDeltaPosition.z * scaleFactor.z);
+            Vector3 rootDeltaPosition = character.animMachine.rootLinearVelocity * dt;
+            Vector3 scaledDeltaPosition = new Vector3(rootDeltaPosition.x * scaleFactor.x, rootDeltaPosition.y * scaleFactor.y,
+                rootDeltaPosition.z * scaleFactor.z);
 
-                Vector3 worldDeltaPostition = scaledDeltaPosition.x * right + scaledDeltaPosition.y * up + scaledDeltaPosition.z * forward;
+            Vector3 worldDeltaPostition = scaledDeltaPosition.x * right + scaledDeltaPosition.y * up + scaledDeltaPosition.z * forward;
 
-                moveAmount = character.characterMover.ProcessCollideAndSlide(worldDeltaPostition, false);
-                moveRatio = worldDeltaPostition == Vector3.zero ? 0 : moveAmount.sqrMagnitude / worldDeltaPostition.sqrMagnitude;
-            }
-            else if (movementMode == MovementMode.EightWay)
-            {
-                Vector3 up = transform.up;
-                Vector3 forward = worldMoveDir;
-                Vector3 right = Vector3.Cross(up, forward).normalized;
-
-                Vector3 rootDeltaPosition = character.animMachine.rootLinearVelocity * dt;
-                Vector3 scaledDeltaPosition = new Vector3(rootDeltaPosition.x * scaleFactor.x, rootDeltaPosition.y * scaleFactor.y,
-                    rootDeltaPosition.z * scaleFactor.z);
-
-                Vector3 worldDeltaPosition = scaledDeltaPosition.x * right + scaledDeltaPosition.y * up + scaledDeltaPosition.z * forward;
-
-                moveAmount = character.characterMover.ProcessCollideAndSlide(worldDeltaPosition, false);
-                moveRatio = worldDeltaPosition == Vector3.zero ? 0 : moveAmount.sqrMagnitude / worldDeltaPosition.sqrMagnitude;
-            }
-            character.characterMover.SetWorldVelocity(moveAmount / dt);
+            moveAmount = character.characterMover.ProcessCollideAndSlide(worldDeltaPostition, false);
+            moveRatio = worldDeltaPostition == Vector3.zero ? 0 : moveAmount.sqrMagnitude / worldDeltaPostition.sqrMagnitude;
         }
+        else if (movementMode == MovementMode.EightWay)
+        {
+            Vector3 up = transform.up;
+            Vector3 forward = worldMoveDir;
+            Vector3 right = Vector3.Cross(up, forward).normalized;
+
+            Vector3 rootDeltaPosition = character.animMachine.rootLinearVelocity * dt;
+            Vector3 scaledDeltaPosition = new Vector3(rootDeltaPosition.x * scaleFactor.x, rootDeltaPosition.y * scaleFactor.y,
+                rootDeltaPosition.z * scaleFactor.z);
+
+            Vector3 worldDeltaPosition = scaledDeltaPosition.x * right + scaledDeltaPosition.y * up + scaledDeltaPosition.z * forward;
+
+            moveAmount = character.characterMover.ProcessCollideAndSlide(worldDeltaPosition, false);
+            moveRatio = worldDeltaPosition == Vector3.zero ? 0 : moveAmount.sqrMagnitude / worldDeltaPosition.sqrMagnitude;
+        }
+        character.characterMover.SetWorldVelocity(moveAmount / dt);
     }
 
-    private void HandleRotation(float dt)
+    public void HandleRotation(float dt)
     {
         if (character.PerformingAction<Idle>() || character.PerformingAction<Walk>() || character.PerformingAction<Run>() ||
             character.PerformingAction<Sprint>() || character.PerformingAction<Crouch>())
         {
             if (movementMode == MovementMode.Forward || character.PerformingAction<Sprint>())
             {
-                character.characterMover.SetFaceDir(RotateTowards(worldMoveDir, groundRotateSpeed, dt));
+                character.characterMover.SetFaceDir(Vector3.RotateTowards(transform.forward, worldMoveDir, groundRotateSpeed * dt * Mathf.Deg2Rad, 0f));
             }
             else if (movementMode == MovementMode.EightWay)
             {
-                character.characterMover.SetFaceDir(RotateTowards(targetForward, groundRotateSpeed, dt));
+                character.characterMover.SetFaceDir(Vector3.RotateTowards(transform.forward, targetForward, groundRotateSpeed * dt * Mathf.Deg2Rad, 0f));
             }
         }
         else if (character.PerformingAction<Jump>() || character.PerformingAction<AirJump>())
@@ -218,7 +200,18 @@ public class BaseController : MonoBehaviour, IControllerModule
         }
         else if (character.PerformingAction<Fall>())
         {
-            character.characterMover.SetFaceDir(RotateTowards(character.characterMover.GetWorldVelocity(), airRotateSpeed, dt));
+            character.characterMover.SetFaceDir(Vector3.RotateTowards(transform.forward, character.characterMover.GetWorldVelocity(), airRotateSpeed * dt * Mathf.Deg2Rad, 0f));
+        }
+    }
+    public void HandlePhysicsSimulation()
+    {
+        if (character.PerformingAction<Fall>() || character.PerformingAction<Jump>() || character.PerformingAction<AirJump>())
+        {
+            character.characterMover.SetGravitySimulation(true);
+        }
+        else
+        {
+            character.characterMover.SetGravitySimulation(false);
         }
     }
 
@@ -251,18 +244,6 @@ public class BaseController : MonoBehaviour, IControllerModule
         Vector3 right = Vector3.Cross(up, forward).normalized;
 
         jumpVelocity = right * localJumpVelocity.x + up * localJumpVelocity.y + forward * localJumpVelocity.z;
-    }
-
-    private void HandlePhysicsSimulation()
-    {
-        if (character.PerformingAction<Fall>() || character.PerformingAction<Jump>() || character.PerformingAction<AirJump>())
-        {
-            character.characterMover.SetGravitySimulation(true);
-        }
-        else
-        {
-            character.characterMover.SetGravitySimulation(false);
-        }
     }
 
     private void HandleAnimationParameters(float dt)
