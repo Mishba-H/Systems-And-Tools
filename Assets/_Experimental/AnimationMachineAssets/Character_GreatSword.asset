@@ -19,8 +19,10 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
+    - rid: -2
+      type: {class: , ns: , asm: }
     - rid: 3049075548522020865
-      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone}
+      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone.AnimationMachine}
       data:
         rootMotionData:
           rootTX:
@@ -7688,8 +7690,16 @@ MonoBehaviour:
             m_PreInfinity: 2
             m_PostInfinity: 2
             m_RotationOrder: 4
+          totalTime: 0
+          totalTXDelta: 0
+          totalTYDelta: 0
+          totalTZDelta: 0
+          totalQXDelta: 0
+          totalQYDelta: 0
+          totalQZDelta: 0
+          totalQWDelta: 0
     - rid: 3137252301772423178
-      type: {class: AnimationLayerInfo, ns: , asm: Sciphone}
+      type: {class: AnimationLayerInfo, ns: , asm: Sciphone.AnimationMachine}
       data:
         layerName: Base
         animMachine: {fileID: 0}
@@ -7706,12 +7716,12 @@ MonoBehaviour:
         - rid: 3137252359779647488
         - rid: 3137252359779647489
     - rid: 3137252301772423179
-      type: {class: AnimationClipState, ns: , asm: Sciphone}
+      type: {class: AnimationClipState, ns: , asm: Sciphone.AnimationMachine}
       data:
         stateName: Idle
         properties:
         - rid: 3137252309960491010
-        - rid: 3137252434831736832
+        - rid: -2
         - rid: 3049075548522020865
         events: []
         animMachine: {fileID: 0}
@@ -7719,12 +7729,12 @@ MonoBehaviour:
         clip: {fileID: 1827226128182048838, guid: 901cf23cf51848c42ab846b25b070e6e, type: 3}
         preview: 0
     - rid: 3137252301772423182
-      type: {class: AnimationClipState, ns: , asm: Sciphone}
+      type: {class: AnimationClipState, ns: , asm: Sciphone.AnimationMachine}
       data:
         stateName: Sprint
         properties:
         - rid: 3137252309960491013
-        - rid: 3137252403077971971
+        - rid: -2
         - rid: 3137252431645114372
         events: []
         animMachine: {fileID: 0}
@@ -7732,12 +7742,12 @@ MonoBehaviour:
         clip: {fileID: 1827226128182048838, guid: af49e2a0250cd474ba2acf1dc162154f, type: 3}
         preview: 0
     - rid: 3137252301772423183
-      type: {class: EightWayBlendState, ns: , asm: Sciphone}
+      type: {class: EightWayBlendState, ns: , asm: Sciphone.AnimationMachine}
       data:
         stateName: Walk
         properties:
         - rid: 3137252309960491011
-        - rid: 3137252403077971969
+        - rid: -2
         - rid: 3137252431645114368
         events: []
         animMachine: {fileID: 0}
@@ -7765,12 +7775,12 @@ MonoBehaviour:
         - 0.3873194
         - 0.000005910115
     - rid: 3137252301772423184
-      type: {class: EightWayBlendState, ns: , asm: Sciphone}
+      type: {class: EightWayBlendState, ns: , asm: Sciphone.AnimationMachine}
       data:
         stateName: Run
         properties:
         - rid: 3137252309960491012
-        - rid: 3137252403077971970
+        - rid: -2
         - rid: 3137252431645114369
         events: []
         animMachine: {fileID: 0}
@@ -7798,7 +7808,7 @@ MonoBehaviour:
         - 0
         - 0
     - rid: 3137252301772423185
-      type: {class: AnimationClipState, ns: , asm: Sciphone}
+      type: {class: AnimationClipState, ns: , asm: Sciphone.AnimationMachine}
       data:
         stateName: Jump
         properties: []
@@ -7808,7 +7818,7 @@ MonoBehaviour:
         clip: {fileID: 7400000, guid: e371eb54a5274074cae41f04cdbf5c93, type: 3}
         preview: 0
     - rid: 3137252301772423186
-      type: {class: AnimationClipState, ns: , asm: Sciphone}
+      type: {class: AnimationClipState, ns: , asm: Sciphone.AnimationMachine}
       data:
         stateName: AirJump
         properties: []
@@ -7818,7 +7828,7 @@ MonoBehaviour:
         clip: {fileID: 7400000, guid: 78611a5d2de949c4a8e78bd2ad5f361c, type: 3}
         preview: 0
     - rid: 3137252301772423187
-      type: {class: AnimationClipState, ns: , asm: Sciphone}
+      type: {class: AnimationClipState, ns: , asm: Sciphone.AnimationMachine}
       data:
         stateName: Fall
         properties:
@@ -7829,32 +7839,32 @@ MonoBehaviour:
         clip: {fileID: 7400000, guid: 5b2b09843f4a5fe4ea5bb26d70fbb9ad, type: 3}
         preview: 0
     - rid: 3137252309960491010
-      type: {class: LoopProperty, ns: , asm: Sciphone}
+      type: {class: LoopProperty, ns: , asm: Sciphone.AnimationMachine}
       data:
         loop: 1
     - rid: 3137252309960491011
-      type: {class: LoopProperty, ns: , asm: Sciphone}
+      type: {class: LoopProperty, ns: , asm: Sciphone.AnimationMachine}
       data:
         loop: 1
     - rid: 3137252309960491012
-      type: {class: LoopProperty, ns: , asm: Sciphone}
+      type: {class: LoopProperty, ns: , asm: Sciphone.AnimationMachine}
       data:
         loop: 1
     - rid: 3137252309960491013
-      type: {class: LoopProperty, ns: , asm: Sciphone}
+      type: {class: LoopProperty, ns: , asm: Sciphone.AnimationMachine}
       data:
         loop: 1
     - rid: 3137252335904882688
-      type: {class: LoopProperty, ns: , asm: Sciphone}
+      type: {class: LoopProperty, ns: , asm: Sciphone.AnimationMachine}
       data:
         loop: 1
     - rid: 3137252340919435275
-      type: {class: EightWayBlendState, ns: , asm: Sciphone}
+      type: {class: EightWayBlendState, ns: , asm: Sciphone.AnimationMachine}
       data:
         stateName: Crouch
         properties:
         - rid: 3137252340919435277
-        - rid: 3137252403077971972
+        - rid: -2
         - rid: 3137252431645114371
         events: []
         animMachine: {fileID: 0}
@@ -7882,15 +7892,15 @@ MonoBehaviour:
         - 0
         - 0
     - rid: 3137252340919435277
-      type: {class: LoopProperty, ns: , asm: Sciphone}
+      type: {class: LoopProperty, ns: , asm: Sciphone.AnimationMachine}
       data:
         loop: 1
     - rid: 3137252359779647488
-      type: {class: FourWayBlendState, ns: , asm: Sciphone}
+      type: {class: FourWayBlendState, ns: , asm: Sciphone.AnimationMachine}
       data:
         stateName: Evade
         properties:
-        - rid: 3137252403077971977
+        - rid: -2
         - rid: 3137252431645114376
         - rid: 3137252431645114374
         events: []
@@ -7911,11 +7921,11 @@ MonoBehaviour:
         - 1
         - 0
     - rid: 3137252359779647489
-      type: {class: FourWayBlendState, ns: , asm: Sciphone}
+      type: {class: FourWayBlendState, ns: , asm: Sciphone.AnimationMachine}
       data:
         stateName: Roll
         properties:
-        - rid: 3137252403077971976
+        - rid: -2
         - rid: 3137252369052729344
         - rid: 3137252431645114377
         - rid: 3137252431645114375
@@ -7937,35 +7947,11 @@ MonoBehaviour:
         - 1
         - 0
     - rid: 3137252369052729344
-      type: {class: PlayWindowProperty, ns: , asm: Sciphone}
+      type: {class: PlayWindowProperty, ns: , asm: Sciphone.AnimationMachine}
       data:
         playWindow: {x: 0, y: 0.75}
-    - rid: 3137252403077971969
-      type: {class: ApplyRootMotionProperty, ns: , asm: Sciphone}
-      data:
-        applyRootMotion: 0
-    - rid: 3137252403077971970
-      type: {class: ApplyRootMotionProperty, ns: , asm: Sciphone}
-      data:
-        applyRootMotion: 0
-    - rid: 3137252403077971971
-      type: {class: ApplyRootMotionProperty, ns: , asm: Sciphone}
-      data:
-        applyRootMotion: 0
-    - rid: 3137252403077971972
-      type: {class: ApplyRootMotionProperty, ns: , asm: Sciphone}
-      data:
-        applyRootMotion: 0
-    - rid: 3137252403077971976
-      type: {class: ApplyRootMotionProperty, ns: , asm: Sciphone}
-      data:
-        applyRootMotion: 1
-    - rid: 3137252403077971977
-      type: {class: ApplyRootMotionProperty, ns: , asm: Sciphone}
-      data:
-        applyRootMotion: 1
     - rid: 3137252431645114368
-      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone}
+      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone.AnimationMachine}
       data:
         rootMotionData:
           rootTX:
@@ -8847,8 +8833,16 @@ MonoBehaviour:
             m_PreInfinity: 2
             m_PostInfinity: 2
             m_RotationOrder: 4
+          totalTime: 0
+          totalTXDelta: 0
+          totalTYDelta: 0
+          totalTZDelta: 0
+          totalQXDelta: 0
+          totalQYDelta: 0
+          totalQZDelta: 0
+          totalQWDelta: 0
     - rid: 3137252431645114369
-      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone}
+      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone.AnimationMachine}
       data:
         rootMotionData:
           rootTX:
@@ -9883,8 +9877,16 @@ MonoBehaviour:
             m_PreInfinity: 2
             m_PostInfinity: 2
             m_RotationOrder: 4
+          totalTime: 0
+          totalTXDelta: 0
+          totalTYDelta: 0
+          totalTZDelta: 0
+          totalQXDelta: 0
+          totalQYDelta: 0
+          totalQZDelta: 0
+          totalQWDelta: 0
     - rid: 3137252431645114371
-      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone}
+      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone.AnimationMachine}
       data:
         rootMotionData:
           rootTX:
@@ -10604,8 +10606,16 @@ MonoBehaviour:
             m_PreInfinity: 2
             m_PostInfinity: 2
             m_RotationOrder: 4
+          totalTime: 0
+          totalTXDelta: 0
+          totalTYDelta: 0
+          totalTZDelta: 0
+          totalQXDelta: 0
+          totalQYDelta: 0
+          totalQZDelta: 0
+          totalQWDelta: 0
     - rid: 3137252431645114372
-      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone}
+      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone.AnimationMachine}
       data:
         rootMotionData:
           rootTX:
@@ -11388,8 +11398,16 @@ MonoBehaviour:
             m_PreInfinity: 2
             m_PostInfinity: 2
             m_RotationOrder: 4
+          totalTime: 0
+          totalTXDelta: 0
+          totalTYDelta: 0
+          totalTZDelta: 0
+          totalQXDelta: 0
+          totalQYDelta: 0
+          totalQZDelta: 0
+          totalQWDelta: 0
     - rid: 3137252431645114374
-      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone}
+      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone.AnimationMachine}
       data:
         rootMotionData:
           rootTX:
@@ -13387,8 +13405,16 @@ MonoBehaviour:
             m_PreInfinity: 2
             m_PostInfinity: 2
             m_RotationOrder: 4
+          totalTime: 0
+          totalTXDelta: 0
+          totalTYDelta: 0
+          totalTZDelta: 0
+          totalQXDelta: 0
+          totalQYDelta: 0
+          totalQZDelta: 0
+          totalQWDelta: 0
     - rid: 3137252431645114375
-      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone}
+      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone.AnimationMachine}
       data:
         rootMotionData:
           rootTX:
@@ -14693,20 +14719,24 @@ MonoBehaviour:
             m_PreInfinity: 2
             m_PostInfinity: 2
             m_RotationOrder: 4
+          totalTime: 0
+          totalTXDelta: 0
+          totalTYDelta: 0
+          totalTZDelta: 0
+          totalQXDelta: 0
+          totalQYDelta: 0
+          totalQZDelta: 0
+          totalQWDelta: 0
     - rid: 3137252431645114376
-      type: {class: BlendDurationProperty, ns: , asm: Sciphone}
+      type: {class: BlendDurationProperty, ns: , asm: Sciphone.AnimationMachine}
       data:
         blendDuration: 0.1
     - rid: 3137252431645114377
-      type: {class: BlendDurationProperty, ns: , asm: Sciphone}
+      type: {class: BlendDurationProperty, ns: , asm: Sciphone.AnimationMachine}
       data:
         blendDuration: 0.1
-    - rid: 3137252434831736832
-      type: {class: ApplyRootMotionProperty, ns: , asm: Sciphone}
-      data:
-        applyRootMotion: 0
     - rid: 4945720422352290123
-      type: {class: AnimationLayerInfo, ns: , asm: Sciphone}
+      type: {class: AnimationLayerInfo, ns: , asm: Sciphone.AnimationMachine}
       data:
         layerName: Parkour
         animMachine: {fileID: 0}
@@ -14717,7 +14747,7 @@ MonoBehaviour:
         - rid: 4945720422352290126
         - rid: 4945720422352290127
     - rid: 4945720422352290124
-      type: {class: AnimationClipState, ns: , asm: Sciphone}
+      type: {class: AnimationClipState, ns: , asm: Sciphone.AnimationMachine}
       data:
         stateName: ClimbOverLow
         properties:
@@ -14730,7 +14760,7 @@ MonoBehaviour:
         clip: {fileID: 1827226128182048838, guid: 7219c10ad7d010840a26ca827ca2aa57, type: 3}
         preview: 0
     - rid: 4945720422352290125
-      type: {class: AnimationClipState, ns: , asm: Sciphone}
+      type: {class: AnimationClipState, ns: , asm: Sciphone.AnimationMachine}
       data:
         stateName: ClimbOverHigh
         properties:
@@ -14743,7 +14773,7 @@ MonoBehaviour:
         clip: {fileID: 1827226128182048838, guid: bf11027ae953f904484d041e06fb964c, type: 3}
         preview: 0
     - rid: 4945720422352290126
-      type: {class: AnimationClipState, ns: , asm: Sciphone}
+      type: {class: AnimationClipState, ns: , asm: Sciphone.AnimationMachine}
       data:
         stateName: VaultFenceLow
         properties:
@@ -14756,7 +14786,7 @@ MonoBehaviour:
         clip: {fileID: 1827226128182048838, guid: 939a138e604d4ee46a297e89e9f0a1ba, type: 3}
         preview: 0
     - rid: 4945720422352290127
-      type: {class: AnimationClipState, ns: , asm: Sciphone}
+      type: {class: AnimationClipState, ns: , asm: Sciphone.AnimationMachine}
       data:
         stateName: VaultFenceHigh
         properties:
@@ -14769,11 +14799,11 @@ MonoBehaviour:
         clip: {fileID: 1827226128182048838, guid: 433c5d4fe208e6d4da878fd1b55fd9c7, type: 3}
         preview: 0
     - rid: 4945720422352290128
-      type: {class: PlayWindowProperty, ns: , asm: Sciphone}
+      type: {class: PlayWindowProperty, ns: , asm: Sciphone.AnimationMachine}
       data:
         playWindow: {x: 0.237, y: 0.875}
     - rid: 4945720422352290129
-      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone}
+      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone.AnimationMachine}
       data:
         rootMotionData:
           rootTX:
@@ -15718,16 +15748,24 @@ MonoBehaviour:
             m_PreInfinity: 2
             m_PostInfinity: 2
             m_RotationOrder: 4
+          totalTime: 0
+          totalTXDelta: 0
+          totalTYDelta: 0
+          totalTZDelta: 0
+          totalQXDelta: 0
+          totalQYDelta: 0
+          totalQZDelta: 0
+          totalQWDelta: 0
     - rid: 4945720422352290130
-      type: {class: BlendDurationProperty, ns: , asm: Sciphone}
+      type: {class: BlendDurationProperty, ns: , asm: Sciphone.AnimationMachine}
       data:
         blendDuration: 0.1
     - rid: 4945720422352290131
-      type: {class: PlayWindowProperty, ns: , asm: Sciphone}
+      type: {class: PlayWindowProperty, ns: , asm: Sciphone.AnimationMachine}
       data:
         playWindow: {x: 0.21, y: 0.911}
     - rid: 4945720422352290132
-      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone}
+      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone.AnimationMachine}
       data:
         rootMotionData:
           rootTX:
@@ -18418,16 +18456,24 @@ MonoBehaviour:
             m_PreInfinity: 2
             m_PostInfinity: 2
             m_RotationOrder: 4
+          totalTime: 0
+          totalTXDelta: 0
+          totalTYDelta: 0
+          totalTZDelta: 0
+          totalQXDelta: 0
+          totalQYDelta: 0
+          totalQZDelta: 0
+          totalQWDelta: 0
     - rid: 4945720422352290133
-      type: {class: BlendDurationProperty, ns: , asm: Sciphone}
+      type: {class: BlendDurationProperty, ns: , asm: Sciphone.AnimationMachine}
       data:
         blendDuration: 0.1
     - rid: 4945720422352290134
-      type: {class: PlayWindowProperty, ns: , asm: Sciphone}
+      type: {class: PlayWindowProperty, ns: , asm: Sciphone.AnimationMachine}
       data:
         playWindow: {x: 0.199, y: 0.717}
     - rid: 4945720422352290135
-      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone}
+      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone.AnimationMachine}
       data:
         rootMotionData:
           rootTX:
@@ -19372,16 +19418,24 @@ MonoBehaviour:
             m_PreInfinity: 2
             m_PostInfinity: 2
             m_RotationOrder: 4
+          totalTime: 0
+          totalTXDelta: 0
+          totalTYDelta: 0
+          totalTZDelta: 0
+          totalQXDelta: 0
+          totalQYDelta: 0
+          totalQZDelta: 0
+          totalQWDelta: 0
     - rid: 4945720422352290136
-      type: {class: BlendDurationProperty, ns: , asm: Sciphone}
+      type: {class: BlendDurationProperty, ns: , asm: Sciphone.AnimationMachine}
       data:
         blendDuration: 0.1
     - rid: 4945720422352290137
-      type: {class: PlayWindowProperty, ns: , asm: Sciphone}
+      type: {class: PlayWindowProperty, ns: , asm: Sciphone.AnimationMachine}
       data:
         playWindow: {x: 0.103, y: 0.775}
     - rid: 4945720422352290138
-      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone}
+      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone.AnimationMachine}
       data:
         rootMotionData:
           rootTX:
@@ -20326,12 +20380,20 @@ MonoBehaviour:
             m_PreInfinity: 2
             m_PostInfinity: 2
             m_RotationOrder: 4
+          totalTime: 0
+          totalTXDelta: 0
+          totalTYDelta: 0
+          totalTZDelta: 0
+          totalQXDelta: 0
+          totalQYDelta: 0
+          totalQZDelta: 0
+          totalQWDelta: 0
     - rid: 4945720422352290139
-      type: {class: BlendDurationProperty, ns: , asm: Sciphone}
+      type: {class: BlendDurationProperty, ns: , asm: Sciphone.AnimationMachine}
       data:
         blendDuration: 0.1
     - rid: 4945720422352290140
-      type: {class: AnimationLayerInfo, ns: , asm: Sciphone}
+      type: {class: AnimationLayerInfo, ns: , asm: Sciphone.AnimationMachine}
       data:
         layerName: GreatSword
         animMachine: {fileID: 0}
@@ -20363,7 +20425,7 @@ MonoBehaviour:
         - rid: 4945720422352290164
         - rid: 4945720422352290165
     - rid: 4945720422352290141
-      type: {class: AnimationClipState, ns: , asm: Sciphone}
+      type: {class: AnimationClipState, ns: , asm: Sciphone.AnimationMachine}
       data:
         stateName: Combo_1_1
         properties:
@@ -20375,7 +20437,7 @@ MonoBehaviour:
         clip: {fileID: 7400000, guid: 0f01aa99506fe204f98d3a01ff53d76a, type: 3}
         preview: 0
     - rid: 4945720422352290142
-      type: {class: AnimationClipState, ns: , asm: Sciphone}
+      type: {class: AnimationClipState, ns: , asm: Sciphone.AnimationMachine}
       data:
         stateName: Combo_1_2
         properties:
@@ -20387,7 +20449,7 @@ MonoBehaviour:
         clip: {fileID: 7400000, guid: 7880debb8c11bb24fb791405e0967658, type: 3}
         preview: 0.469
     - rid: 4945720422352290143
-      type: {class: AnimationClipState, ns: , asm: Sciphone}
+      type: {class: AnimationClipState, ns: , asm: Sciphone.AnimationMachine}
       data:
         stateName: Combo_1_3
         properties:
@@ -20399,7 +20461,7 @@ MonoBehaviour:
         clip: {fileID: 7400000, guid: 767b33b2c087a5a4d9f2ae70fe712240, type: 3}
         preview: 0.396
     - rid: 4945720422352290144
-      type: {class: AnimationClipState, ns: , asm: Sciphone}
+      type: {class: AnimationClipState, ns: , asm: Sciphone.AnimationMachine}
       data:
         stateName: Combo_1_4
         properties:
@@ -20411,7 +20473,7 @@ MonoBehaviour:
         clip: {fileID: 7400000, guid: 9b8482507c77b8a4ca0b9df3fcd1369e, type: 3}
         preview: 0.321
     - rid: 4945720422352290145
-      type: {class: AnimationClipState, ns: , asm: Sciphone}
+      type: {class: AnimationClipState, ns: , asm: Sciphone.AnimationMachine}
       data:
         stateName: Combo_1_5
         properties:
@@ -20423,7 +20485,7 @@ MonoBehaviour:
         clip: {fileID: 7400000, guid: aa6f7162518b9784293e34060a110247, type: 3}
         preview: 0.257
     - rid: 4945720422352290146
-      type: {class: AnimationClipState, ns: , asm: Sciphone}
+      type: {class: AnimationClipState, ns: , asm: Sciphone.AnimationMachine}
       data:
         stateName: Combo_1_6
         properties:
@@ -20435,7 +20497,7 @@ MonoBehaviour:
         clip: {fileID: 7400000, guid: 8f933a988ef5cb845b864a1eb461f06e, type: 3}
         preview: 0.592
     - rid: 4945720422352290147
-      type: {class: AnimationClipState, ns: , asm: Sciphone}
+      type: {class: AnimationClipState, ns: , asm: Sciphone.AnimationMachine}
       data:
         stateName: Combo_1_7
         properties:
@@ -20447,7 +20509,7 @@ MonoBehaviour:
         clip: {fileID: 7400000, guid: f793f9d6ec799b14390f24f8f45e9694, type: 3}
         preview: 0.814
     - rid: 4945720422352290148
-      type: {class: AnimationClipState, ns: , asm: Sciphone}
+      type: {class: AnimationClipState, ns: , asm: Sciphone.AnimationMachine}
       data:
         stateName: Combo_2_1
         properties:
@@ -20459,7 +20521,7 @@ MonoBehaviour:
         clip: {fileID: 7400000, guid: 6bddcdfebb3a83e46991aa42b76c7259, type: 3}
         preview: 0.338
     - rid: 4945720422352290149
-      type: {class: AnimationClipState, ns: , asm: Sciphone}
+      type: {class: AnimationClipState, ns: , asm: Sciphone.AnimationMachine}
       data:
         stateName: Combo_2_2
         properties:
@@ -20471,7 +20533,7 @@ MonoBehaviour:
         clip: {fileID: 7400000, guid: 1a436aa52e89b8049bdafcd98b98ca6b, type: 3}
         preview: 0.368
     - rid: 4945720422352290150
-      type: {class: AnimationClipState, ns: , asm: Sciphone}
+      type: {class: AnimationClipState, ns: , asm: Sciphone.AnimationMachine}
       data:
         stateName: Combo_2_3
         properties:
@@ -20483,7 +20545,7 @@ MonoBehaviour:
         clip: {fileID: 7400000, guid: fb63dda3b9f133d45bcde0fa0b53d103, type: 3}
         preview: 0.446
     - rid: 4945720422352290151
-      type: {class: AnimationClipState, ns: , asm: Sciphone}
+      type: {class: AnimationClipState, ns: , asm: Sciphone.AnimationMachine}
       data:
         stateName: Combo_2_4
         properties:
@@ -20495,7 +20557,7 @@ MonoBehaviour:
         clip: {fileID: 7400000, guid: a3ceb18483673d84886a9a362f2fa02e, type: 3}
         preview: 0.859
     - rid: 4945720422352290152
-      type: {class: AnimationClipState, ns: , asm: Sciphone}
+      type: {class: AnimationClipState, ns: , asm: Sciphone.AnimationMachine}
       data:
         stateName: Combo_3_1
         properties:
@@ -20507,7 +20569,7 @@ MonoBehaviour:
         clip: {fileID: 7400000, guid: 98e6292c687a88c47a05eb619d9559b2, type: 3}
         preview: 0.602
     - rid: 4945720422352290153
-      type: {class: AnimationClipState, ns: , asm: Sciphone}
+      type: {class: AnimationClipState, ns: , asm: Sciphone.AnimationMachine}
       data:
         stateName: Combo_3_2
         properties:
@@ -20519,7 +20581,7 @@ MonoBehaviour:
         clip: {fileID: 7400000, guid: cb4cc4715657b9847870f490d2b2dc0a, type: 3}
         preview: 0.353
     - rid: 4945720422352290154
-      type: {class: AnimationClipState, ns: , asm: Sciphone}
+      type: {class: AnimationClipState, ns: , asm: Sciphone.AnimationMachine}
       data:
         stateName: Combo_3_3
         properties:
@@ -20531,7 +20593,7 @@ MonoBehaviour:
         clip: {fileID: 7400000, guid: cf86ca3439ea609479beef4995243edf, type: 3}
         preview: 0.21
     - rid: 4945720422352290155
-      type: {class: AnimationClipState, ns: , asm: Sciphone}
+      type: {class: AnimationClipState, ns: , asm: Sciphone.AnimationMachine}
       data:
         stateName: Combo_3_4
         properties:
@@ -20543,7 +20605,7 @@ MonoBehaviour:
         clip: {fileID: 7400000, guid: 71a03bdedd7a648428ddd1ac85086e72, type: 3}
         preview: 0.662
     - rid: 4945720422352290156
-      type: {class: AnimationClipState, ns: , asm: Sciphone}
+      type: {class: AnimationClipState, ns: , asm: Sciphone.AnimationMachine}
       data:
         stateName: Combo_4_1
         properties:
@@ -20555,7 +20617,7 @@ MonoBehaviour:
         clip: {fileID: 7400000, guid: fb14fa234e735414080e259fae996858, type: 3}
         preview: 0.743
     - rid: 4945720422352290157
-      type: {class: AnimationClipState, ns: , asm: Sciphone}
+      type: {class: AnimationClipState, ns: , asm: Sciphone.AnimationMachine}
       data:
         stateName: Combo_4_2
         properties:
@@ -20567,7 +20629,7 @@ MonoBehaviour:
         clip: {fileID: 7400000, guid: 8f933a988ef5cb845b864a1eb461f06e, type: 3}
         preview: 0.618
     - rid: 4945720422352290158
-      type: {class: AnimationClipState, ns: , asm: Sciphone}
+      type: {class: AnimationClipState, ns: , asm: Sciphone.AnimationMachine}
       data:
         stateName: Combo_4_3
         properties:
@@ -20579,7 +20641,7 @@ MonoBehaviour:
         clip: {fileID: 7400000, guid: f793f9d6ec799b14390f24f8f45e9694, type: 3}
         preview: 0.784
     - rid: 4945720422352290159
-      type: {class: AnimationClipState, ns: , asm: Sciphone}
+      type: {class: AnimationClipState, ns: , asm: Sciphone.AnimationMachine}
       data:
         stateName: Combo_5_1
         properties:
@@ -20591,7 +20653,7 @@ MonoBehaviour:
         clip: {fileID: 7400000, guid: a85a5d9ac17217e4995311a9c79ab5e0, type: 3}
         preview: 0.672
     - rid: 4945720422352290160
-      type: {class: AnimationClipState, ns: , asm: Sciphone}
+      type: {class: AnimationClipState, ns: , asm: Sciphone.AnimationMachine}
       data:
         stateName: Combo_6_1
         properties:
@@ -20603,7 +20665,7 @@ MonoBehaviour:
         clip: {fileID: 7400000, guid: a849ddc28882ee34a9e464e8b74d81a5, type: 3}
         preview: 0.72
     - rid: 4945720422352290161
-      type: {class: AnimationClipState, ns: , asm: Sciphone}
+      type: {class: AnimationClipState, ns: , asm: Sciphone.AnimationMachine}
       data:
         stateName: Combo_7_1
         properties:
@@ -20615,7 +20677,7 @@ MonoBehaviour:
         clip: {fileID: 7400000, guid: ea666a0024e95544eb16d6b6e817f80c, type: 3}
         preview: 0.964
     - rid: 4945720422352290162
-      type: {class: AnimationClipState, ns: , asm: Sciphone}
+      type: {class: AnimationClipState, ns: , asm: Sciphone.AnimationMachine}
       data:
         stateName: Combo_8_1
         properties:
@@ -20627,7 +20689,7 @@ MonoBehaviour:
         clip: {fileID: 7400000, guid: aeadecb385108a04383a024f6c6b2bab, type: 3}
         preview: 0.887
     - rid: 4945720422352290163
-      type: {class: AnimationClipState, ns: , asm: Sciphone}
+      type: {class: AnimationClipState, ns: , asm: Sciphone.AnimationMachine}
       data:
         stateName: Combo_9_1
         properties:
@@ -20639,7 +20701,7 @@ MonoBehaviour:
         clip: {fileID: 7400000, guid: b3fbf7fea81c6dd40b32a92f18380f5c, type: 3}
         preview: 0.823
     - rid: 4945720422352290164
-      type: {class: AnimationClipState, ns: , asm: Sciphone}
+      type: {class: AnimationClipState, ns: , asm: Sciphone.AnimationMachine}
       data:
         stateName: Combo_10_1
         properties:
@@ -20651,7 +20713,7 @@ MonoBehaviour:
         clip: {fileID: 7400000, guid: 8c7f9edaa6d57484f95c3fd4fae4a754, type: 3}
         preview: 1
     - rid: 4945720422352290165
-      type: {class: AnimationClipState, ns: , asm: Sciphone}
+      type: {class: AnimationClipState, ns: , asm: Sciphone.AnimationMachine}
       data:
         stateName: Combo_11_1
         properties:
@@ -20663,7 +20725,7 @@ MonoBehaviour:
         clip: {fileID: 7400000, guid: 87196e3069e553143996522f76e3bf6b, type: 3}
         preview: 0.88
     - rid: 4945720422352290166
-      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone}
+      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone.AnimationMachine}
       data:
         rootMotionData:
           rootTX:
@@ -20708,12 +20770,20 @@ MonoBehaviour:
             m_PreInfinity: 2
             m_PostInfinity: 2
             m_RotationOrder: 4
+          totalTime: 0
+          totalTXDelta: 0
+          totalTYDelta: 0
+          totalTZDelta: 0
+          totalQXDelta: 0
+          totalQYDelta: 0
+          totalQZDelta: 0
+          totalQWDelta: 0
     - rid: 4945720422352290167
-      type: {class: ReadyToAttack, ns: , asm: Sciphone}
+      type: {class: ReadyToAttack, ns: , asm: Experimental}
       data:
         triggerTime: 0.492
     - rid: 4945720422352290168
-      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone}
+      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone.AnimationMachine}
       data:
         rootMotionData:
           rootTX:
@@ -20758,12 +20828,20 @@ MonoBehaviour:
             m_PreInfinity: 2
             m_PostInfinity: 2
             m_RotationOrder: 4
+          totalTime: 0
+          totalTXDelta: 0
+          totalTYDelta: 0
+          totalTZDelta: 0
+          totalQXDelta: 0
+          totalQYDelta: 0
+          totalQZDelta: 0
+          totalQWDelta: 0
     - rid: 4945720422352290169
-      type: {class: ReadyToAttack, ns: , asm: Sciphone}
+      type: {class: ReadyToAttack, ns: , asm: Experimental}
       data:
         triggerTime: 0.469
     - rid: 4945720422352290170
-      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone}
+      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone.AnimationMachine}
       data:
         rootMotionData:
           rootTX:
@@ -20808,12 +20886,20 @@ MonoBehaviour:
             m_PreInfinity: 2
             m_PostInfinity: 2
             m_RotationOrder: 4
+          totalTime: 0
+          totalTXDelta: 0
+          totalTYDelta: 0
+          totalTZDelta: 0
+          totalQXDelta: 0
+          totalQYDelta: 0
+          totalQZDelta: 0
+          totalQWDelta: 0
     - rid: 4945720422352290171
-      type: {class: ReadyToAttack, ns: , asm: Sciphone}
+      type: {class: ReadyToAttack, ns: , asm: Experimental}
       data:
         triggerTime: 0.392
     - rid: 4945720422352290172
-      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone}
+      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone.AnimationMachine}
       data:
         rootMotionData:
           rootTX:
@@ -20858,12 +20944,20 @@ MonoBehaviour:
             m_PreInfinity: 2
             m_PostInfinity: 2
             m_RotationOrder: 4
+          totalTime: 0
+          totalTXDelta: 0
+          totalTYDelta: 0
+          totalTZDelta: 0
+          totalQXDelta: 0
+          totalQYDelta: 0
+          totalQZDelta: 0
+          totalQWDelta: 0
     - rid: 4945720422352290173
-      type: {class: ReadyToAttack, ns: , asm: Sciphone}
+      type: {class: ReadyToAttack, ns: , asm: Experimental}
       data:
         triggerTime: 0.321
     - rid: 4945720422352290174
-      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone}
+      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone.AnimationMachine}
       data:
         rootMotionData:
           rootTX:
@@ -20908,12 +21002,20 @@ MonoBehaviour:
             m_PreInfinity: 2
             m_PostInfinity: 2
             m_RotationOrder: 4
+          totalTime: 0
+          totalTXDelta: 0
+          totalTYDelta: 0
+          totalTZDelta: 0
+          totalQXDelta: 0
+          totalQYDelta: 0
+          totalQZDelta: 0
+          totalQWDelta: 0
     - rid: 4945720422352290175
-      type: {class: ReadyToAttack, ns: , asm: Sciphone}
+      type: {class: ReadyToAttack, ns: , asm: Experimental}
       data:
         triggerTime: 0.257
     - rid: 4945720422352290176
-      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone}
+      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone.AnimationMachine}
       data:
         rootMotionData:
           rootTX:
@@ -20958,12 +21060,20 @@ MonoBehaviour:
             m_PreInfinity: 2
             m_PostInfinity: 2
             m_RotationOrder: 4
+          totalTime: 0
+          totalTXDelta: 0
+          totalTYDelta: 0
+          totalTZDelta: 0
+          totalQXDelta: 0
+          totalQYDelta: 0
+          totalQZDelta: 0
+          totalQWDelta: 0
     - rid: 4945720422352290177
-      type: {class: ReadyToAttack, ns: , asm: Sciphone}
+      type: {class: ReadyToAttack, ns: , asm: Experimental}
       data:
         triggerTime: 0.592
     - rid: 4945720422352290178
-      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone}
+      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone.AnimationMachine}
       data:
         rootMotionData:
           rootTX:
@@ -21008,12 +21118,20 @@ MonoBehaviour:
             m_PreInfinity: 2
             m_PostInfinity: 2
             m_RotationOrder: 4
+          totalTime: 0
+          totalTXDelta: 0
+          totalTYDelta: 0
+          totalTZDelta: 0
+          totalQXDelta: 0
+          totalQYDelta: 0
+          totalQZDelta: 0
+          totalQWDelta: 0
     - rid: 4945720422352290179
-      type: {class: ReadyToAttack, ns: , asm: Sciphone}
+      type: {class: ReadyToAttack, ns: , asm: Experimental}
       data:
         triggerTime: 0.814
     - rid: 4945720422352290180
-      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone}
+      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone.AnimationMachine}
       data:
         rootMotionData:
           rootTX:
@@ -21058,12 +21176,20 @@ MonoBehaviour:
             m_PreInfinity: 2
             m_PostInfinity: 2
             m_RotationOrder: 4
+          totalTime: 0
+          totalTXDelta: 0
+          totalTYDelta: 0
+          totalTZDelta: 0
+          totalQXDelta: 0
+          totalQYDelta: 0
+          totalQZDelta: 0
+          totalQWDelta: 0
     - rid: 4945720422352290181
-      type: {class: ReadyToAttack, ns: , asm: Sciphone}
+      type: {class: ReadyToAttack, ns: , asm: Experimental}
       data:
         triggerTime: 0.338
     - rid: 4945720422352290182
-      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone}
+      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone.AnimationMachine}
       data:
         rootMotionData:
           rootTX:
@@ -21108,12 +21234,20 @@ MonoBehaviour:
             m_PreInfinity: 2
             m_PostInfinity: 2
             m_RotationOrder: 4
+          totalTime: 0
+          totalTXDelta: 0
+          totalTYDelta: 0
+          totalTZDelta: 0
+          totalQXDelta: 0
+          totalQYDelta: 0
+          totalQZDelta: 0
+          totalQWDelta: 0
     - rid: 4945720422352290183
-      type: {class: ReadyToAttack, ns: , asm: Sciphone}
+      type: {class: ReadyToAttack, ns: , asm: Experimental}
       data:
         triggerTime: 0.368
     - rid: 4945720422352290184
-      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone}
+      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone.AnimationMachine}
       data:
         rootMotionData:
           rootTX:
@@ -21158,12 +21292,20 @@ MonoBehaviour:
             m_PreInfinity: 2
             m_PostInfinity: 2
             m_RotationOrder: 4
+          totalTime: 0
+          totalTXDelta: 0
+          totalTYDelta: 0
+          totalTZDelta: 0
+          totalQXDelta: 0
+          totalQYDelta: 0
+          totalQZDelta: 0
+          totalQWDelta: 0
     - rid: 4945720422352290185
-      type: {class: ReadyToAttack, ns: , asm: Sciphone}
+      type: {class: ReadyToAttack, ns: , asm: Experimental}
       data:
         triggerTime: 0.446
     - rid: 4945720422352290186
-      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone}
+      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone.AnimationMachine}
       data:
         rootMotionData:
           rootTX:
@@ -21208,12 +21350,20 @@ MonoBehaviour:
             m_PreInfinity: 2
             m_PostInfinity: 2
             m_RotationOrder: 4
+          totalTime: 0
+          totalTXDelta: 0
+          totalTYDelta: 0
+          totalTZDelta: 0
+          totalQXDelta: 0
+          totalQYDelta: 0
+          totalQZDelta: 0
+          totalQWDelta: 0
     - rid: 4945720422352290187
-      type: {class: ReadyToAttack, ns: , asm: Sciphone}
+      type: {class: ReadyToAttack, ns: , asm: Experimental}
       data:
         triggerTime: 0.859
     - rid: 4945720422352290188
-      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone}
+      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone.AnimationMachine}
       data:
         rootMotionData:
           rootTX:
@@ -21258,12 +21408,20 @@ MonoBehaviour:
             m_PreInfinity: 2
             m_PostInfinity: 2
             m_RotationOrder: 4
+          totalTime: 0
+          totalTXDelta: 0
+          totalTYDelta: 0
+          totalTZDelta: 0
+          totalQXDelta: 0
+          totalQYDelta: 0
+          totalQZDelta: 0
+          totalQWDelta: 0
     - rid: 4945720422352290189
-      type: {class: ReadyToAttack, ns: , asm: Sciphone}
+      type: {class: ReadyToAttack, ns: , asm: Experimental}
       data:
         triggerTime: 0.602
     - rid: 4945720422352290190
-      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone}
+      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone.AnimationMachine}
       data:
         rootMotionData:
           rootTX:
@@ -21308,12 +21466,20 @@ MonoBehaviour:
             m_PreInfinity: 2
             m_PostInfinity: 2
             m_RotationOrder: 4
+          totalTime: 0
+          totalTXDelta: 0
+          totalTYDelta: 0
+          totalTZDelta: 0
+          totalQXDelta: 0
+          totalQYDelta: 0
+          totalQZDelta: 0
+          totalQWDelta: 0
     - rid: 4945720422352290191
-      type: {class: ReadyToAttack, ns: , asm: Sciphone}
+      type: {class: ReadyToAttack, ns: , asm: Experimental}
       data:
         triggerTime: 0.353
     - rid: 4945720422352290192
-      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone}
+      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone.AnimationMachine}
       data:
         rootMotionData:
           rootTX:
@@ -21358,12 +21524,20 @@ MonoBehaviour:
             m_PreInfinity: 2
             m_PostInfinity: 2
             m_RotationOrder: 4
+          totalTime: 0
+          totalTXDelta: 0
+          totalTYDelta: 0
+          totalTZDelta: 0
+          totalQXDelta: 0
+          totalQYDelta: 0
+          totalQZDelta: 0
+          totalQWDelta: 0
     - rid: 4945720422352290193
-      type: {class: ReadyToAttack, ns: , asm: Sciphone}
+      type: {class: ReadyToAttack, ns: , asm: Experimental}
       data:
         triggerTime: 0.21
     - rid: 4945720422352290194
-      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone}
+      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone.AnimationMachine}
       data:
         rootMotionData:
           rootTX:
@@ -21408,12 +21582,20 @@ MonoBehaviour:
             m_PreInfinity: 2
             m_PostInfinity: 2
             m_RotationOrder: 4
+          totalTime: 0
+          totalTXDelta: 0
+          totalTYDelta: 0
+          totalTZDelta: 0
+          totalQXDelta: 0
+          totalQYDelta: 0
+          totalQZDelta: 0
+          totalQWDelta: 0
     - rid: 4945720422352290195
-      type: {class: ReadyToAttack, ns: , asm: Sciphone}
+      type: {class: ReadyToAttack, ns: , asm: Experimental}
       data:
         triggerTime: 0.662
     - rid: 4945720422352290196
-      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone}
+      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone.AnimationMachine}
       data:
         rootMotionData:
           rootTX:
@@ -21458,12 +21640,20 @@ MonoBehaviour:
             m_PreInfinity: 2
             m_PostInfinity: 2
             m_RotationOrder: 4
+          totalTime: 0
+          totalTXDelta: 0
+          totalTYDelta: 0
+          totalTZDelta: 0
+          totalQXDelta: 0
+          totalQYDelta: 0
+          totalQZDelta: 0
+          totalQWDelta: 0
     - rid: 4945720422352290197
-      type: {class: ReadyToAttack, ns: , asm: Sciphone}
+      type: {class: ReadyToAttack, ns: , asm: Experimental}
       data:
         triggerTime: 0.743
     - rid: 4945720422352290198
-      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone}
+      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone.AnimationMachine}
       data:
         rootMotionData:
           rootTX:
@@ -21508,12 +21698,20 @@ MonoBehaviour:
             m_PreInfinity: 2
             m_PostInfinity: 2
             m_RotationOrder: 4
+          totalTime: 0
+          totalTXDelta: 0
+          totalTYDelta: 0
+          totalTZDelta: 0
+          totalQXDelta: 0
+          totalQYDelta: 0
+          totalQZDelta: 0
+          totalQWDelta: 0
     - rid: 4945720422352290199
-      type: {class: ReadyToAttack, ns: , asm: Sciphone}
+      type: {class: ReadyToAttack, ns: , asm: Experimental}
       data:
         triggerTime: 0.618
     - rid: 4945720422352290200
-      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone}
+      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone.AnimationMachine}
       data:
         rootMotionData:
           rootTX:
@@ -21558,12 +21756,20 @@ MonoBehaviour:
             m_PreInfinity: 2
             m_PostInfinity: 2
             m_RotationOrder: 4
+          totalTime: 0
+          totalTXDelta: 0
+          totalTYDelta: 0
+          totalTZDelta: 0
+          totalQXDelta: 0
+          totalQYDelta: 0
+          totalQZDelta: 0
+          totalQWDelta: 0
     - rid: 4945720422352290201
-      type: {class: ReadyToAttack, ns: , asm: Sciphone}
+      type: {class: ReadyToAttack, ns: , asm: Experimental}
       data:
         triggerTime: 0.784
     - rid: 4945720422352290202
-      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone}
+      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone.AnimationMachine}
       data:
         rootMotionData:
           rootTX:
@@ -21608,12 +21814,20 @@ MonoBehaviour:
             m_PreInfinity: 2
             m_PostInfinity: 2
             m_RotationOrder: 4
+          totalTime: 0
+          totalTXDelta: 0
+          totalTYDelta: 0
+          totalTZDelta: 0
+          totalQXDelta: 0
+          totalQYDelta: 0
+          totalQZDelta: 0
+          totalQWDelta: 0
     - rid: 4945720422352290203
-      type: {class: ReadyToAttack, ns: , asm: Sciphone}
+      type: {class: ReadyToAttack, ns: , asm: Experimental}
       data:
         triggerTime: 0.672
     - rid: 4945720422352290204
-      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone}
+      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone.AnimationMachine}
       data:
         rootMotionData:
           rootTX:
@@ -21658,12 +21872,20 @@ MonoBehaviour:
             m_PreInfinity: 2
             m_PostInfinity: 2
             m_RotationOrder: 4
+          totalTime: 0
+          totalTXDelta: 0
+          totalTYDelta: 0
+          totalTZDelta: 0
+          totalQXDelta: 0
+          totalQYDelta: 0
+          totalQZDelta: 0
+          totalQWDelta: 0
     - rid: 4945720422352290205
-      type: {class: ReadyToAttack, ns: , asm: Sciphone}
+      type: {class: ReadyToAttack, ns: , asm: Experimental}
       data:
         triggerTime: 0.72
     - rid: 4945720422352290206
-      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone}
+      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone.AnimationMachine}
       data:
         rootMotionData:
           rootTX:
@@ -21708,12 +21930,20 @@ MonoBehaviour:
             m_PreInfinity: 2
             m_PostInfinity: 2
             m_RotationOrder: 4
+          totalTime: 0
+          totalTXDelta: 0
+          totalTYDelta: 0
+          totalTZDelta: 0
+          totalQXDelta: 0
+          totalQYDelta: 0
+          totalQZDelta: 0
+          totalQWDelta: 0
     - rid: 4945720422352290207
-      type: {class: ReadyToAttack, ns: , asm: Sciphone}
+      type: {class: ReadyToAttack, ns: , asm: Experimental}
       data:
         triggerTime: 0.964
     - rid: 4945720422352290208
-      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone}
+      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone.AnimationMachine}
       data:
         rootMotionData:
           rootTX:
@@ -21758,12 +21988,20 @@ MonoBehaviour:
             m_PreInfinity: 2
             m_PostInfinity: 2
             m_RotationOrder: 4
+          totalTime: 0
+          totalTXDelta: 0
+          totalTYDelta: 0
+          totalTZDelta: 0
+          totalQXDelta: 0
+          totalQYDelta: 0
+          totalQZDelta: 0
+          totalQWDelta: 0
     - rid: 4945720422352290209
-      type: {class: ReadyToAttack, ns: , asm: Sciphone}
+      type: {class: ReadyToAttack, ns: , asm: Experimental}
       data:
         triggerTime: 0.887
     - rid: 4945720422352290210
-      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone}
+      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone.AnimationMachine}
       data:
         rootMotionData:
           rootTX:
@@ -21808,12 +22046,20 @@ MonoBehaviour:
             m_PreInfinity: 2
             m_PostInfinity: 2
             m_RotationOrder: 4
+          totalTime: 0
+          totalTXDelta: 0
+          totalTYDelta: 0
+          totalTZDelta: 0
+          totalQXDelta: 0
+          totalQYDelta: 0
+          totalQZDelta: 0
+          totalQWDelta: 0
     - rid: 4945720422352290211
-      type: {class: ReadyToAttack, ns: , asm: Sciphone}
+      type: {class: ReadyToAttack, ns: , asm: Experimental}
       data:
         triggerTime: 0.823
     - rid: 4945720422352290212
-      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone}
+      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone.AnimationMachine}
       data:
         rootMotionData:
           rootTX:
@@ -21858,12 +22104,20 @@ MonoBehaviour:
             m_PreInfinity: 2
             m_PostInfinity: 2
             m_RotationOrder: 4
+          totalTime: 0
+          totalTXDelta: 0
+          totalTYDelta: 0
+          totalTZDelta: 0
+          totalQXDelta: 0
+          totalQYDelta: 0
+          totalQZDelta: 0
+          totalQWDelta: 0
     - rid: 4945720422352290213
-      type: {class: ReadyToAttack, ns: , asm: Sciphone}
+      type: {class: ReadyToAttack, ns: , asm: Experimental}
       data:
         triggerTime: 0.82
     - rid: 4945720422352290214
-      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone}
+      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone.AnimationMachine}
       data:
         rootMotionData:
           rootTX:
@@ -21908,7 +22162,15 @@ MonoBehaviour:
             m_PreInfinity: 2
             m_PostInfinity: 2
             m_RotationOrder: 4
+          totalTime: 0
+          totalTXDelta: 0
+          totalTYDelta: 0
+          totalTZDelta: 0
+          totalQXDelta: 0
+          totalQYDelta: 0
+          totalQZDelta: 0
+          totalQWDelta: 0
     - rid: 4945720422352290215
-      type: {class: ReadyToAttack, ns: , asm: Sciphone}
+      type: {class: ReadyToAttack, ns: , asm: Experimental}
       data:
         triggerTime: 0.88

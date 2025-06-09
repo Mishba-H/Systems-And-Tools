@@ -1,14 +1,15 @@
 {
-    "name": "Sciphone",
-    "rootNamespace": "Sciphone",
+    "name": "Experimental",
+    "rootNamespace": "Experimental",
     "references": [
+        "GUID:75469ad4d38634e559750d17036d5f7c",
         "GUID:1b845e2499b39be4aab3e6ac2c8aa02a",
         "GUID:696a0953692949b40bec8730e64e1fdd",
-        "GUID:75469ad4d38634e559750d17036d5f7c",
-        "GUID:d8e7b33ba1e4a89fc8a64b6b1e97a6ac",
         "GUID:d1b444302b718f44cb143fec387f1e3e",
         "GUID:23117dc810931e14da96ee7d66e745ee",
-        "GUID:c81a0326bd3bb9c48851676efb024e77"
+        "GUID:c81a0326bd3bb9c48851676efb024e77",
+        "GUID:7644cd4e90fe54142af5f4837ae783e4",
+        "GUID:f3ff9dc0d4b4785489e67c6c298ccd4f"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

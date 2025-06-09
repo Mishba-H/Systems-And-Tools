@@ -8,7 +8,7 @@ using System.Linq;
 
 public class InputProcessor : MonoBehaviour
 {
-    public Action<InputSequenceType> OnProcessInput { get; internal set; }
+    public Action<InputSequenceType> OnProcessInput { get; set; }
 
     private InputReader inputReader;
 
@@ -35,7 +35,7 @@ public class InputProcessor : MonoBehaviour
     {
         inputReader.Subscribe("Move", OnMoveInput);
         inputReader.Subscribe("Attack", OnAttackInput);
-        inputReader.Subscribe("AttackAlt", OnAttackAltInput);
+        inputReader.Subscribe("AltAttack", OnAttackAltInput);
     }
 
     private void Update()

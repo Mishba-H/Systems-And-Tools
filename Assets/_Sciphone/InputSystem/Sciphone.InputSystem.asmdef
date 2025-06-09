@@ -1,7 +1,8 @@
 {
-    "name": "Sciphone.ComboGraph",
-    "rootNamespace": "Sciphone.ComboGraph",
+    "name": "Sciphone.InputSystem",
+    "rootNamespace": "",
     "references": [
+        "GUID:75469ad4d38634e559750d17036d5f7c",
         "GUID:23117dc810931e14da96ee7d66e745ee"
     ],
     "includePlatforms": [],

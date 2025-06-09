@@ -7,34 +7,39 @@ using static PlayerInputActions;
 public class InputReader : MonoBehaviour, IPlayerActions
 {
     public Dictionary<string, Action<InputAction.CallbackContext>> inputTable;
-    private PlayerInputActions inputActions;
+    private PlayerInput playerInput;
+    private PlayerInputActions playerInputActions;
 
     private void Awake()
     {
-        inputActions = new PlayerInputActions();
+        playerInputActions = new PlayerInputActions();
+        playerInput = GetComponent<PlayerInput>();
+        playerInput.actions = playerInputActions.asset;
 
-        inputTable = new();
-        inputTable.Add("Look", null);
-        inputTable.Add("Move", null);
-        inputTable.Add("Walk", null);
-        inputTable.Add("Sprint", null);
-        inputTable.Add("Crouch", null);
-        inputTable.Add("Jump", null);
-        inputTable.Add("Dodge", null);
-        inputTable.Add("Block", null);
-        inputTable.Add("Attack", null);
-        inputTable.Add("AttackAlt", null);
+        inputTable = new()
+        {
+            { "Look", null },
+            { "Move", null },
+            { "Walk", null },
+            { "Sprint", null },
+            { "Crouch", null },
+            { "Jump", null },
+            { "Dodge", null },
+            { "Block", null },
+            { "Attack", null },
+            { "AltAttack", null }
+        };
     }
 
     private void OnEnable()
     {
-        inputActions.Player.Enable();
-        inputActions.Player.SetCallbacks(this);
+        playerInputActions.Player.Enable();
+        playerInputActions.Player.SetCallbacks(this);
     }
 
     private void OnDisable()
     {
-        inputActions.Player.Disable();
+        playerInputActions.Player.Disable();
     }
 
     public void Subscribe(string inputName, Action<InputAction.CallbackContext> callback)
@@ -108,6 +113,6 @@ public class InputReader : MonoBehaviour, IPlayerActions
 
     public void OnAltAttack(InputAction.CallbackContext context)
     {
-        Invoke("AttackAlt", context);
+        Invoke("AltAttack", context);
     }
 }
