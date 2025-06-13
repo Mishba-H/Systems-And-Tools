@@ -131,7 +131,7 @@ public class AnimationMachine : MonoBehaviour
         activeState = newState;
 
         // This calculates root motion parameters for one frame when the active state is changed
-        /*if (enableStopMotion)
+        if (enableStopMotion)
         {
             var currNT = frameTime / activeState.length;
             var prevNT = 0f;
@@ -142,7 +142,7 @@ public class AnimationMachine : MonoBehaviour
             var currNT = Time.deltaTime / activeState.length;
             var prevNT = 0f;
             EvaluateRootMotionData(Time.deltaTime, currNT, prevNT);
-        }*/
+        }
 
         OnActiveStateChanged?.Invoke();
     }

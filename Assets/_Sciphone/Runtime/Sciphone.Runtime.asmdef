@@ -1,6 +1,6 @@
 {
     "name": "Sciphone.Runtime",
-    "rootNamespace": "Sciphone",
+    "rootNamespace": "Sciphone.Runtime",
     "references": [
         "GUID:696a0953692949b40bec8730e64e1fdd",
         "GUID:d1b444302b718f44cb143fec387f1e3e"

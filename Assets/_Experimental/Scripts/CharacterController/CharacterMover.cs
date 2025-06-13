@@ -130,7 +130,7 @@ public class CharacterMover : MonoBehaviour
         }
         else
         {
-            return 0f;
+            return maxStepHeight;
         }
     }
 

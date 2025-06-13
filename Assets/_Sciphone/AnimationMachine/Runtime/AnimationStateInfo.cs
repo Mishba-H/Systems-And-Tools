@@ -36,7 +36,7 @@ public abstract class AnimationStateInfo
 [Serializable]
 public class AnimationClipState : AnimationStateInfo
 {
-    public AnimationClip clip;
+    [ClipOrFBX] public AnimationClip clip;
     [PreviewAnimationClip(nameof(clip))] public float preview;
     public override void AddToGraph(PlayableGraph graph)
     {
@@ -83,11 +83,11 @@ public class AnimationClipState : AnimationStateInfo
 [Serializable]
 public class FourWayBlendState : AnimationStateInfo
 {
-    public AnimationClip Forward;
-    public AnimationClip Backward;
-    public AnimationClip Right;
-    public AnimationClip Left;
-    public AnimationClip Center;
+    [ClipOrFBX] public AnimationClip Forward;
+    [ClipOrFBX] public AnimationClip Backward;
+    [ClipOrFBX] public AnimationClip Right;
+    [ClipOrFBX] public AnimationClip Left;
+    [ClipOrFBX] public AnimationClip Center;
     [PreviewAnimationClip(nameof(Forward))] public float preview;
     [Range(-1f, 1f)] public float blendX;
     [Range(-1f, 1f)] public float blendY;
@@ -198,15 +198,15 @@ public class FourWayBlendState : AnimationStateInfo
 [Serializable]
 public class EightWayBlendState : AnimationStateInfo
 {
-    public AnimationClip ForwardLeft;
-    public AnimationClip Forward;
-    public AnimationClip ForwardRight;
-    public AnimationClip CenterLeft;
-    public AnimationClip Center;
-    public AnimationClip CenterRight;
-    public AnimationClip BackwardLeft;
-    public AnimationClip Backward;
-    public AnimationClip BackwardRight;
+    [ClipOrFBX] public AnimationClip ForwardLeft;
+    [ClipOrFBX] public AnimationClip Forward;
+    [ClipOrFBX] public AnimationClip ForwardRight;
+    [ClipOrFBX] public AnimationClip CenterLeft;
+    [ClipOrFBX] public AnimationClip Center;
+    [ClipOrFBX] public AnimationClip CenterRight;
+    [ClipOrFBX] public AnimationClip BackwardLeft;
+    [ClipOrFBX] public AnimationClip Backward;
+    [ClipOrFBX] public AnimationClip BackwardRight;
     [PreviewAnimationClip(nameof(Forward))] public float preview;
     [Range(-1f, 1f)] public float blendX;
     [Range(-1f, 1f)] public float blendY;
