@@ -4,6 +4,7 @@ using UnityEngine.Playables;
 using UnityEngine;
 using Sciphone;
 using UnityEngine.Animations;
+using UnityEngine.Scripting.APIUpdating;
 
 [Serializable]
 public abstract class AnimationStateInfo
@@ -11,12 +12,34 @@ public abstract class AnimationStateInfo
     public string stateName = "DefaultState";
     [SerializeReference, Polymorphic] public List<AnimationStateProperty> properties = new List<AnimationStateProperty>();
     [SerializeReference, Polymorphic] public List<IAnimationEvent> events;
+    [SerializeReference, Polymorphic] public List<IAnimationData> data;
     [HideInInspector] public AnimationMachine animMachine;
     [HideInInspector] public Playable playable;
     [HideInInspector] public float length;
     public virtual void AddToGraph(PlayableGraph graph) { }
     public virtual void ResetState(float normalizedTime = 0f) { }
-    public virtual float GetNormalizedTime() { return 0f; }
+    public float NormalizedTime()
+    {
+        if (TryGetProperty<PlayWindowProperty>(out AnimationStateProperty property))
+        {
+            var playWindow = (Vector2)property.Value;
+            var currentTime = (float)playable.GetTime() - playWindow.x * length;
+            var duration = (playWindow.y - playWindow.x) * length;
+            return currentTime / duration;
+        }
+        return (float)(playable.GetTime() / playable.GetDuration());
+    }
+    public float GetAdjustedNormalizedTime(float unadjustedTime)
+    {
+        if (TryGetProperty<PlayWindowProperty>(out AnimationStateProperty property))
+        {
+            var playWindow = (Vector2)property.Value;
+            var currentTime = unadjustedTime - playWindow.x;
+            var duration = playWindow.y - playWindow.x;
+            return currentTime / duration;
+        }
+        return unadjustedTime;
+    }
     public bool TryGetProperty<T>(out AnimationStateProperty property) where T : AnimationStateProperty
     {
         foreach (var prop in properties)
@@ -29,6 +52,20 @@ public abstract class AnimationStateInfo
             }
         }
         property = null;
+        return false;
+    }
+    public bool TryGetData<T>(out IAnimationData animData) where T : IAnimationData
+    {
+        foreach (var d in data)
+        {
+            if (d == null) continue;
+            if (d.GetType() == typeof(T))
+            {
+                animData = d;
+                return true;
+            }
+        }
+        animData = null;
         return false;
     }
 }
@@ -66,17 +103,6 @@ public class AnimationClipState : AnimationStateInfo
             playable.SetTime(normalizedTime * length);
         }
         animMachine.playableGraph.Evaluate(0f);
-    }
-    public override float GetNormalizedTime()
-    {
-        if (TryGetProperty<PlayWindowProperty>(out AnimationStateProperty property))
-        {
-            var playWindow = (Vector2)property.Value;
-            var currentTime = playable.GetTime() - playWindow.x * clip.length;
-            var duration = (playWindow.y - playWindow.x) * clip.length;
-            return (float)(currentTime / duration);
-        }
-        return (float)(playable.GetTime() / playable.GetDuration());
     }
 }
 
@@ -160,17 +186,6 @@ public class FourWayBlendState : AnimationStateInfo
             }
         }
         animMachine.playableGraph.Evaluate(0f);
-    }
-    public override float GetNormalizedTime()
-    {
-        if (TryGetProperty<PlayWindowProperty>(out AnimationStateProperty property))
-        {
-            var playWindow = (Vector2)property.Value;
-            var currentTime = playable.GetTime() - playWindow.x * length;
-            var duration = (playWindow.y - playWindow.x) * length;
-            return (float)(currentTime / duration);
-        }
-        return (float)(playable.GetTime() / playable.GetDuration());
     }
     public void UpdateWeights()
     {
@@ -286,17 +301,6 @@ public class EightWayBlendState : AnimationStateInfo
             }
         }
         animMachine.playableGraph.Evaluate(0f);
-    }
-    public override float GetNormalizedTime()
-    {
-        if (TryGetProperty<PlayWindowProperty>(out AnimationStateProperty property))
-        {
-            var playWindow = (Vector2)property.Value;
-            var currentTime = playable.GetTime() - playWindow.x * length;
-            var duration = (playWindow.y - playWindow.x) * length;
-            return (float)(currentTime / duration);
-        }
-        return (float)(playable.GetTime() / playable.GetDuration());
     }
     public void UpdateWeights()
     {

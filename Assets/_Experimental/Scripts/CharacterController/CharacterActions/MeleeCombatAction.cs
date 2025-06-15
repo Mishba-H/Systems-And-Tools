@@ -39,8 +39,7 @@ public class Evade : MeleeCombatAction
         if (parkourController != null)
         {
             var parkourExpression = (Expression<Func<bool>>)(() =>
-                !character.PerformingAction<ParkourAction>() &&
-                !character.PerformingAction<ClimbOverHigh>());
+                !character.PerformingAction<ParkourAction>());
             condition = CombineExpressions(condition, parkourExpression);
         }
         var meleeCombatController = character.GetControllerModule<MeleeCombatController>();
@@ -60,7 +59,7 @@ public class Evade : MeleeCombatAction
     {
         base.EvaluateStatus();
 
-        if (IsBeingPerformed && (MathF.Abs(character.animMachine.activeState.GetNormalizedTime() - 1f) < 0.01f))
+        if (IsBeingPerformed && (MathF.Abs(character.animMachine.activeState.NormalizedTime() - 1f) < 0.01f))
         {
             IsBeingPerformed = false;
         }
@@ -120,8 +119,7 @@ public class Roll : MeleeCombatAction
         if (parkourController != null)
         {
             var parkourExpression = (Expression<Func<bool>>)(() =>
-                !character.PerformingAction<ClimbOverLow>() &&
-                !character.PerformingAction<ClimbOverHigh>());
+                !character.PerformingAction<ParkourAction>());
             condition = CombineExpressions(condition, parkourExpression);
         }
         var meleeCombatController = character.GetControllerModule<MeleeCombatController>();
@@ -141,7 +139,7 @@ public class Roll : MeleeCombatAction
     {
         base.EvaluateStatus();
 
-        if (IsBeingPerformed && (MathF.Abs(character.animMachine.activeState.GetNormalizedTime() - 1f) < 0.01f))
+        if (IsBeingPerformed && (MathF.Abs(character.animMachine.activeState.NormalizedTime() - 1f) < 0.01f))
         {
             IsBeingPerformed = false;
         }
@@ -216,8 +214,7 @@ public class Attack : MeleeCombatAction
         if (parkourController != null)
         {
             var parkourExpression = (Expression<Func<bool>>)(() =>
-                !character.PerformingAction<ClimbOverLow>() &&
-                !character.PerformingAction<ClimbOverHigh>());
+                !character.PerformingAction<ParkourAction>());
             condition = CombineExpressions(condition, parkourExpression);
         }
         var meleeCombatController = character.GetControllerModule<MeleeCombatController>();
@@ -245,7 +242,7 @@ public class Attack : MeleeCombatAction
             IsBeingPerformed = controller.TrySelectAttack(controller.cachedAttack);
         }
 
-        if (IsBeingPerformed && character.animMachine.activeState.GetNormalizedTime() >= 1f)
+        if (IsBeingPerformed && character.animMachine.activeState.NormalizedTime() >= 1f)
         {
             IsBeingPerformed = false;
         }

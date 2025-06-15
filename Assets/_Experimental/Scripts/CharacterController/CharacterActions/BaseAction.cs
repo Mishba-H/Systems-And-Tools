@@ -35,8 +35,7 @@ public class Idle : BaseAction
         if (parkourController != null)
         {
             var parkourExpression = (Expression<Func<bool>>)(() =>
-                !character.PerformingAction<ClimbOverLow>() &&
-                !character.PerformingAction<ClimbOverHigh>());
+                !character.PerformingAction<ParkourAction>());
             condition = CombineExpressions(condition, parkourExpression);
         }
         var meleeCombatController = character.GetControllerModule<MeleeCombatController>();
@@ -105,8 +104,7 @@ public class Walk : BaseAction
         if (parkourController != null)
         {
             var parkourExpression = (Expression<Func<bool>>)(() =>
-                !character.PerformingAction<ClimbOverLow>() &&
-                !character.PerformingAction<ClimbOverHigh>());
+                !character.PerformingAction<ParkourAction>());
             condition = CombineExpressions(condition, parkourExpression);
         }
         var meleeCombatController = character.GetControllerModule<MeleeCombatController>();
@@ -196,8 +194,7 @@ public class Run : BaseAction
         if (parkourController != null)
         {
             var parkourExpression = (Expression<Func<bool>>)(() =>
-                !character.PerformingAction<ClimbOverLow>() &&
-                !character.PerformingAction<ClimbOverHigh>());
+                !character.PerformingAction<ParkourAction>());
             condition = CombineExpressions(condition, parkourExpression);
         }
         var meleeCombatController = character.GetControllerModule<MeleeCombatController>();
@@ -288,8 +285,7 @@ public class Sprint : BaseAction
         if (parkourController != null)
         {
             var parkourExpression = (Expression<Func<bool>>)(() =>
-                !character.PerformingAction<ClimbOverLow>() &&
-                !character.PerformingAction<ClimbOverHigh>());
+                !character.PerformingAction<ParkourAction>());
             condition = CombineExpressions(condition, parkourExpression);
         }
         var meleeCombatController = character.GetControllerModule<MeleeCombatController>();
@@ -380,8 +376,7 @@ public class Crouch : BaseAction
         if (parkourController != null)
         {
             var parkourExpression = (Expression<Func<bool>>)(() =>
-                !character.PerformingAction<ClimbOverLow>() &&
-                !character.PerformingAction<ClimbOverHigh>());
+                !character.PerformingAction<ParkourAction>());
             condition = CombineExpressions(condition, parkourExpression);
         }
         var meleeCombatController = character.GetControllerModule<MeleeCombatController>();
@@ -464,10 +459,8 @@ public class Jump : BaseAction
         if (parkourController != null)
         {
             var parkourExpression = (Expression<Func<bool>>)(() =>
-                !character.CanPerformAction<ClimbOverLow>() &&
-                !character.CanPerformAction<ClimbOverHigh>() &&
-                !character.PerformingAction<ClimbOverLow>() &&
-                !character.PerformingAction<ClimbOverHigh>());
+                !character.PerformingAction<ParkourAction>() &&
+                !character.CanPerformAction<ClimbOverFromGround>());
             condition = CombineExpressions(condition, parkourExpression);
         }
         var meleeCombatController = character.GetControllerModule<MeleeCombatController>();
@@ -568,10 +561,8 @@ public class AirJump : BaseAction
         if (parkourController != null)
         {
             var parkourExpression = (Expression<Func<bool>>)(() =>
-                !character.CanPerformAction<ClimbOverLow>() &&
-                !character.CanPerformAction<ClimbOverHigh>() &&
-                !character.PerformingAction<ClimbOverLow>() &&
-                !character.PerformingAction<ClimbOverHigh>());
+                !character.PerformingAction<ParkourAction>() &&
+                !character.CanPerformAction<ClimbOverFromGround>());
             condition = CombineExpressions(condition, parkourExpression);
         }
         var meleeCombatController = character.GetControllerModule<MeleeCombatController>();
@@ -672,8 +663,7 @@ public class Fall : BaseAction
         if (parkourController != null)
         {
             var parkourExpression = (Expression<Func<bool>>)(() =>
-                !character.PerformingAction<ClimbOverLow>() &&
-                !character.PerformingAction<ClimbOverHigh>());
+                !character.PerformingAction<ParkourAction>());
             condition = CombineExpressions(condition, parkourExpression);
         }
         var meleeCombatController = character.GetControllerModule<MeleeCombatController>();

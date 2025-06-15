@@ -7,11 +7,12 @@ using UnityEngine;
 [SelectionBase]
 public class Character : MonoBehaviour
 {
-    public event Action OnCharacterUpdate;
-    public event Action OnCharacterFixedUpdate;
+    public event Action DetectionLoop;
+    public event Action UpdateLoop;
+    public event Action FixedUpdateLoop;
 
     public float time = 0.0f;
-    [Range(0f, 3f)] public float timeScale = 1f;
+    [Range(0.001f, 3f)] public float timeScale = 1f;
 
     public List<IControllerModule> modules;
     [SerializeReference, Polymorphic] public List<CharacterAction> actions;
@@ -73,20 +74,25 @@ public class Character : MonoBehaviour
     private void Update()
     {
         SynchronizeTime();
+
+        DetectionLoop?.Invoke();
         EvaluateAndUpdateAllActions();
-        OnCharacterUpdate?.Invoke();
+        if (!PerformingAction<CharacterAction>())
+        {
+            EvaluateAndUpdateAllActions();
+        }
+        UpdateLoop?.Invoke();
     }
 
     private void FixedUpdate()
     {
         EvaluateAndFixedUpdateAllActions();
-        OnCharacterFixedUpdate?.Invoke();
+        FixedUpdateLoop?.Invoke();
     }
 
     private void SynchronizeTime()
     {
         time += Time.deltaTime * timeScale;
-
         animMachine.timeScale = timeScale;
     }
 

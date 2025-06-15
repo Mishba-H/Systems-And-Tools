@@ -14,19 +14,16 @@ public class AnimationMachine : MonoBehaviour
 
     private Animator animator;
 
-    public string graphName = "Playable Graph";
-
-    [Range(0f, 3f)] public float timeScale;
-
-    public bool enableStopMotion;
-    [Range(1, 60)] public int frameRate = 60;
-    private float frameTime;
-    private float accumulatedTime = 0f;
+    [TabGroup("Graph Settings")] public string graphName = "Playable Graph";
+    [TabGroup("Graph Settings")][Range(0.001f, 3f)] public float timeScale = 1f;
+    [TabGroup("Graph Settings")] public bool enableStopMotion;
+    [TabGroup("Graph Settings")][Range(1, 60)] public int stopMotionRate = 60;
+    [TabGroup("Graph Settings")] public float stepTime;
+    [TabGroup("Graph Settings")] public float accumulatedTime = 0f;
 
     public PlayableGraph playableGraph;
     public AnimationPlayableOutput playableOutput;
     public AnimationLayerMixerPlayable layerMixer;
-    [SerializeReference, Polymorphic] public List<AnimationLayerInfo> layers;
 
     public AnimationStateInfo activeState;
 
@@ -38,10 +35,12 @@ public class AnimationMachine : MonoBehaviour
 
     private float currNT;
     private float prevNT;
-    [FoldoutGroup("Root Motion Properties")] public Vector3 rootDeltaPosition;
-    [FoldoutGroup("Root Motion Properties")] public Quaternion rootDeltaRotation;
-    [FoldoutGroup("Root Motion Properties")] public Vector3 rootLinearVelocity;
-    [FoldoutGroup("Root Motion Properties")] public Vector3 rootAngularVelocity;
+    [TabGroup("Root Motion Properties")] public Vector3 rootDeltaPosition;
+    [TabGroup("Root Motion Properties")] public Quaternion rootDeltaRotation;
+    [TabGroup("Root Motion Properties")] public Vector3 rootLinearVelocity;
+    [TabGroup("Root Motion Properties")] public Vector3 rootAngularVelocity;
+
+    [SerializeReference, Polymorphic] public List<AnimationLayerInfo> layers;
 
 
     private void Awake()
@@ -130,19 +129,19 @@ public class AnimationMachine : MonoBehaviour
         
         activeState = newState;
 
-        // This calculates root motion parameters for one frame when the active state is changed
+        /*// This calculates root motion parameters for one frame when the active state is changed
         if (enableStopMotion)
         {
-            var currNT = frameTime / activeState.length;
+            var currNT = stepTime / activeState.length;
             var prevNT = 0f;
-            EvaluateRootMotionData(frameTime, currNT, prevNT);
+            EvaluateRootMotionData(stepTime, currNT, prevNT);
         }
         else
         {
-            var currNT = Time.deltaTime / activeState.length;
+            var currNT = Time.deltaTime * timeScale / activeState.length;
             var prevNT = 0f;
-            EvaluateRootMotionData(Time.deltaTime, currNT, prevNT);
-        }
+            EvaluateRootMotionData(Time.deltaTime * timeScale, currNT, prevNT);
+        }*/
 
         OnActiveStateChanged?.Invoke();
     }
@@ -151,14 +150,14 @@ public class AnimationMachine : MonoBehaviour
     {
         if (enableStopMotion)
         {
-            frameTime = 1f / frameRate;
+            stepTime = 1f / stopMotionRate;
             accumulatedTime += dt * timeScale;
-            while (accumulatedTime > frameTime)
+            while (accumulatedTime > stepTime)
             {
-                accumulatedTime -= frameTime;
-                playableGraph.Evaluate(frameTime);
-                HandleLooping(frameTime);
-                OnGraphEvaluate?.Invoke(frameTime);
+                accumulatedTime -= stepTime;
+                playableGraph.Evaluate(stepTime);
+                HandleLooping(stepTime);
+                OnGraphEvaluate?.Invoke(stepTime);
             }
         }
         else
@@ -171,12 +170,12 @@ public class AnimationMachine : MonoBehaviour
 
     public void HandleLooping(float evaluationTime)
     {
-        currNT = activeState.GetNormalizedTime();
+        currNT = activeState.NormalizedTime();
         if (currNT == 1f)
         {
             if (activeState.TryGetProperty<LoopProperty>(out _))
             {
-                var overflowTime = PrecidctOverflowTime(activeState, prevNT, enableStopMotion ? frameTime : Time.deltaTime * timeScale);
+                var overflowTime = PrecidctOverflowTime(activeState, prevNT, enableStopMotion ? stepTime : Time.deltaTime * timeScale);
                 currNT = overflowTime / activeState.length;
                 activeState.ResetState(currNT);
             }
@@ -354,7 +353,7 @@ public class AnimationMachine : MonoBehaviour
         layerMixer.SetInputWeight(layerMixer.GetInputCount() - 1, 1);
 
         // Wait until clip ends
-        while (state.GetNormalizedTime() < 1f)
+        while (state.NormalizedTime() < 1f)
             yield return null;
 
         // Blend Out
@@ -439,7 +438,7 @@ public class AnimationMachine : MonoBehaviour
     }
 
 #if UNITY_EDITOR
-    [Button(nameof(InititalizeRootMotionProperty))]
+    //[Button(nameof(InititalizeRootMotionProperty))]
     public void InititalizeRootMotionProperty()
     {
         foreach (var layer in layers)
@@ -474,19 +473,19 @@ public class AnimationMachine : MonoBehaviour
         UnityEditor.AssetDatabase.SaveAssets();
     }
 
-    [Button(nameof(ImportLayersFromAsset))]
+    //[Button(nameof(ImportLayersFromAsset))]
     public void ImportLayersFromAsset(ScriptableAnimationMachineAsset asset)
     {
         this.layers = asset.layers;
     }
 
-    [Button(nameof(ExportLayersToAsset))]
+    //[Button(nameof(ExportLayersToAsset))]
     public void ExportLayersToAsset(ScriptableAnimationMachineAsset asset)
     {
         asset.layers = this.layers;
 
         UnityEditor.EditorUtility.SetDirty(asset);
         UnityEditor.AssetDatabase.SaveAssets();
-#endif
     }
+#endif
 }

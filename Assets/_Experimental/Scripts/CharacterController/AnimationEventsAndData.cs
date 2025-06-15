@@ -1,4 +1,11 @@
 using System;
+using UnityEngine;
+
+[Serializable]
+public class TimeOfContactData : IAnimationData
+{
+    public float timeOfContact;
+}
 
 [Serializable]
 public class ChangeAnimationState : TriggerEvent
@@ -26,7 +33,7 @@ public class ReadyToAttack : TriggerEvent
     }
 }
 
-[Serializable]
+/*[Serializable]
 public class ReadAttackInput : WindowEvent
 {
     public override void OnEventStarted()
@@ -38,7 +45,7 @@ public class ReadAttackInput : WindowEvent
     {
         base.OnEventFinished();
     }
-}
+}*/
 
 [Serializable]
 public class TriggerNextAttack : TriggerEvent

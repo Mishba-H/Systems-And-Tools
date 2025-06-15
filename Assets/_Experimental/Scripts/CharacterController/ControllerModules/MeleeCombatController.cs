@@ -60,7 +60,7 @@ public class MeleeCombatController : MonoBehaviour, IControllerModule
     {
         character.characterCommand.MoveDirCommand += OnMoveDirCommand;
 
-        character.OnCharacterUpdate += OnCharacterUpdate;
+        character.UpdateLoop += OnCharacterUpdate;
         foreach (var action in character.actions)
         {
             if (action is Evade || action is Roll || action is Attack)
@@ -132,22 +132,22 @@ public class MeleeCombatController : MonoBehaviour, IControllerModule
         if (relativeDodgeDir == Vector2.up)
         {
             worldDeltaPosition = scaledDeltaPosition.x * right + scaledDeltaPosition.y * up + scaledDeltaPosition.z * forward;
-            moveAmount = character.characterMover.ProcessCollideAndSlide(worldDeltaPosition, false);
+            moveAmount = character.characterMover.ProcessCollideAndSlide(worldDeltaPosition);
         }
         else if (relativeDodgeDir == Vector2.down)
         {
             worldDeltaPosition = scaledDeltaPosition.x * -right + scaledDeltaPosition.y * up + scaledDeltaPosition.z * -forward;
-            moveAmount = character.characterMover.ProcessCollideAndSlide(worldDeltaPosition, false);
+            moveAmount = character.characterMover.ProcessCollideAndSlide(worldDeltaPosition);
         }
         else if (relativeDodgeDir == Vector2.right)
         {
             worldDeltaPosition = scaledDeltaPosition.x * -forward + scaledDeltaPosition.y * up + scaledDeltaPosition.z * right;
-            moveAmount = character.characterMover.ProcessCollideAndSlide(worldDeltaPosition, false);
+            moveAmount = character.characterMover.ProcessCollideAndSlide(worldDeltaPosition);
         }
         else if (relativeDodgeDir == Vector2.left)
         {
             worldDeltaPosition = scaledDeltaPosition.x * forward + scaledDeltaPosition.y * up + scaledDeltaPosition.z * -right;
-            moveAmount = character.characterMover.ProcessCollideAndSlide(worldDeltaPosition, false);
+            moveAmount = character.characterMover.ProcessCollideAndSlide(worldDeltaPosition);
         }
 
         character.characterMover.SetWorldVelocity(moveAmount / dt);
@@ -167,7 +167,7 @@ public class MeleeCombatController : MonoBehaviour, IControllerModule
         Vector3 moveAmount = Vector3.zero;
 
         worldDeltaPosition = scaledDeltaPosition.x * right + scaledDeltaPosition.y * up + scaledDeltaPosition.z * forward;
-        moveAmount = character.characterMover.ProcessCollideAndSlide(worldDeltaPosition, false);
+        moveAmount = character.characterMover.ProcessCollideAndSlide(worldDeltaPosition);
 
         character.characterMover.SetWorldVelocity(moveAmount / dt);
     }

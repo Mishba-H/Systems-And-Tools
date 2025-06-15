@@ -1,6 +1,10 @@
 using System;
 using UnityEngine;
 
+public interface IAnimationData
+{
+}
+
 public interface IAnimationEvent
 {
     GameObject GameObject { get; set; }

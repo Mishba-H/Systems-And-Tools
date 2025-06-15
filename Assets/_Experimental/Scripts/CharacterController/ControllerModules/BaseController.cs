@@ -55,7 +55,7 @@ public class BaseController : MonoBehaviour, IControllerModule
         character.characterCommand.FaceDirCommand += CharacterCommand_FaceDirCommand;
         character.characterCommand.MoveDirCommand += CharacterCommand_MoveDirCommand;
 
-        character.OnCharacterUpdate += OnCharacterUpdate;
+        character.UpdateLoop += OnCharacterUpdate;
         foreach (var action in character.actions)
         {
             if (action is Idle || action is Walk || action is Run || action is Sprint || action is Crouch)
@@ -159,7 +159,7 @@ public class BaseController : MonoBehaviour, IControllerModule
 
             Vector3 worldDeltaPostition = scaledDeltaPosition.x * right + scaledDeltaPosition.y * up + scaledDeltaPosition.z * forward;
 
-            moveAmount = character.characterMover.ProcessCollideAndSlide(worldDeltaPostition, false);
+            moveAmount = character.characterMover.ProcessCollideAndSlide(worldDeltaPostition);
             moveRatio = worldDeltaPostition == Vector3.zero ? 0 : moveAmount.sqrMagnitude / worldDeltaPostition.sqrMagnitude;
         }
         else if (movementMode == MovementMode.EightWay)
@@ -174,7 +174,7 @@ public class BaseController : MonoBehaviour, IControllerModule
 
             Vector3 worldDeltaPosition = scaledDeltaPosition.x * right + scaledDeltaPosition.y * up + scaledDeltaPosition.z * forward;
 
-            moveAmount = character.characterMover.ProcessCollideAndSlide(worldDeltaPosition, false);
+            moveAmount = character.characterMover.ProcessCollideAndSlide(worldDeltaPosition);
             moveRatio = worldDeltaPosition == Vector3.zero ? 0 : moveAmount.sqrMagnitude / worldDeltaPosition.sqrMagnitude;
         }
         character.characterMover.SetWorldVelocity(moveAmount / dt);

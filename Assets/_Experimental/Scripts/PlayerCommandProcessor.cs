@@ -150,6 +150,7 @@ public class PlayerCommandProcessor : MonoBehaviour
         if (context.performed)
         {
             characterCommand.InvokeJumpCommand();
+            characterCommand.InvokeParkourUpCommand();
         }
     }
 
@@ -158,6 +159,7 @@ public class PlayerCommandProcessor : MonoBehaviour
         if (context.performed)
         {
             characterCommand.InvokeDodgeCommand();
+            characterCommand.InvokeParkourDownCommand();
         }
     }
 

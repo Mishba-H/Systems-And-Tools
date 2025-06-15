@@ -12,15 +12,15 @@ using Physics = UnityEngine.Physics;
 
 public class CameraController : MonoBehaviour
 {
-    public static CameraController instance;
+    [Range(0.001f, 3f)] public float timeScale = 1f;
 
     public Transform cameraTransform;
     public Transform playerTransform;
-    public LayerMask collisionLayer;
+    public LayerMask cameraCollisionLayer;
 
     [SerializeField] internal InputReader inputReader;
 
-    [SerializeReference, Polymorphic] public BaseCameraMode[] cameraModes;
+    [SerializeReference, Polymorphic] public ICameraMode[] cameraModes;
     public ICameraMode currentCameraMode;
 
     private void Start()
@@ -55,8 +55,8 @@ public interface ICameraMode
 {
     public void Initialize(CameraController controller);
     public void HandleLookInput(CameraController controller, float dt);
-    public void HandlePivotPosition(CameraController controller, float dt); // Adjusts position for camera pivot/ holder
-    public void HandlePivotRotation(CameraController controller, float dt); // Adjusts rotations for camera pivot/ holder
+    public void HandlePivotPosition(CameraController controller, float dt);
+    public void HandlePivotRotation(CameraController controller, float dt);
     public void HandleCamera(CameraController controller, float dt); // Moves the camera in case of collisions
     public IEnumerator SetCameraTransform(CameraController controller); 
 }
@@ -98,7 +98,7 @@ public abstract class BaseCameraMode : ICameraMode
 
         cameraTransform = controller.cameraTransform;
         followTarget = controller.playerTransform;
-        collisionLayer = controller.collisionLayer;
+        collisionLayer = controller.cameraCollisionLayer;
 
         controller.StartCoroutine(SetCameraTransform(controller));
     }

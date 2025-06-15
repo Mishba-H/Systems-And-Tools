@@ -16,25 +16,6 @@ public class CharacterDetector : MonoBehaviour
         character = GetComponent<Character>();
     }
 
-    [TabGroup("Climb")] public LayerMask climbLayer;
-    [TabGroup("Climb")] public int climbCheckerCount = 3;
-    [TabGroup("Climb")] public float climbCheckerInterval = 0.1f;
-    [TabGroup("Climb")] public float climbCheckerHeight;
-    [TabGroup("Climb")] public float climbCheckerDepth;
-    public bool DetectClimbPoint(out RaycastHit climbHit)
-    {
-        climbHit = new RaycastHit();
-        var pos = transform.position + Vector3.up * climbCheckerHeight;
-        for (int i = 0; i < climbCheckerCount; i++)
-        {
-            if (Physics.Raycast(pos + climbCheckerInterval * i * transform.forward, Vector3.down, out climbHit, climbCheckerDepth, climbLayer))
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-
     [TabGroup("Wall")] public LayerMask wallLayer;
     [TabGroup("Wall")] public float startingHeight;
     [TabGroup("Wall")] public float wallCheckerInterval;
