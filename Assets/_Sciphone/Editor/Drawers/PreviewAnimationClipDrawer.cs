@@ -34,9 +34,6 @@ namespace Sciphone
             Animator animator = target?.GetComponent<Animator>();
             if (animator)
             {
-                /*float time = progress * clip.length;
-                AnimationMode.StartAnimationMode();
-                AnimationMode.SampleAnimationClip(Selection.activeGameObject, clip, time); */
                 var hips = animator.GetBoneTransform(HumanBodyBones.Hips);
                 var hipsPosition = hips.position;
                 clip.SampleAnimation(target, progress * clip.length);

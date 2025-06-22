@@ -818,6 +818,7 @@ PlayerSettings:
   webGLCloseOnQuit: 0
   webWasm2023: 0
   scriptingDefineSymbols:
+    Android: TOOLBOX_FORCE_DEFAULT_LISTS
     Standalone: TOOLBOX_FORCE_DEFAULT_LISTS
   additionalCompilerArguments: {}
   platformArchitecture: {}

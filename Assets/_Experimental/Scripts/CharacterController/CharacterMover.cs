@@ -1,8 +1,6 @@
 using System;
-using Nomnom.RaycastVisualization;
 using Sciphone;
 using UnityEngine;
-using UnityEngine.InputSystem.HID;
 
 #if UNITY_EDITOR
 using Physics = Nomnom.RaycastVisualization.VisualPhysics;
@@ -234,7 +232,8 @@ public class CharacterMover : MonoBehaviour
                 }
             }
 
-            if (Physics.Raycast(pos + transform.up * skinWidth, moveDir, out RaycastHit lowerStepHit, checkDistance + skinWidth) &&
+            if (Physics.Raycast(pos + transform.up * skinWidth, moveDir, out RaycastHit lowerStepHit, 
+                checkDistance + skinWidth, groundLayer, QueryTriggerInteraction.Ignore) &&
                 Vector3.Angle(lowerStepHit.normal, transform.up) > criticalSlopeAngle &&
                 Vector3.ProjectOnPlane(lowerStepHit.distance * moveDir, transform.up).magnitude <= capsuleRadius)
             {
@@ -243,7 +242,7 @@ public class CharacterMover : MonoBehaviour
                 if (wallAngle <= criticalWallAngle)
                 {
                     //Debug.Log(depth + "will stop against wall");
-                    return Vector3.zero;
+                    return lowerStepHit.normal;
                 }
                 else
                 {
@@ -252,7 +251,7 @@ public class CharacterMover : MonoBehaviour
                     float leftOverMagnitude = leftOverMovement.magnitude;
                     leftOverMovement = Vector3.ProjectOnPlane(leftOverMovement, wallNormal);
                     leftOverMovement = Vector3.ProjectOnPlane(leftOverMovement, transform.up);
-                    return CollideAndSlide(leftOverMovement, initialMoveDir, pos, leftOverMagnitude, gravityPass, depth + 1);
+                    return lowerStepHit.normal + CollideAndSlide(leftOverMovement, initialMoveDir, pos, leftOverMagnitude, gravityPass, depth + 1);
                 }
             }
 
@@ -307,7 +306,7 @@ public class CharacterMover : MonoBehaviour
         var groundCheckerDepth = GetGroundCheckerDepth();
 
         if (Physics.Raycast(pos + transform.up * (maxStepHeight + skinWidth),
-            -transform.up, out groundHit, maxStepHeight + skinWidth + groundCheckerDepth, groundLayer))
+            -transform.up, out groundHit, maxStepHeight + skinWidth + groundCheckerDepth, groundLayer, QueryTriggerInteraction.Ignore))
         {
             if (Vector3.Angle(groundHit.normal, transform.up) <= criticalSlopeAngle)
             {
@@ -323,7 +322,7 @@ public class CharacterMover : MonoBehaviour
                 float angle = j * angleStep;
                 Vector3 direction = Quaternion.AngleAxis(angle, transform.up) * transform.forward;
                 Vector3 rayStart = pos + transform.up * (maxStepHeight + skinWidth) + direction * radius;
-                if (Physics.Raycast(rayStart, -transform.up, out groundHit, maxStepHeight + skinWidth + groundCheckerDepth, groundLayer))
+                if (Physics.Raycast(rayStart, -transform.up, out groundHit, maxStepHeight + skinWidth + groundCheckerDepth, groundLayer, QueryTriggerInteraction.Ignore))
                 {
                     if (Vector3.Angle(groundHit.normal, transform.up) <= criticalSlopeAngle)
                     {
@@ -364,7 +363,7 @@ public class CharacterMover : MonoBehaviour
             upwardsRoom = maxStepHeight - skinWidth;
 
         RaycastHit upperStepHit = new RaycastHit();
-        if (Physics.Raycast(pos + transform.up * skinWidth, moveDir, out lowerStepHit, distance) &&
+        if (Physics.Raycast(pos + transform.up * skinWidth, moveDir, out lowerStepHit, distance, groundLayer, QueryTriggerInteraction.Ignore) &&
             Vector3.Angle(lowerStepHit.normal, transform.up) > criticalSlopeAngle)
         {
             bool allRaysHit = true;
@@ -373,8 +372,8 @@ public class CharacterMover : MonoBehaviour
             Vector3 lowerStepNormal = Vector3.ProjectOnPlane(lowerStepHit.normal, transform.up);
             for (int i = 0; i <= stepCheckerCount; i++)
             {
-                if (!(Physics.Raycast(lowerStepHit.point + i * seperation * transform.up + lowerStepNormal * skinWidth,
-                    -lowerStepNormal, out upperStepHit, distance - lowerStepHit.distance + skinWidth) &&
+                if (!(Physics.Raycast(lowerStepHit.point + i * seperation * transform.up + lowerStepNormal * skinWidth, -lowerStepNormal, out upperStepHit,
+                    distance - lowerStepHit.distance + skinWidth, groundLayer, QueryTriggerInteraction.Ignore) &&
                     Vector3.Angle(upperStepHit.normal, transform.up) > criticalSlopeAngle))
                 {
                     allRaysHit = false;
@@ -385,7 +384,8 @@ public class CharacterMover : MonoBehaviour
 
             if (allRaysHit)
             {
-                if (Physics.Raycast(upperStepHit.point + lowerStepNormal * skinWidth, -transform.up, out RaycastHit stepSurfaceHit, maxStepHeight + skinWidth) &&
+                if (Physics.Raycast(upperStepHit.point + lowerStepNormal * skinWidth, -transform.up, out RaycastHit stepSurfaceHit, maxStepHeight + skinWidth, 
+                    groundLayer, QueryTriggerInteraction.Ignore) &&
                     Vector3.Angle(stepSurfaceHit.normal, transform.up) <= criticalSlopeAngle)
                 {
                     stepHeight = Vector3.Dot(stepSurfaceHit.point - lowerStepHit.point, transform.up);
@@ -400,12 +400,12 @@ public class CharacterMover : MonoBehaviour
             else
             {
                 if (Physics.Raycast(lowerStepHit.point + notHitIndex * seperation * transform.up - lowerStepNormal * skinWidth,
-                    -transform.up, out RaycastHit stepSurfaceHit, maxStepHeight + skinWidth * 2f) &&
+                    -transform.up, out RaycastHit stepSurfaceHit, maxStepHeight + skinWidth * 2f, groundLayer, QueryTriggerInteraction.Ignore) &&
                     Vector3.Angle(stepSurfaceHit.normal, transform.up) <= criticalSlopeAngle)
                 {
                     stepHeight = Vector3.Dot(stepSurfaceHit.point - lowerStepHit.point, transform.up);
                     stepWidth = stepHeight / Mathf.Tan(criticalSlopeAngle * Mathf.Deg2Rad); // Min Required width to be a step
-                    if (!Physics.Raycast(stepSurfaceHit.point, -lowerStepNormal, stepWidth - skinWidth))
+                    if (!Physics.Raycast(stepSurfaceHit.point, -lowerStepNormal, stepWidth - skinWidth, groundLayer, QueryTriggerInteraction.Ignore))
                     {
                         return true;
                     }
@@ -447,11 +447,13 @@ public class CharacterMover : MonoBehaviour
         for (int i = 0; i < noOfSpheres; i++)
         {
             Vector3 center = point1 + i * seperation * point1to2.normalized;
-            if (Physics.SphereCast(center, capsuleRadius - skinWidth, sweepDir, out RaycastHit sphereHit, sweepDistance) && sphereHit.distance < capsuleHit.distance)
+            if (Physics.SphereCast(center, capsuleRadius - skinWidth, sweepDir, out RaycastHit sphereHit, sweepDistance,
+                groundLayer, QueryTriggerInteraction.Ignore) &&
+                sphereHit.distance < capsuleHit.distance)
             {
                 capsuleHit = sphereHit;
                 Vector3 centerAtHit = center + sphereHit.distance * sweepDir;
-                if (Physics.Raycast(centerAtHit, -sphereHit.normal, out surfaceHit, capsuleRadius))
+                if (Physics.Raycast(centerAtHit, -sphereHit.normal, out surfaceHit, capsuleRadius, groundLayer, QueryTriggerInteraction.Ignore))
                 {
                     returnValue = true;
                 }
@@ -492,9 +494,17 @@ public class CharacterMover : MonoBehaviour
     {
         if (value != simulateGravity)
         {
-            currentPosition = transform.position;
-            previousPosition = currentPosition;
             simulateGravity = value;
+            if (value)
+            {
+                currentPosition = transform.position;
+                previousPosition = currentPosition;
+            }
+            else
+            {
+                previousPosition = currentPosition;
+                currentPosition = transform.position;
+            }
         }
     }
 

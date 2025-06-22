@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 
 [Serializable]
-public class TimeOfContactData : IAnimationData
+public class TimeOfContact : IAnimationData
 {
     public float timeOfContact;
 }
@@ -32,20 +32,6 @@ public class ReadyToAttack : TriggerEvent
         }
     }
 }
-
-/*[Serializable]
-public class ReadAttackInput : WindowEvent
-{
-    public override void OnEventStarted()
-    {
-        base.OnEventStarted();
-    }
-
-    public override void OnEventFinished()
-    {
-        base.OnEventFinished();
-    }
-}*/
 
 [Serializable]
 public class TriggerNextAttack : TriggerEvent

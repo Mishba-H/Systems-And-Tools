@@ -2,7 +2,7 @@ using System;
 using System.Linq.Expressions;
 using UnityEngine;
 using Sciphone.ComboGraph;
-using System.Linq;
+using ZLinq;
 
 [Serializable]
 public abstract class MeleeCombatAction : CharacterAction
@@ -189,7 +189,7 @@ public class Attack : MeleeCombatAction
         controller.readyToAttack = false;
         controller.cachedAttack = AttackType.None;
 
-        character.characterAnimator.ChangeAnimationState(controller.attacksPerformed.Last().attackName, "GreatSword");
+        character.characterAnimator.ChangeAnimationState(controller.attacksPerformed.AsValueEnumerable().Last().attackName, "GreatSword");
     }
 
     public override void OnEnable()

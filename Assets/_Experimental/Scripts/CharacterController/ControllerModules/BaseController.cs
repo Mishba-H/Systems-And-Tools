@@ -71,7 +71,8 @@ public class BaseController : MonoBehaviour, IControllerModule
         {
             character.animMachine.layers.GetLayerInfo("Base").GetStateInfo("Walk") as EightWayBlendState,
             character.animMachine.layers.GetLayerInfo("Base").GetStateInfo("Run") as EightWayBlendState,
-            character.animMachine.layers.GetLayerInfo("Base").GetStateInfo("CrouchMove") as EightWayBlendState
+            character.animMachine.layers.GetLayerInfo("Base").GetStateInfo("CrouchMoveSlow") as EightWayBlendState,
+            character.animMachine.layers.GetLayerInfo("Base").GetStateInfo("CrouchMoveFast") as EightWayBlendState
         };
     }
 
@@ -99,6 +100,7 @@ public class BaseController : MonoBehaviour, IControllerModule
     {
         if (recalculateScaleFactor)
         {
+            CalculateTargetSpeed();
             if (character.PerformingAction<Idle>())
             {
                 scaleFactor = new Vector3(1f, 0f, 1f);
@@ -106,16 +108,15 @@ public class BaseController : MonoBehaviour, IControllerModule
             else if (character.PerformingAction<Walk>() || character.PerformingAction<Run>() ||
                 character.PerformingAction<Sprint>() || character.PerformingAction<Crouch>())
             {
-                if (character.animMachine.activeState.TryGetProperty<RootMotionCurvesProperty>(out var prop))
+                if (character.animMachine.activeState.TryGetProperty<RootMotionCurvesProperty>(out var property))
                 {
-                    var curves = (RootMotionData)prop.Value;
-                    var totalTime = curves.rootTZ.keys[curves.rootTZ.length - 1].time;
+                    RootMotionData curves = ((RootMotionCurvesProperty)property).rootMotionData;
+                    var totalTime = curves.totalTime;
                     var totalZDisp = curves.rootTZ.Evaluate(totalTime) - curves.rootTZ.Evaluate(0f);
 
                     scaleFactor = new Vector3(1f, 0f, targetSpeed / (totalZDisp / totalTime));
                 }
             }
-            CalculateTargetSpeed();
         }
     }
 
@@ -203,6 +204,7 @@ public class BaseController : MonoBehaviour, IControllerModule
             character.characterMover.SetFaceDir(Vector3.RotateTowards(transform.forward, character.characterMover.GetWorldVelocity(), airRotateSpeed * dt * Mathf.Deg2Rad, 0f));
         }
     }
+
     public void HandlePhysicsSimulation()
     {
         if (character.PerformingAction<Fall>() || character.PerformingAction<Jump>() || character.PerformingAction<AirJump>())

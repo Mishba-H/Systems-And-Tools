@@ -1,11 +1,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using Sciphone;
 using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
+using ZLinq;
 
 public class AnimationMachine : MonoBehaviour
 {
@@ -188,7 +188,7 @@ public class AnimationMachine : MonoBehaviour
     {
         if (stateInfo.TryGetProperty<PlaybackSpeedProperty>(out AnimationStateProperty property))
         {
-            stateInfo.playable.SetSpeed((float)property.Value);
+            stateInfo.playable.SetSpeed((property as PlaybackSpeedProperty).playbackSpeed);
         }
 
         if (stateInfo.GetType() == typeof(FourWayBlendState))
@@ -200,10 +200,10 @@ public class AnimationMachine : MonoBehaviour
             ((EightWayBlendState)stateInfo).UpdateWeights();
         }
 
-        var realNormalizedTime = (float)stateInfo.playable.GetTime() / stateInfo.length;
-        foreach (IAnimationEvent animEvent in stateInfo.events)
+        var realNormalizedTime = stateInfo.NormalizedTime();
+        for (int i = 0; i < stateInfo.events.Count; i++)
         {
-            animEvent.Evaluate(realNormalizedTime);
+            stateInfo.events[i].Evaluate(realNormalizedTime);
         }
     }
 
@@ -227,7 +227,7 @@ public class AnimationMachine : MonoBehaviour
         if (playOneShotCoroutine != null)
         {
             layerMixer.DisconnectInput(layerMixer.GetInputCount() - 1);
-            layerMixer.SetInputCount(layers.Count());
+            layerMixer.SetInputCount(layers.AsValueEnumerable().Count());
             oneShotState.playable.Destroy();
             oneShotState = null;
             StopCoroutine(playOneShotCoroutine);
@@ -280,7 +280,7 @@ public class AnimationMachine : MonoBehaviour
         if (playOneShotCoroutine != null)
         {
             layerMixer.DisconnectInput(layerMixer.GetInputCount() - 1);
-            layerMixer.SetInputCount(layers.Count());
+            layerMixer.SetInputCount(layers.AsValueEnumerable().Count());
             oneShotState.playable.Destroy();
             oneShotState = null;
             StopCoroutine(playOneShotCoroutine);
@@ -296,9 +296,8 @@ public class AnimationMachine : MonoBehaviour
         float blendDuration = 0.2f;
         if (nextLayer.activeState.TryGetProperty<BlendDurationProperty>(out AnimationStateProperty property))
         {
-            blendDuration = (float)property.Value;
+            blendDuration = (property as BlendDurationProperty).blendDuration;
         }
-        blendDuration *= 1 / timeScale;
 
         int i = layers.GetIndexOf(nextLayer);
         int j = layers.GetIndexOf(prevLayer);
@@ -308,7 +307,7 @@ public class AnimationMachine : MonoBehaviour
             while (elapsedTime < blendDuration)
             {
                 layerMixer.SetInputWeight(i, elapsedTime / blendDuration);
-                elapsedTime += Time.deltaTime;
+                elapsedTime += Time.deltaTime * timeScale;
                 yield return null;
             }
             layerMixer.SetInputWeight(i, 1);
@@ -319,7 +318,7 @@ public class AnimationMachine : MonoBehaviour
             while (elapsedTime < blendDuration)
             {
                 layerMixer.SetInputWeight(j, 1 - elapsedTime / blendDuration);
-                elapsedTime += Time.deltaTime;
+                elapsedTime += Time.deltaTime * timeScale;
                 yield return null;
             }
             layerMixer.SetInputWeight(j, 0);
@@ -339,15 +338,14 @@ public class AnimationMachine : MonoBehaviour
         float blendDuration = 0.2f;
         if (state.TryGetProperty<BlendDurationProperty>(out AnimationStateProperty property))
         {
-            blendDuration = (float)property.Value;
+            blendDuration = (property as BlendDurationProperty).blendDuration;
         }
-        blendDuration *= 1 / timeScale;
 
         float elapsedTime = 0f;
         while (elapsedTime < blendDuration)
         {
             layerMixer.SetInputWeight(layerMixer.GetInputCount() - 1, elapsedTime / blendDuration);
-            elapsedTime += Time.deltaTime;
+            elapsedTime += Time.deltaTime * timeScale;
             yield return null;
         }
         layerMixer.SetInputWeight(layerMixer.GetInputCount() - 1, 1);
@@ -361,7 +359,7 @@ public class AnimationMachine : MonoBehaviour
         while (elapsedTime < blendDuration)
         {
             layerMixer.SetInputWeight(layerMixer.GetInputCount() - 1, (1 - elapsedTime / blendDuration));
-            elapsedTime += Time.deltaTime;
+            elapsedTime += Time.deltaTime * timeScale;
             yield return null;
         }
         layerMixer.SetInputWeight(layerMixer.GetInputCount() - 1, 0);
@@ -379,17 +377,17 @@ public class AnimationMachine : MonoBehaviour
     {
         if (activeState.TryGetProperty<RootMotionCurvesProperty>(out AnimationStateProperty property))
         {
-            var curves = (RootMotionData)property.Value;
+            var curves = (property as RootMotionCurvesProperty).rootMotionData;
             rootDeltaPosition = new Vector3(
-                GetCurveDelta(curves.rootTX, currNT, prevNT),
-                GetCurveDelta(curves.rootTY, currNT, prevNT),
-                GetCurveDelta(curves.rootTZ, currNT, prevNT));
+                GetCurveDelta(curves.rootTX, curves.totalTime, currNT, prevNT),
+                GetCurveDelta(curves.rootTY, curves.totalTime, currNT, prevNT),
+                GetCurveDelta(curves.rootTZ, curves.totalTime, currNT, prevNT));
 
             rootDeltaRotation = new Quaternion(
-                GetCurveDelta(curves.rootQX, currNT, prevNT),
-                GetCurveDelta(curves.rootQY, currNT, prevNT),
-                GetCurveDelta(curves.rootQZ, currNT, prevNT),
-                GetCurveDelta(curves.rootQW, currNT, prevNT));
+                GetCurveDelta(curves.rootQX, curves.totalTime, currNT, prevNT),
+                GetCurveDelta(curves.rootQY, curves.totalTime, currNT, prevNT),
+                GetCurveDelta(curves.rootQZ, curves.totalTime, currNT, prevNT),
+                GetCurveDelta(curves.rootQW, curves.totalTime, currNT, prevNT));
         }
         else
         {
@@ -404,20 +402,24 @@ public class AnimationMachine : MonoBehaviour
             angleInDegrees -= 360f;
         float angleInRadians = angleInDegrees * Mathf.Deg2Rad;
         rootAngularVelocity = axis * angleInRadians / dt;
+
+        if (activeState.TryGetProperty<PlaybackSpeedProperty>(out var speedProperty))
+        {
+            float speed = (speedProperty as PlaybackSpeedProperty).playbackSpeed;
+            rootLinearVelocity *= 1 / speed;
+        }
     }
 
-    private float GetCurveDelta(AnimationCurve curve, float currentNormalizedTime, float prevNormalizedTime)
+    private float GetCurveDelta(AnimationCurve curve, float totalTime, float currentNormalizedTime, float prevNormalizedTime)
     {
         if (curve.length == 0)
             return 0f;
-
-        float totalTime = curve.keys[curve.length - 1].time;
 
         if (currentNormalizedTime > prevNormalizedTime)
         {
             float currentDisplacement = curve.Evaluate(currentNormalizedTime * totalTime);
             float prevDisplacement = curve.Evaluate(prevNormalizedTime * totalTime);
-            return (currentDisplacement - prevDisplacement);
+            return currentDisplacement - prevDisplacement;
         }
         else if (currentNormalizedTime < prevNormalizedTime)
         {
@@ -438,14 +440,14 @@ public class AnimationMachine : MonoBehaviour
     }
 
 #if UNITY_EDITOR
-    //[Button(nameof(InititalizeRootMotionProperty))]
+    [Button(nameof(InititalizeRootMotionProperty))]
     public void InititalizeRootMotionProperty()
     {
         foreach (var layer in layers)
         {
             foreach (var state in layer.states)
             {
-                if (state.TryGetProperty<RootMotionCurvesProperty>(out var curve))
+                if (state.TryGetProperty<RootMotionCurvesProperty>(out var property))
                 {
                     var playWindow = new Vector2(0f, 1f);
                     if (state.TryGetProperty<PlayWindowProperty>(out var normalizedTimes))
@@ -455,15 +457,15 @@ public class AnimationMachine : MonoBehaviour
 
                     if (state is AnimationClipState)
                     {
-                        curve.Value = (state as AnimationClipState).clip.ExtractRootMotionData(playWindow.x, playWindow.y);
+                        (property as RootMotionCurvesProperty).rootMotionData = (state as AnimationClipState).clip.ExtractRootMotionData(playWindow.x, playWindow.y);
                     }
                     else if (state is FourWayBlendState)
                     {
-                        curve.Value = (state as FourWayBlendState).Forward.ExtractRootMotionData(playWindow.x, playWindow.y);
+                        (property as RootMotionCurvesProperty).rootMotionData = (state as FourWayBlendState).Forward.ExtractRootMotionData(playWindow.x, playWindow.y);
                     }
                     else if (state is EightWayBlendState)
                     {
-                        curve.Value = (state as EightWayBlendState).Forward.ExtractRootMotionData(playWindow.x, playWindow.y);
+                        (property as RootMotionCurvesProperty).rootMotionData = (state as EightWayBlendState).Forward.ExtractRootMotionData(playWindow.x, playWindow.y);
                     }
                 }
             }
@@ -473,13 +475,13 @@ public class AnimationMachine : MonoBehaviour
         UnityEditor.AssetDatabase.SaveAssets();
     }
 
-    //[Button(nameof(ImportLayersFromAsset))]
+    [Button(nameof(ImportLayersFromAsset))]
     public void ImportLayersFromAsset(ScriptableAnimationMachineAsset asset)
     {
         this.layers = asset.layers;
     }
 
-    //[Button(nameof(ExportLayersToAsset))]
+    [Button(nameof(ExportLayersToAsset))]
     public void ExportLayersToAsset(ScriptableAnimationMachineAsset asset)
     {
         asset.layers = this.layers;

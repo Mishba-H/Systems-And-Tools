@@ -2,6 +2,8 @@
   "dependencies": {
     "com.browar.editor-toolbox": "https://github.com/arimger/Unity-Editor-Toolbox.git#upm",
     "com.cysharp.unitask": "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask",
+    "com.cysharp.zlinq": "https://github.com/Cysharp/ZLinq.git?path=src/ZLinq.Unity/Assets/ZLinq.Unity",
+    "com.github-glitchenzo.nugetforunity": "https://github.com/GlitchEnzo/NuGetForUnity.git?path=/src/NuGetForUnity",
     "com.greenbamboogames.playablegraphmonitor": "2.6.3",
     "com.nomnom.raycast-visualization": "https://github.com/nomnomab/RaycastVisualization.git",
     "com.smkplus.custom-toolbar": "https://github.com/smkplus/CustomToolbar.git#master",

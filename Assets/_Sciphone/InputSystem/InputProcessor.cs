@@ -4,7 +4,7 @@ using Sciphone;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Interactions;
-using System.Linq;
+using ZLinq;
 
 public class InputProcessor : MonoBehaviour
 {
@@ -26,7 +26,7 @@ public class InputProcessor : MonoBehaviour
     {
         inputReader = GetComponent<InputReader>();
 
-        allSequences = allSequences.OrderByDescending(seq => seq.sequence.Count).ToList();
+        allSequences = allSequences.AsValueEnumerable().OrderByDescending(seq => seq.sequence.Count).ToList();
 
         inputBuffer = new List<ProcessedInput>();
     }
@@ -127,7 +127,14 @@ public class InputProcessor : MonoBehaviour
 
     private void CleanBuffer()
     {
-        inputBuffer.RemoveAll(input => Time.time - input.inputTime > inputBufferTime);
+        for (int i = inputBuffer.Count - 1; i >= 0; i--)
+        {
+            var input = inputBuffer[i];
+            if (Time.time - input.inputTime > inputBufferTime)
+            {
+                inputBuffer.RemoveAt(i);
+            }
+        }
     }
 
     private void CheckSequences()

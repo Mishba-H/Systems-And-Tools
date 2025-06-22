@@ -5,6 +5,7 @@ using Sciphone;
 using UnityEngine.Animations;
 using System.Collections;
 using UnityEngine.Playables;
+using UnityEditor;
 
 [Serializable]
 public class AnimationLayerInfo
@@ -47,6 +48,8 @@ public class AnimationLayerInfo
         {
             activeMonoBehaviour.StopCoroutine(statesBlendCoroutine);
             statesBlendCoroutine = null;
+            int stateIndex = ((Playable)stateMixer).GetIndexOf(activeState.playable);
+            ((Playable)stateMixer).NormalizeWeights(stateIndex);
         }
         activeState = newState;
         statesBlendCoroutine = activeMonoBehaviour.StartCoroutine(BlendStates(newState, activeMonoBehaviour));
@@ -64,16 +67,16 @@ public class AnimationLayerInfo
         float blendDuration = 0.2f;
         if (stateInfo.TryGetProperty<BlendDurationProperty>(out AnimationStateProperty property))
         {
-            blendDuration = (float)property.Value;
+            blendDuration = (property as BlendDurationProperty).blendDuration;
         }
-        blendDuration *= 1 / animMachine.timeScale;
 
         float elapsedTime = 0f;
+        int stateIndex = ((Playable)stateMixer).GetIndexOf(stateInfo.playable);
         while (elapsedTime <= blendDuration)
         {
             for (int i = 0; i < stateMixer.GetInputCount(); i++)
             {
-                if (i == ((Playable)stateMixer).GetIndexOf(stateInfo.playable))
+                if (i == stateIndex)
                 {
                     stateMixer.SetInputWeight(i, elapsedTime / blendDuration);
                 }
@@ -82,8 +85,8 @@ public class AnimationLayerInfo
                     stateMixer.SetInputWeight(i, previousWeights[i] * (1 - elapsedTime / blendDuration));
                 }
             }
-            ((Playable)stateMixer).NormalizeWeights();
-            elapsedTime += Time.deltaTime;
+            ((Playable)stateMixer).NormalizeWeights(stateIndex);
+            elapsedTime += Time.deltaTime * animMachine.timeScale;
             yield return null;
         }
 

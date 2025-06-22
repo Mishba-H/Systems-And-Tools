@@ -1,18 +1,18 @@
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine.Playables;
 using UnityEngine;
 using UnityEditor;
+using ZLinq;
 
 public static class AnimationMachineExtensions
 {
     public static AnimationLayerInfo GetLayerInfo(this List<AnimationLayerInfo> layers, string layerName)
     {
-        return layers.FirstOrDefault(t => t.layerName == layerName);
+        return layers.AsValueEnumerable().FirstOrDefault(t => t.layerName == layerName);
     }
     public static AnimationStateInfo GetStateInfo(this AnimationLayerInfo layer, string stateName)
     {
-        return layer.states.FirstOrDefault(t => t.stateName == stateName);
+        return layer.states.AsValueEnumerable().FirstOrDefault(t => t.stateName == stateName);
     }
     public static int GetIndexOf(this List<AnimationLayerInfo> layers, AnimationLayerInfo layer)
     {
@@ -31,14 +31,26 @@ public static class AnimationMachineExtensions
         }
         return -1;
     }
-    public static void NormalizeWeights(this Playable playable)
+    public static void NormalizeWeights(this Playable playable, int index)
     {
         float weightSum = 0f;
         for (int i = 0; i < playable.GetInputCount(); i++)
         {
             weightSum += playable.GetInputWeight(i);
         }
-        if (weightSum == 0f) return;
+
+        if (weightSum == 0f)
+        {
+            for (int i = 0; i < playable.GetInputCount(); i++)
+            {
+                if (i == index)
+                    playable.SetInputWeight(i, 1f);
+                else
+                    playable.SetInputWeight(i, 0f);
+            }
+            return;
+        }
+
         for (int i = 0; i < playable.GetInputCount(); i++)
         {
             playable.SetInputWeight(i, playable.GetInputWeight(i) / weightSum);
@@ -78,6 +90,7 @@ public static class AnimationMachineExtensions
                     break;
             }
         }
+        data.totalTime = data.rootTX.keys[data.rootTX.length - 1].time;
         return data;
     }
 #endif
@@ -118,8 +131,6 @@ public static class AnimationMachineExtensions
 
         return croppedCurve;
     }
-
-    // Helper function to approximate the tangent at a given time
     private static float GetTangent(this AnimationCurve curve, float time)
     {
         float delta = 0.01f; // Small step to approximate derivative

@@ -5,6 +5,7 @@ using UnityEngine;
 using Sciphone;
 using UnityEngine.Animations;
 using UnityEngine.Scripting.APIUpdating;
+using ZLinq;
 
 [Serializable]
 public abstract class AnimationStateInfo
@@ -22,7 +23,7 @@ public abstract class AnimationStateInfo
     {
         if (TryGetProperty<PlayWindowProperty>(out AnimationStateProperty property))
         {
-            var playWindow = (Vector2)property.Value;
+            var playWindow = (property as PlayWindowProperty).playWindow;
             var currentTime = (float)playable.GetTime() - playWindow.x * length;
             var duration = (playWindow.y - playWindow.x) * length;
             return currentTime / duration;
@@ -33,7 +34,7 @@ public abstract class AnimationStateInfo
     {
         if (TryGetProperty<PlayWindowProperty>(out AnimationStateProperty property))
         {
-            var playWindow = (Vector2)property.Value;
+            var playWindow = (property as PlayWindowProperty).playWindow;
             var currentTime = unadjustedTime - playWindow.x;
             var duration = playWindow.y - playWindow.x;
             return currentTime / duration;
@@ -42,31 +43,13 @@ public abstract class AnimationStateInfo
     }
     public bool TryGetProperty<T>(out AnimationStateProperty property) where T : AnimationStateProperty
     {
-        foreach (var prop in properties)
-        {
-            if (prop == null) continue;
-            if (prop.GetType() == typeof(T))
-            {
-                property = prop;
-                return true;
-            }
-        }
-        property = null;
-        return false;
+        property = properties.AsValueEnumerable().FirstOrDefault(t => t.GetType() == typeof(T));
+        return property != null;
     }
     public bool TryGetData<T>(out IAnimationData animData) where T : IAnimationData
     {
-        foreach (var d in data)
-        {
-            if (d == null) continue;
-            if (d.GetType() == typeof(T))
-            {
-                animData = d;
-                return true;
-            }
-        }
-        animData = null;
-        return false;
+        animData = data.AsValueEnumerable().FirstOrDefault(t => t.GetType() == typeof(T));
+        return animData != null;
     }
 }
 
@@ -130,7 +113,7 @@ public class FourWayBlendState : AnimationStateInfo
         length = (Forward.length + Backward.length + Right.length + Left.length) / 4;
         if (TryGetProperty<PlayWindowProperty>(out AnimationStateProperty property))
         {
-            Vector2 playWindow = (Vector2)property.Value;
+            var playWindow = (property as PlayWindowProperty).playWindow;
             playable.SetDuration(playWindow.y * length);
         }
         else
@@ -144,7 +127,7 @@ public class FourWayBlendState : AnimationStateInfo
             {
                 if (TryGetProperty<PlayWindowProperty>(out property))
                 {
-                    Vector2 playWindow = (Vector2)property.Value;
+                    var playWindow = (property as PlayWindowProperty).playWindow;
                     inputPlayable.SetDuration(playWindow.y * length);
                 }
                 else
@@ -158,7 +141,7 @@ public class FourWayBlendState : AnimationStateInfo
     {
         if (TryGetProperty<PlayWindowProperty>(out AnimationStateProperty property))
         {
-            Vector2 playWindow = (Vector2)property.Value;
+            var playWindow = (property as PlayWindowProperty).playWindow;
             playable.SetTime(playWindow.x * length + normalizedTime * length);
             playable.SetTime(playWindow.x * length + normalizedTime * length);
         }
@@ -174,7 +157,7 @@ public class FourWayBlendState : AnimationStateInfo
             {
                 if (TryGetProperty<PlayWindowProperty>(out property))
                 {
-                    Vector2 playWindow = (Vector2)property.Value;
+                    var playWindow = (property as PlayWindowProperty).playWindow;
                     inputPlayable.SetTime(playWindow.x * length + normalizedTime * length);
                     inputPlayable.SetTime(playWindow.x * length + normalizedTime * length);
                 }
@@ -245,7 +228,7 @@ public class EightWayBlendState : AnimationStateInfo
             CenterLeft.length + CenterRight.length) / 8;
         if (TryGetProperty<PlayWindowProperty>(out AnimationStateProperty property))
         {
-            Vector2 playWindow = (Vector2)property.Value;
+            var playWindow = (property as PlayWindowProperty).playWindow;
             playable.SetDuration(playWindow.y * length);
         }
         else
@@ -259,7 +242,7 @@ public class EightWayBlendState : AnimationStateInfo
             {
                 if (TryGetProperty<PlayWindowProperty>(out property))
                 {
-                    Vector2 playWindow = (Vector2)property.Value;
+                    var playWindow = (property as PlayWindowProperty).playWindow;
                     inputPlayable.SetDuration(playWindow.y * length);
                 }
                 else
@@ -273,7 +256,7 @@ public class EightWayBlendState : AnimationStateInfo
     {
         if (TryGetProperty<PlayWindowProperty>(out AnimationStateProperty property))
         {
-            Vector2 playWindow = (Vector2)property.Value;
+            var playWindow = (property as PlayWindowProperty).playWindow;
             playable.SetTime(playWindow.x * length + normalizedTime * length);
             playable.SetTime(playWindow.x * length + normalizedTime * length);
         }
@@ -289,7 +272,7 @@ public class EightWayBlendState : AnimationStateInfo
             {
                 if (TryGetProperty<PlayWindowProperty>(out property))
                 {
-                    Vector2 playWindow = (Vector2)property.Value;
+                    var playWindow = (property as PlayWindowProperty).playWindow;
                     inputPlayable.SetTime(playWindow.x * length + normalizedTime * length);
                     inputPlayable.SetTime(playWindow.x * length + normalizedTime * length);
                 }

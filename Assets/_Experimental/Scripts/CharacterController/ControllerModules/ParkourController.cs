@@ -1,6 +1,6 @@
-using System;
 using Sciphone;
 using UnityEngine;
+
 #if UNITY_EDITOR
 using Physics = Nomnom.RaycastVisualization.VisualPhysics;
 #else
@@ -11,136 +11,214 @@ public class ParkourController : MonoBehaviour, IControllerModule
 {
     public Character character {  get; set; }
 
-    [TabGroup("Climb Over From Ground")] public bool climbPointAvailable;
+    [TabGroup("Auto Traverse Options")][LeftToggle] public bool autoClimbOverFromGroundLow;
+    [TabGroup("Auto Traverse Options")][LeftToggle] public bool autoClimbOverFromGroundMedium;
+    [TabGroup("Auto Traverse Options")][LeftToggle] public bool autoClimbOverFromGroundHigh;
+    [TabGroup("Auto Traverse Options")][LeftToggle] public bool autoVaultOverFenceLow;
+    [TabGroup("Auto Traverse Options")][LeftToggle] public bool autoVaultOverFenceMedium;
+    [TabGroup("Auto Traverse Options")][LeftToggle] public bool autoVaultOverFenceHigh;
+
+    public RaycastHit climbHit;
+    [TabGroup("Climb Over From Ground")] public bool climbAvailable;
     [TabGroup("Climb Over From Ground")] public Vector2 climbLowRange = new Vector2(0.3f, 0.75f);
     [TabGroup("Climb Over From Ground")] public Vector2 climbMediumRange = new Vector2(0.75f, 1.25f);
     [TabGroup("Climb Over From Ground")] public Vector2 climbHighRange = new Vector2(1.25f, 2.25f);
-
-    public RaycastHit climbHit;
-    [TabGroup("Climb Over From Ground")] public Vector3 localClimbPoint;
     [TabGroup("Climb Over From Ground")] public float climbHeight;
-    [TabGroup("Climb Over From Ground")] public float startingDistFromWall;
-
-    [Header("Detector Settings")]
-    [TabGroup("Climb Over From Ground")] public LayerMask climbLayer;
+    [TabGroup("Climb Over From Ground")][Header("Detector Settings")] public LayerMask climbLayer;
     [TabGroup("Climb Over From Ground")] public float climbCheckerDistance = 1f;
-    [TabGroup("Climb Over From Ground")] public float climbCheckerInterval = 0.1f;
     [TabGroup("Climb Over From Ground")] public Vector2 climbCheckerOffset;
 
-    public RaycastHit wallHit;
-    [TabGroup("Climb Over From Ground")] public float wallCheckerInterval;
-    [TabGroup("Climb Over From Ground")] public float wallCheckerDistance;
+    public RaycastHit fenceHit;
+    [TabGroup("Vault Over Fence")] public bool fenceAvalilable;
+    [TabGroup("Vault Over Fence")] public float fenceHeight;
+    [TabGroup("Vault Over Fence")] public Vector2 vaultFenceLowRange;
+    [TabGroup("Vault Over Fence")] public Vector2 vaultFenceMediumRange;
+    [TabGroup("Vault Over Fence")] public Vector2 vaultFenceHighRange;
+    [TabGroup("Vault Over Fence")][Header("Detector Settings")] public LayerMask fenceLayer;
+    [TabGroup("Vault Over Fence")] public Vector2 fenceCheckerOffset;
+    [TabGroup("Vault Over Fence")] public float fenceCheckerDistance = 1f;
 
+    public RaycastHit wallHit;
+    public float animHeight;
     public Vector3 scaleFactor = Vector3.one;
-    public Vector3 initialPos;
+    public LayerMask wallLayer;
+    public float startingDistFromWall;
+    public float allCheckerInterval = 0.1f;
+    public Vector3 targetPos;
+    public Vector3 targetForward;
+
+    private Vector3 worldMoveDir;
+    private Vector3 parkourDir;
 
     private void Start()
     {
         climbLowRange.x = character.characterMover.maxStepHeight;
         climbCheckerOffset.x = character.characterMover.capsuleRadius;
-        climbCheckerOffset.y = climbHighRange.y + 0.1f;
+        climbCheckerOffset.y = climbHighRange.y + character.characterMover.skinWidth;
+
+        vaultFenceLowRange.x = character.characterMover.maxStepHeight;
+        fenceCheckerOffset.x = character.characterMover.capsuleRadius;
+        fenceCheckerOffset.y = vaultFenceHighRange.y + character.characterMover.skinWidth;
 
         character.DetectionLoop += Character_DetectionLoop;
+        character.characterCommand.MoveDirCommand += CharacterCommand_MoveDirCommand;
+    }
+
+    private void CharacterCommand_MoveDirCommand(Vector3 vector)
+    {
+        worldMoveDir = vector;
     }
 
     private void Character_DetectionLoop()
     {
-        CheckClimbPoint();
+        parkourDir = worldMoveDir == Vector3.zero ? transform.forward : worldMoveDir;
+        CheckClimbAvailability(parkourDir);
+        CheckFenceAvailability(parkourDir);
     }
 
-    public Vector3 GetWallNormal(Vector3 direction)
+    public void CheckClimbAvailability(Vector3 direction)
     {
-        int count = Mathf.CeilToInt(climbHeight / wallCheckerInterval);
-        var pos = transform.position + climbHeight * transform.up;
-        for (int i = 0; i <= count; i++)
+        if (DetectClimbPoint(direction, out climbHit) && 
+            DetectWall(direction, climbCheckerDistance + character.characterMover.skinWidth, climbHighRange.y, out wallHit))
         {
-            if (Physics.Raycast(pos + i * wallCheckerInterval * -transform.up, direction, out wallHit, wallCheckerDistance))
-            {
-                return Vector3.ProjectOnPlane(wallHit.normal, transform.up).normalized;
-            }
-        }
-        return Vector3.zero;
-    }
-
-    public bool DetectClimbPoint(out RaycastHit climbHit)
-    {
-        climbHit = new RaycastHit();
-        var pos = transform.position + transform.forward * climbCheckerOffset.x + transform.up * climbCheckerOffset.y;
-        var climbCheckerCount = climbCheckerDistance / climbCheckerInterval;
-        for (int i = 0; i <= climbCheckerCount ; i++)
-        {
-            if (Physics.Raycast(pos + climbCheckerInterval * i * transform.forward, -transform.up, out climbHit, climbCheckerOffset.y))
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public void CheckClimbPoint()
-    {
-        if (DetectClimbPoint(out climbHit))
-        {
-            localClimbPoint = transform.InverseTransformPoint(climbHit.point);
+            Vector3 localClimbPoint = transform.InverseTransformPoint(climbHit.point);
             climbHeight = localClimbPoint.y;
             if (climbHeight > climbLowRange.x && climbHeight < climbHighRange.y)
             {
-                climbPointAvailable = true;
+                climbAvailable = true;
             }
         }
         else
         {
-            climbPointAvailable = false;
-            return;
+            climbAvailable = false;
         }
     }
 
-    public void InitiateClimb()
+    public bool DetectClimbPoint(Vector3 direction, out RaycastHit climbHit)
     {
-        CalculateScaleFactor();
-        CalculateStartingDistanceFromWall();
-        SetInitialTransform();
-    }
-
-    private void CalculateScaleFactor()
-    {
-        if (character.animMachine.activeState.TryGetProperty<RootMotionCurvesProperty>(out AnimationStateProperty property))
+        var pos = transform.position + direction * climbCheckerOffset.x + transform.up * climbCheckerOffset.y;
+        var climbCheckerCount = Mathf.FloorToInt((climbCheckerDistance - character.characterMover.capsuleRadius) / allCheckerInterval);
+        for (int i = 0; i <= climbCheckerCount; i++)
         {
-            RootMotionData curves = (RootMotionData)property.Value;
-            float totalTime = curves.rootTZ.keys[curves.rootTZ.length - 1].time;
-
-            AnimationCurve rootTYCurve = curves.rootTY;
-
-            float totalYDisp = rootTYCurve.Evaluate(totalTime) - rootTYCurve.Evaluate(0f);
-            scaleFactor = new Vector3(1f, climbHeight / totalYDisp, 1f);
-        }
-    }
-
-    private void CalculateStartingDistanceFromWall()
-    {
-        if (character.animMachine.activeState.TryGetProperty<RootMotionCurvesProperty>(out AnimationStateProperty property))
-        {
-            RootMotionData curves = (RootMotionData)property.Value;
-            float totalTime = curves.rootTZ.keys[curves.rootTZ.length - 1].time;
-
-            AnimationCurve rootTZCurve = curves.rootTZ;
-            if (character.animMachine.activeState.TryGetData<TimeOfContactData>(out IAnimationData data))
+            if (Physics.Raycast(pos + allCheckerInterval * i * direction, -transform.up, out climbHit, climbHighRange.y + character.characterMover.skinWidth,
+                climbLayer, QueryTriggerInteraction.Ignore)
+                && Vector3.Angle(climbHit.normal, transform.up) < character.characterMover.criticalSlopeAngle)
             {
-                var timeOfContact = character.animMachine.activeState.GetAdjustedNormalizedTime((data as TimeOfContactData).timeOfContact) * totalTime;
+                return true;
+            }
+        }
+        climbHit = new RaycastHit();
+        return false;
+    }
+
+    public bool DetectWall(Vector3 direction, float distance, float height, out RaycastHit wallHit)
+    {
+        int count = Mathf.FloorToInt(height / allCheckerInterval);
+        var pos = transform.position + climbHeight * transform.up;
+        for (int i = 0; i <= count; i++)
+        {
+            if (Physics.Raycast(pos + i * allCheckerInterval * -transform.up, direction, out wallHit, distance,
+                wallLayer, QueryTriggerInteraction.Ignore)
+                && Vector3.Angle(wallHit.normal, transform.up) > character.characterMover.criticalSlopeAngle)
+            {
+                return true;
+            }
+        }
+        wallHit = new RaycastHit();
+        return false;
+    }
+
+    public void CheckFenceAvailability(Vector3 direction)
+    {
+        if (DetectFence(direction, out fenceHit) && 
+            DetectWall(direction, fenceCheckerDistance + character.characterMover.skinWidth, vaultFenceHighRange.y, out wallHit))
+        {
+            Vector3 localFenceHitPoint = transform.InverseTransformPoint(fenceHit.point);
+            fenceHeight = localFenceHitPoint.y;
+            if (fenceHeight > vaultFenceLowRange.x && fenceHeight <= vaultFenceLowRange.y ||
+                fenceHeight > vaultFenceMediumRange.x && fenceHeight <= vaultFenceMediumRange.y ||
+                fenceHeight > vaultFenceHighRange.x && fenceHeight <= vaultFenceHighRange.y)
+            {
+                fenceAvalilable = true;
+            }
+        }
+        else
+        {
+            fenceAvalilable = false;
+        }
+    }
+
+    public bool DetectFence(Vector3 direction, out RaycastHit fenceHit)
+    {
+        var pos = transform.position + direction * fenceCheckerOffset.x + transform.up * fenceCheckerOffset.y;
+        var fenceCheckerCount = Mathf.FloorToInt((fenceCheckerDistance - character.characterMover.capsuleRadius) / allCheckerInterval);
+        for (int i = 0; i <= fenceCheckerCount; i++)
+        {
+            if (Physics.Raycast(pos + allCheckerInterval * i * direction, -transform.up, out fenceHit, fenceCheckerOffset.y, fenceLayer, QueryTriggerInteraction.Ignore)
+                && Vector3.Angle(fenceHit.normal, transform.up) < character.characterMover.criticalSlopeAngle)
+            {
+                return true;
+            }
+        }
+        fenceHit = new RaycastHit();
+        return false;
+    }
+
+    public void CalculateScaleFactorAndStartingDistanceForClimb()
+    {
+        if (character.animMachine.activeState.TryGetProperty<RootMotionCurvesProperty>(out AnimationStateProperty property))
+        {
+            RootMotionData curves = ((RootMotionCurvesProperty)property).rootMotionData;
+            float totalTime = curves.totalTime;
+
+            if (character.animMachine.activeState.TryGetData<TimeOfContact>(out IAnimationData data))
+            {
+                var timeOfContact = character.animMachine.activeState.GetAdjustedNormalizedTime((data as TimeOfContact).timeOfContact) * totalTime;
+
+                AnimationCurve rootTZCurve = curves.rootTZ;
                 startingDistFromWall = rootTZCurve.Evaluate(timeOfContact) - rootTZCurve.Evaluate(0f);
+
+                AnimationCurve rootTYCurve = curves.rootTY;
+                animHeight = rootTYCurve.Evaluate(totalTime) - rootTYCurve.Evaluate(0f);
+                scaleFactor = new Vector3(1f, climbHeight / animHeight, 1f);
             }
         }
     }
 
-    private void SetInitialTransform()
+    public void CalculateScaleFactorAndStartingDistanceForFence()
     {
-        var wallNormal = GetWallNormal(transform.forward);
-        initialPos = transform.position + startingDistFromWall * wallNormal - wallNormal * Vector3.Dot(transform.position - wallHit.point, wallNormal);
-        transform.position = initialPos;
-        transform.forward = -wallNormal;
+        if (character.animMachine.activeState.TryGetProperty<RootMotionCurvesProperty>(out AnimationStateProperty property))
+        {
+            RootMotionData curves = ((RootMotionCurvesProperty)property).rootMotionData;
+            float totalTime = curves.totalTime;
+
+            if (character.animMachine.activeState.TryGetData<TimeOfContact>(out IAnimationData data))
+            {
+                var timeOfContact = character.animMachine.activeState.GetAdjustedNormalizedTime((data as TimeOfContact).timeOfContact) * totalTime;
+
+                AnimationCurve rootTZCurve = curves.rootTZ;
+                startingDistFromWall = rootTZCurve.Evaluate(timeOfContact) - rootTZCurve.Evaluate(0f);
+
+                AnimationCurve rootTYCurve = curves.rootTY;
+                animHeight = rootTYCurve.GetMaxValue() - rootTYCurve.Evaluate(0f);
+                scaleFactor = new Vector3(1f, fenceHeight / animHeight, 1f);
+            }
+        }
     }
 
-    public void HandleClimb(float dt)
+    public void SetInitialTransform(RaycastHit hitInfo, float totalHeight)
+    {
+        Vector3 wallNormal = Vector3.ProjectOnPlane(wallHit.normal, transform.up);
+        var localHitPoint = transform.InverseTransformPoint(hitInfo.point);
+        var hitPoint = transform.TransformPoint(localHitPoint);
+
+        targetPos = hitPoint - totalHeight * transform.up + startingDistFromWall * wallNormal;
+        targetForward = -wallNormal;
+        character.characterMover.SetWorldVelocity(Vector3.zero);
+        character.characterMover.SetGravitySimulation(false);
+    }
+
+    public void HandleParkourMovement(float dt)
     {
         Vector3 up = transform.up;
         Vector3 forward = transform.forward;
@@ -152,6 +230,8 @@ public class ParkourController : MonoBehaviour, IControllerModule
 
         Vector3 worldDeltaPostition = scaledDeltaPosition.x * right + scaledDeltaPosition.y * up + scaledDeltaPosition.z * forward;
 
-        transform.position += worldDeltaPostition;
+        targetPos += worldDeltaPostition;
+        transform.position = targetPos;
+        transform.forward = targetForward;
     }
 }

@@ -95,8 +95,8 @@ public class MeleeCombatController : MonoBehaviour, IControllerModule
         {
             if (character.animMachine.activeState.TryGetProperty<RootMotionCurvesProperty>(out AnimationStateProperty property))
             {
-                var curves = (RootMotionData)property.Value;
-                float totalTime = curves.rootTZ.keys[curves.rootTZ.length - 1].time;
+                var curves = (property as RootMotionCurvesProperty).rootMotionData;
+                float totalTime = curves.totalTime;
                 float totalDisplacement = curves.rootTZ.Evaluate(totalTime) - curves.rootTZ.Evaluate(0f);
                 totalDisplacement = Mathf.Abs(totalDisplacement) < 0.1f ? curves.rootTZ.GetMaxValue() : totalDisplacement;
 

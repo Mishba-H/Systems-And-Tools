@@ -1,7 +1,6 @@
 using System.Linq.Expressions;
 using System;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 [Serializable]
 public abstract class BaseAction : CharacterAction
@@ -149,17 +148,10 @@ public class Walk : BaseAction
     public override void OnPerform()
     {
         if (character.PerformingAction<Crouch>())
-            character.characterAnimator.ChangeAnimationState("CrouchMove", "Base");
+            character.characterAnimator.ChangeAnimationState("CrouchMoveSlow", "Base");
         else
             character.characterAnimator.ChangeAnimationState("Walk", "Base");
     }
-    //public override void OnStop()
-    //{
-    //    if (character.TryGetAction<Idle>(out var idleAction))
-    //    {
-    //        idleAction.EvaluateStatus();
-    //    }
-    //}
 }
 
 [Serializable]
@@ -239,17 +231,10 @@ public class Run : BaseAction
     public override void OnPerform()
     {
         if (character.PerformingAction<Crouch>())
-            character.characterAnimator.ChangeAnimationState("CrouchMove", "Base");
+            character.characterAnimator.ChangeAnimationState("CrouchMoveFast", "Base");
         else
             character.characterAnimator.ChangeAnimationState("Run", "Base");
     }
-    //public override void OnStop()
-    //{
-    //    if (character.TryGetAction<Idle>(out var idleAction))
-    //    {
-    //        idleAction.EvaluateStatus();
-    //    }
-    //}
 }
 
 [Serializable]
@@ -334,13 +319,6 @@ public class Sprint : BaseAction
 
         character.characterAnimator.ChangeAnimationState("Sprint", "Base");
     }
-    //public override void OnStop()
-    //{
-    //    if (character.TryGetAction<Idle>(out var idleAction))
-    //    {
-    //        idleAction.EvaluateStatus();
-    //    }
-    //}
 }
 
 [Serializable]
@@ -407,9 +385,13 @@ public class Crouch : BaseAction
         {
             character.characterAnimator.ChangeAnimationState("CrouchIdle", "Base");
         }
-        else if (character.PerformingAction<Walk>() || character.PerformingAction<Run>())
+        else if (character.PerformingAction<Walk>())
         {
-            character.characterAnimator.ChangeAnimationState("CrouchMove", "Base");
+            character.characterAnimator.ChangeAnimationState("CrouchMoveSlow", "Base");
+        }
+        else if (character.PerformingAction<Run>())
+        {
+            character.characterAnimator.ChangeAnimationState("CrouchMoveFast", "Base");
         }
     }
     public override void OnStop()
@@ -460,7 +442,8 @@ public class Jump : BaseAction
         {
             var parkourExpression = (Expression<Func<bool>>)(() =>
                 !character.PerformingAction<ParkourAction>() &&
-                !character.CanPerformAction<ClimbOverFromGround>());
+                !character.CanPerformAction<ClimbOverFromGround>() &&
+                !character.CanPerformAction<VaultOverFence>());
             condition = CombineExpressions(condition, parkourExpression);
         }
         var meleeCombatController = character.GetControllerModule<MeleeCombatController>();
@@ -507,12 +490,12 @@ public class Jump : BaseAction
     {
         if (IsBeingPerformed)
         {
-            controller.HandlePhysicsSimulation();
             controller.HandleRotation(Time.deltaTime * character.timeScale);
         }
     }
     public override void OnPerform()
     {
+        controller.HandlePhysicsSimulation();
         controller.InitiateJump();
         character.characterMover.IsGrounded = false;
         character.EvaluateAndUpdateAllActions();
@@ -521,7 +504,7 @@ public class Jump : BaseAction
     }
     public override void OnStop()
     {
-        character.characterMover.SetGravitySimulation(false);
+        controller.HandlePhysicsSimulation();
         if (character.TryGetAction<Fall>(out var fallAction))
         {
             fallAction.EvaluateStatus();
@@ -537,7 +520,6 @@ public class AirJump : BaseAction
         if (!CanPerform) return;
 
         IsBeingPerformed = true;
-        controller.InitiateJump();
     }
     public override void OnEnable()
     {
@@ -562,7 +544,8 @@ public class AirJump : BaseAction
         {
             var parkourExpression = (Expression<Func<bool>>)(() =>
                 !character.PerformingAction<ParkourAction>() &&
-                !character.CanPerformAction<ClimbOverFromGround>());
+                !character.CanPerformAction<ClimbOverFromGround>() &&
+                !character.CanPerformAction<VaultOverFence>());
             condition = CombineExpressions(condition, parkourExpression);
         }
         var meleeCombatController = character.GetControllerModule<MeleeCombatController>();
@@ -608,17 +591,19 @@ public class AirJump : BaseAction
     {
         if (IsBeingPerformed)
         {
-            controller.HandlePhysicsSimulation();
             controller.HandleRotation(Time.deltaTime * character.timeScale);
         }
     }
     public override void OnPerform()
     {
+        controller.HandlePhysicsSimulation();
+        controller.InitiateJump();
         character.characterAnimator.ChangeAnimationState("AirJump", "Base");
     }
     public override void OnStop()
     {
-        character.characterMover.SetGravitySimulation(false);
+        controller.HandlePhysicsSimulation();
+
         if (character.TryGetAction<Fall>(out var fallAction))
         {
             fallAction.EvaluateStatus();
@@ -692,12 +677,12 @@ public class Fall : BaseAction
     {
         if (IsBeingPerformed)
         {
-            controller.HandlePhysicsSimulation();
             controller.HandleRotation(Time.deltaTime * character.timeScale);
         }
     }
     public override void OnPerform()
     {
+        controller.HandlePhysicsSimulation();
         if (character.characterAnimator.currentStateName == "AirJump" || character.characterAnimator.currentStateName == "Jump")
         {
             return;
@@ -709,6 +694,6 @@ public class Fall : BaseAction
     }
     public override void OnStop()
     {
-        character.characterMover.SetGravitySimulation(false);
+        controller.HandlePhysicsSimulation();
     }
 }

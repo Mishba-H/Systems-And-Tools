@@ -43,72 +43,9 @@ namespace Sciphone
 
         private Dictionary<MethodInfo, object[]> methodParameters = new Dictionary<MethodInfo, object[]>();
 
-        private bool IsPropertyInTabGroups(SerializedProperty property)
-        {
-            foreach (var list in tabGroups.Values)
-            {
-                if (list.Contains(property, comparer))
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        private bool IsPropertyInFoldoutGroups(SerializedProperty property)
-        {
-            foreach (var list in foldoutGroups.Values)
-            {
-                if (list.Contains(property, comparer))
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        private void DrawTabGroup(string[] tabNames, int tabGroupIndex)
-        {
-            tabNames = tabNames.Except(drawnTabs).ToArray();
-            if (tabNames.Length == 0) return;
-
-            if (selectedTabIndices.Count - 1 < tabGroupIndex)
-            {
-                selectedTabIndices.Add(0);
-            }
-            // Draw tab group inside a box
-            EditorGUILayout.BeginVertical("box");
-            // Draw tab selection
-            selectedTabIndices[tabGroupIndex] = GUILayout.Toolbar(selectedTabIndices[tabGroupIndex], tabNames);
-            // Draw properties for the selected tab using Toolbox's property drawer
-            EditorGUILayout.Space();
-            foreach (var property in tabGroups[tabNames[selectedTabIndices[tabGroupIndex]]])
-            {
-                ToolboxEditorGui.DrawToolboxProperty(property);
-            }
-            EditorGUILayout.EndVertical();
-            EditorGUILayout.Space();
-        }
-
-        private void DrawFoldoutGroup(string key, List<SerializedProperty> value)
-        {
-            if (drawnFoldouts.Contains(key)) return;
-
-            EditorGUILayout.BeginVertical("box");
-            foldoutStates[key] = EditorGUILayout.Foldout(foldoutStates[key], key, true);
-            if (foldoutStates[key])
-            {
-                foreach (var property in value)
-                {
-                    ToolboxEditorGui.DrawToolboxProperty(property);
-                }
-            }
-            EditorGUILayout.EndVertical();
-        }
-
         private void OnEnable()
         {
-            if (!(target is MonoBehaviour) && !(target is ScriptableObject))
+            if (target is not MonoBehaviour && target is not ScriptableObject)
             {
                 return;
             }
@@ -162,6 +99,66 @@ namespace Sciphone
             {
                 tabNames = new string[tabGroups.Keys.Count];
                 tabGroups.Keys.CopyTo(tabNames, 0);
+            }
+        }
+
+        private bool IsPropertyInTabGroups(SerializedProperty property)
+        {
+            foreach (var list in tabGroups.Values)
+            {
+                if (list.Contains(property, comparer))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private bool IsPropertyInFoldoutGroups(SerializedProperty property)
+        {
+            foreach (var list in foldoutGroups.Values)
+            {
+                if (list.Contains(property, comparer))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private void DrawTabGroup(string[] tabNames, int tabGroupIndex)
+        {
+            tabNames = tabNames.Except(drawnTabs).ToArray();
+            if (tabNames.Length == 0) return;
+
+            if (selectedTabIndices.Count - 1 < tabGroupIndex)
+            {
+                selectedTabIndices.Add(0);
+            }
+
+            // Draw tab selection
+            selectedTabIndices[tabGroupIndex] = GUILayout.Toolbar(selectedTabIndices[tabGroupIndex], tabNames);
+            // Draw properties for the selected tab using Toolbox's property drawer
+            EditorGUILayout.Space();
+            foreach (var property in tabGroups[tabNames[selectedTabIndices[tabGroupIndex]]])
+            {
+                ToolboxEditorGui.DrawToolboxProperty(property);
+            }
+            DrawHorizontalLine(Color.grey);
+            EditorGUILayout.Space();
+        }
+
+        private void DrawFoldoutGroup(string key, List<SerializedProperty> value)
+        {
+            if (drawnFoldouts.Contains(key)) return;
+
+            foldoutStates[key] = EditorGUILayout.Foldout(foldoutStates[key], key, true);
+            if (foldoutStates[key])
+            {
+                foreach (var property in value)
+                {
+                    ToolboxEditorGui.DrawToolboxProperty(property);
+                }
             }
         }
 
@@ -255,9 +252,7 @@ namespace Sciphone
 
         private void DrawButtonWithParameters(Object targetObject, MethodInfo method)
         {
-            // Begin vertical group with a box
-            EditorGUILayout.BeginVertical("box");
-
+            GUILayout.Space(5f);
             // Draw the button
             if (GUILayout.Button($"{method.Name}"))
             {
@@ -277,7 +272,6 @@ namespace Sciphone
                 }
 
                 // Draw fields for each parameter
-                EditorGUI.indentLevel++;
                 for (int i = 0; i < parametersInfo.Length; i++)
                 {
                     ParameterInfo param = parametersInfo[i];
@@ -286,17 +280,13 @@ namespace Sciphone
                     // Draw parameter field based on parameter type
                     methodParameters[method][i] = DrawParameterField(param, currentValue);
                 }
-                EditorGUI.indentLevel--;
             }
-
-            // End vertical group
-            EditorGUILayout.EndVertical();
         }
 
         private object DrawParameterField(ParameterInfo param, object currentValue)
         {
             EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField(param.Name, GUILayout.MaxWidth(100));
+            EditorGUILayout.LabelField(ObjectNames.NicifyVariableName(param.Name), GUILayout.MaxWidth(100));
 
             object newValue = currentValue;
             if (param.ParameterType == typeof(int))
@@ -330,6 +320,19 @@ namespace Sciphone
 
             EditorGUILayout.EndHorizontal();
             return newValue;
+        }
+
+        public void DrawHorizontalLine(Color color, float thickness = 1, float padding = 10)
+        {
+            var rect = EditorGUILayout.GetControlRect(GUILayout.Height(padding + thickness));
+            rect.height = thickness;
+            rect.y += padding * 0.5f;
+
+            rect.x -= 2f;                       // optional: stretch left a bit
+            rect.width += 6f;                  // optional: stretch right a bit
+            rect.width -= 5f;       // apply right padding
+
+            EditorGUI.DrawRect(rect, color);
         }
     }
 }

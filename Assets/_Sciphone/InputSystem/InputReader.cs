@@ -7,14 +7,15 @@ using static PlayerInputActions;
 public class InputReader : MonoBehaviour, IPlayerActions
 {
     public Dictionary<string, Action<InputAction.CallbackContext>> inputTable;
-    private PlayerInput playerInput;
+    //private PlayerInput playerInput;
     private PlayerInputActions playerInputActions;
 
     private void Awake()
     {
         playerInputActions = new PlayerInputActions();
-        playerInput = GetComponent<PlayerInput>();
-        playerInput.actions = playerInputActions.asset;
+        //playerInput = GetComponent<PlayerInput>();
+        //playerInput.actions = playerInputActions.asset;
+        //playerInput.defaultControlScheme = "Gamepad";
 
         inputTable = new()
         {
