@@ -48,7 +48,7 @@ public class ParkourController : MonoBehaviour, IControllerModule
     public Vector3 targetForward;
 
     private Vector3 worldMoveDir;
-    private Vector3 parkourDir;
+    public Vector3 parkourDir;
 
     private void Start()
     {
@@ -60,7 +60,7 @@ public class ParkourController : MonoBehaviour, IControllerModule
         fenceCheckerOffset.x = character.characterMover.capsuleRadius;
         fenceCheckerOffset.y = vaultFenceHighRange.y + character.characterMover.skinWidth;
 
-        character.DetectionLoop += Character_DetectionLoop;
+        character.PreUpdateLoop += Character_PreUpdateLoop;
         character.characterCommand.MoveDirCommand += CharacterCommand_MoveDirCommand;
     }
 
@@ -69,21 +69,20 @@ public class ParkourController : MonoBehaviour, IControllerModule
         worldMoveDir = vector;
     }
 
-    private void Character_DetectionLoop()
+    private void Character_PreUpdateLoop()
     {
         parkourDir = worldMoveDir == Vector3.zero ? transform.forward : worldMoveDir;
-        CheckClimbAvailability(parkourDir);
-        CheckFenceAvailability(parkourDir);
     }
 
     public void CheckClimbAvailability(Vector3 direction)
     {
-        if (DetectClimbPoint(direction, out climbHit) && 
-            DetectWall(direction, climbCheckerDistance + character.characterMover.skinWidth, climbHighRange.y, out wallHit))
+        if (DetectClimbPoint(direction, out climbHit))
         {
             Vector3 localClimbPoint = transform.InverseTransformPoint(climbHit.point);
             climbHeight = localClimbPoint.y;
-            if (climbHeight > climbLowRange.x && climbHeight < climbHighRange.y)
+            if (climbHeight > climbLowRange.x && climbHeight < climbHighRange.y && 
+                DetectWall(direction, climbCheckerDistance + character.characterMover.skinWidth, climbHeight, out wallHit))
+
             {
                 climbAvailable = true;
             }
@@ -130,8 +129,7 @@ public class ParkourController : MonoBehaviour, IControllerModule
 
     public void CheckFenceAvailability(Vector3 direction)
     {
-        if (DetectFence(direction, out fenceHit) && 
-            DetectWall(direction, fenceCheckerDistance + character.characterMover.skinWidth, vaultFenceHighRange.y, out wallHit))
+        if (DetectFence(direction, out fenceHit))
         {
             Vector3 localFenceHitPoint = transform.InverseTransformPoint(fenceHit.point);
             fenceHeight = localFenceHitPoint.y;
@@ -139,7 +137,10 @@ public class ParkourController : MonoBehaviour, IControllerModule
                 fenceHeight > vaultFenceMediumRange.x && fenceHeight <= vaultFenceMediumRange.y ||
                 fenceHeight > vaultFenceHighRange.x && fenceHeight <= vaultFenceHighRange.y)
             {
-                fenceAvalilable = true;
+                if (DetectWall(direction, fenceCheckerDistance + character.characterMover.skinWidth, fenceHeight, out wallHit))
+                {
+                    fenceAvalilable = true;
+                }
             }
         }
         else
@@ -208,12 +209,14 @@ public class ParkourController : MonoBehaviour, IControllerModule
 
     public void SetInitialTransform(RaycastHit hitInfo, float totalHeight)
     {
-        Vector3 wallNormal = Vector3.ProjectOnPlane(wallHit.normal, transform.up);
+        Vector3 wallNormalOnPlane = Vector3.ProjectOnPlane(wallHit.normal, transform.up);
         var localHitPoint = transform.InverseTransformPoint(hitInfo.point);
-        var hitPoint = transform.TransformPoint(localHitPoint);
+        var localWallPoint = transform.InverseTransformPoint(wallHit.point);
+        var localAnchorPoint = new Vector3(localWallPoint.x, localHitPoint.y, localWallPoint.z);
+        var anchorPoint = transform.TransformPoint(localAnchorPoint);
 
-        targetPos = hitPoint - totalHeight * transform.up + startingDistFromWall * wallNormal;
-        targetForward = -wallNormal;
+        targetPos = anchorPoint - totalHeight * transform.up + startingDistFromWall * wallNormalOnPlane;
+        targetForward = -wallNormalOnPlane;
         character.characterMover.SetWorldVelocity(Vector3.zero);
         character.characterMover.SetGravitySimulation(false);
     }

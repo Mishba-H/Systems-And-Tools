@@ -55,7 +55,7 @@ public class BaseController : MonoBehaviour, IControllerModule
         character.characterCommand.FaceDirCommand += CharacterCommand_FaceDirCommand;
         character.characterCommand.MoveDirCommand += CharacterCommand_MoveDirCommand;
 
-        character.UpdateLoop += OnCharacterUpdate;
+        character.UpdateLoop += Character_UpdateLoop;
         foreach (var action in character.actions)
         {
             if (action is Idle || action is Walk || action is Run || action is Sprint || action is Crouch)
@@ -91,7 +91,7 @@ public class BaseController : MonoBehaviour, IControllerModule
         worldMoveDir = Vector3.ProjectOnPlane(dir, transform.up).normalized;
     }
 
-    private void OnCharacterUpdate()
+    private void Character_UpdateLoop()
     {
         HandleAnimationParameters(Time.deltaTime * character.timeScale);
     }

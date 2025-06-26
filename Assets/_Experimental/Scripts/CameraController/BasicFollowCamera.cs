@@ -21,8 +21,8 @@ public class BasicFollow : BaseCameraMode
     public Vector2 pitchRange = new Vector2(75f, 75f); // Looking up/down
     public Vector2 yawRange = new Vector2(0f, 360f); // Looking side to side
 
-    [HideInInspector] public float pitchAngle;
-    [HideInInspector] public float yawAngle;
+    public float pitchAngle;
+    public float yawAngle;
 
     public Vector3 smoothTime = 2f * Vector3.one;
     private Vector3 vel = Vector3.zero;
@@ -79,39 +79,38 @@ public class BasicFollow : BaseCameraMode
         HandleLookInput(dt / controller.timeScale);
 
         Vector3 refUp = followTransform.up;
-        Vector3 worldForward = Vector3.forward;
-        if (Mathf.Abs(Vector3.Dot(refUp, worldForward)) == 1f)
-            worldForward = Vector3.right;
-        Vector3 refRight = Vector3.Normalize(Vector3.Cross(refUp, worldForward));
+        Vector3 arbitrary = (Mathf.Abs(Vector3.Dot(refUp, Vector3.up)) < 0.99f) ? Vector3.up : Vector3.right;
+        Vector3 refRight = Vector3.Normalize(Vector3.Cross(arbitrary, refUp));
+        Vector3 refForward = Vector3.Normalize(Vector3.Cross(refUp, refRight));
 
-        //Debug.DrawRay(pivotTransform.position, refUp, Color.green);
-        //Debug.DrawRay(pivotTransform.position, refRight, Color.red);
-        //Debug.DrawRay(pivotTransform.position, refForward, Color.blue);
+        Debug.DrawRay(pivotTransform.position, refUp, Color.green);
+        Debug.DrawRay(pivotTransform.position, refRight, Color.red);
+        Debug.DrawRay(pivotTransform.position, refForward, Color.blue);
 
-        HandleRecentering(dt, refUp, refRight);
+        HandleRecentering(dt, refUp, refRight, refForward);
 
-        Quaternion pitchRotation = Quaternion.AngleAxis(pitchAngle, refRight);
+        Quaternion baseRotation = Quaternion.LookRotation(refForward, refUp);
         Quaternion yawRotation = Quaternion.AngleAxis(yawAngle, refUp);
-        Quaternion targetRotation = yawRotation * pitchRotation;
+        Quaternion pitchRotation = Quaternion.AngleAxis(pitchAngle, yawRotation * refRight);
+        Quaternion targetRotation = pitchRotation * yawRotation * baseRotation;
 
         pivotTransform.rotation = targetRotation;
-        pivotTransform.rotation = Quaternion.LookRotation(pivotTransform.forward, followTransform.up);
     }
     public void HandleLookInput(float dt)
     {
         if (device is Mouse)
         {
-            pitchAngle -= lookInput.y * mouseSensitivity * 0.01f;
+            pitchAngle += lookInput.y * mouseSensitivity * 0.01f;
             yawAngle += lookInput.x * mouseSensitivity * 0.01f;
         }
         else if (device is Gamepad)
         {
-            pitchAngle -= lookInput.y * dt * gamepadSensitivity * 10;
+            pitchAngle += lookInput.y * dt * gamepadSensitivity * 10;
             yawAngle += lookInput.x * dt * gamepadSensitivity * 10;
         }
         else if (device is Touchscreen)
         {
-            pitchAngle -= lookInput.y * touchscreenSensitivity * 0.01f;
+            pitchAngle += lookInput.y * touchscreenSensitivity * 0.01f;
             yawAngle += lookInput.x * touchscreenSensitivity * 0.01f;
         }
 
@@ -123,7 +122,7 @@ public class BasicFollow : BaseCameraMode
         if (yawAngle >= 180f) yawAngle -= 360f;
         else if (yawAngle <= -180f) yawAngle += 360f;
     }
-    public void HandleRecentering(float dt, Vector3 refUp, Vector3 refRight)
+    public void HandleRecentering(float dt, Vector3 refUp, Vector3 refRight, Vector3 refForward)
     {
         if (lookInput == Vector2.zero && moveInput != Vector2.zero)
         {
@@ -151,21 +150,17 @@ public class BasicFollow : BaseCameraMode
 
             if (horizontalRecentering || verticalRecentering)
             {
-                Vector3 refForward = Vector3.Cross(refRight, refUp);
-                Quaternion targetRot = Quaternion.LookRotation(dampedForward, refUp);
-
-                Quaternion referenceRotation = Quaternion.LookRotation(refForward, refUp);
-                Quaternion localRot = Quaternion.Inverse(referenceRotation) * targetRot;
-                Vector3 euler = localRot.eulerAngles;
-
                 if (horizontalRecentering)
                 {
-                    yawAngle = Extensions.NormalizeAngle(euler.y);
+                    Vector3 forwardOnUpPlane = Vector3.ProjectOnPlane(dampedForward, refUp);
+                    yawAngle = Vector3.SignedAngle(refForward, forwardOnUpPlane, refUp);
                 }
 
                 if (verticalRecentering)
                 {
-                    pitchAngle = Extensions.NormalizeAngle(euler.x);
+                    Quaternion referenceRotation = Quaternion.LookRotation(refForward, refUp);
+                    Vector3 localForward = Quaternion.Inverse(referenceRotation) * dampedForward;
+                    pitchAngle = Mathf.Asin(localForward.y) * Mathf.Rad2Deg;
                 }
             }
         }

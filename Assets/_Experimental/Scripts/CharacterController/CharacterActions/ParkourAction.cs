@@ -50,6 +50,10 @@ public class ClimbOverFromGround : ParkourAction
 
         this.condition = condition.Compile();
     }
+    public override void Detect()
+    {
+        controller.CheckClimbAvailability(controller.parkourDir);
+    }
     public override void EvaluateStatus()
     {
         base.EvaluateStatus();
@@ -149,6 +153,10 @@ public class VaultOverFence : ParkourAction
         }
 
         this.condition = condition.Compile();
+    }
+    public override void Detect()
+    {
+        controller.CheckFenceAvailability(controller.parkourDir);
     }
     public override void EvaluateStatus()
     {

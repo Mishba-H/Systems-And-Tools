@@ -60,7 +60,7 @@ public class MeleeCombatController : MonoBehaviour, IControllerModule
     {
         character.characterCommand.MoveDirCommand += OnMoveDirCommand;
 
-        character.UpdateLoop += OnCharacterUpdate;
+        character.UpdateLoop += Character_UpdateLoop;
         foreach (var action in character.actions)
         {
             if (action is Evade || action is Roll || action is Attack)
@@ -79,7 +79,7 @@ public class MeleeCombatController : MonoBehaviour, IControllerModule
         };
     }
 
-    private void OnCharacterUpdate()
+    private void Character_UpdateLoop()
     {
         HandleAnimationParameters(Time.deltaTime * character.timeScale);
     }

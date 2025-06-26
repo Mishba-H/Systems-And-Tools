@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 497cc32a5e0962242810202e8e43f4a3, type: 3}
-  m_Name: NewComboGraph
+  m_Name: GreatSwordComboGraph
   m_EditorClassIdentifier: 
   nodeInfos:
   - rid: 4945720444371599632

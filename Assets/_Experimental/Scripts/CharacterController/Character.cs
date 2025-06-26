@@ -7,7 +7,7 @@ using ZLinq;
 [SelectionBase]
 public class Character : MonoBehaviour
 {
-    public event Action DetectionLoop;
+    public event Action PreUpdateLoop;
     public event Action UpdateLoop;
     //public event Action FixedUpdateLoop;
 
@@ -73,11 +73,11 @@ public class Character : MonoBehaviour
     {
         SynchronizeTime();
 
-        DetectionLoop?.Invoke();
-        EvaluateAndUpdateAllActions();
+        PreUpdateLoop?.Invoke();
+        DetectEvaluateUpdateAllActions();
         if (!PerformingAction<CharacterAction>())
         {
-            EvaluateAndUpdateAllActions();
+            DetectEvaluateUpdateAllActions();
         }
         UpdateLoop?.Invoke();
     }
@@ -94,10 +94,11 @@ public class Character : MonoBehaviour
         animMachine.timeScale = timeScale;
     }
 
-    public void EvaluateAndUpdateAllActions()
+    public void DetectEvaluateUpdateAllActions()
     {
         foreach (var action in actions)
         {
+            action.Detect();
             action.EvaluateStatus();
             action.Update();
         }

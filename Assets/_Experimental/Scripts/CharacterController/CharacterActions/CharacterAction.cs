@@ -49,6 +49,7 @@ public abstract class CharacterAction
         CompileCondition();
     }
     public virtual void CompileCondition() { }
+    public virtual void Detect() { }
     public virtual void EvaluateStatus() 
     {
         if (!enabled)

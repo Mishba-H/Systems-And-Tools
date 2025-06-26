@@ -268,12 +268,12 @@ public class Attack : MeleeCombatAction
     }
     public override void OnPerform()
     {
-        character.EvaluateAndUpdateAllActions();
+        character.DetectEvaluateUpdateAllActions();
     }
     public override void OnStop()
     {
         controller.lastAttackTime = character.time;
-        character.EvaluateAndUpdateAllActions();
+        character.DetectEvaluateUpdateAllActions();
     }
 }
 [Serializable]

@@ -85,7 +85,7 @@ public class CharacterMover : MonoBehaviour
 
     private void Start()
     {
-        character.DetectionLoop += Character_DetectionLoop;
+        character.PreUpdateLoop += Character_PreUpdateLoop;
         character.UpdateLoop += Character_UpdateLoop;
     }
 
@@ -104,7 +104,7 @@ public class CharacterMover : MonoBehaviour
     //    }
     //}
 
-    private void Character_DetectionLoop()
+    private void Character_PreUpdateLoop()
     {
         IsGrounded = CheckGround(transform.position, out groundHit);
     }
@@ -171,7 +171,7 @@ public class CharacterMover : MonoBehaviour
                         IsGrounded = true;
                         CheckGround(transform.position, out groundHit);
                         SnapToGround();
-                        character.EvaluateAndUpdateAllActions();
+                        character.DetectEvaluateUpdateAllActions();
                         return distToSurface;
                     }
                 }

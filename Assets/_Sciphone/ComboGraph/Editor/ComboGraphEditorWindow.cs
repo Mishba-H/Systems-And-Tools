@@ -19,9 +19,6 @@ namespace Sciphone.ComboGraph
             Undo.undoRedoPerformed += OnUndoRedoPerformed;
 
             AddToolbar();
-
-            if (comboGraphAsset == null) return;
-
             Initialize(comboGraphAsset);
         }
 
@@ -55,12 +52,17 @@ namespace Sciphone.ComboGraph
             if (graphView != null)
             {
                 rootVisualElement.Remove(graphView);
+                graphView = null;
             }
+
+            if (target == null)
+            {
+                return;
+            }
+
             comboGraphAsset = target;
             serializedObject = new SerializedObject(comboGraphAsset);
             AddGraphView();
-            graphView.ComboGraphAsset = comboGraphAsset;
-            graphView.DrawFromAsset();
         }
 
         private void AddGraphView()
@@ -69,6 +71,8 @@ namespace Sciphone.ComboGraph
 
             graphView = new ComboGraphView(this, serializedObject);
             rootVisualElement.Add(graphView);
+            graphView.ComboGraphAsset = comboGraphAsset;
+            graphView.DrawFromAsset();
         }
 
         private void AddToolbar()
@@ -79,23 +83,23 @@ namespace Sciphone.ComboGraph
             
             ObjectField assetField = new ObjectField("Graph Asset");
             assetField.objectType = typeof(ComboGraphAsset);
-            assetField.RegisterValueChangedCallback(evt =>
+            assetField.RegisterCallback<ChangeEvent<UnityEngine.Object>>(evt =>
             {
-                if (evt.newValue != null)
-                {
-                    Initialize(evt.newValue as ComboGraphAsset);
-                }
+                Initialize(evt.newValue as ComboGraphAsset);
             });
-
             toolbar.Add(assetField);
 
             Button miniMapButton = new Button(() => ToggleMiniMap())
             {
                 text = "Minimap"
             };
-
             toolbar.Add(miniMapButton);
 
+            Button frameAllButton = new Button(() => graphView.FrameAll())
+            {
+                text = "Frame All"
+            };
+            toolbar.Add(frameAllButton);
 
             rootVisualElement.Add(toolbar);
         }
