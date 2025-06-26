@@ -1,11 +1,11 @@
 using Sciphone;
 using UnityEngine;
 
-#if UNITY_EDITOR
-using Physics = Nomnom.RaycastVisualization.VisualPhysics;
-#else
-using Physics = UnityEngine.Physics;
-#endif
+//#if UNITY_EDITOR
+//using Physics = Nomnom.RaycastVisualization.VisualPhysics;
+//#else
+//using Physics = UnityEngine.Physics;
+//#endif
 
 public class ParkourController : MonoBehaviour, IControllerModule
 {
@@ -232,6 +232,6 @@ public class ParkourController : MonoBehaviour, IControllerModule
 
         targetPos += worldDeltaPostition;
         transform.position = targetPos;
-        transform.forward = targetForward;
+        character.characterMover.SetFaceDir(targetForward);
     }
 }

@@ -11,36 +11,33 @@ using Physics = UnityEngine.Physics;
 public class TargetingCamera : BaseCameraMode
 {
     public float pivotHeight = 1.5f;
-    public Vector3 posOffset = Vector3.back * 3.5f;
-    public float topClampAngle = 75f;
-    public float bottomClampAngle = 75f;
+    public Vector3 camPosOffset = Vector3.back * 3.5f;
+    public float camSpeed = 15f;
 
     public Vector3 smoothTime = 2f * Vector3.one;
-    private Transform refTransform;
     private Vector3 vel = Vector3.zero;
 
     public Transform lookTarget;
     public float targetCamSpeed;
     public Vector3 velo;
 
-    public void SetLookTArget(Transform targetTransform)
+    private Vector3 smoothedForward;
+
+    public void SetLookTarget(Transform targetTransform)
     {
         lookTarget = targetTransform;
     }
-
     public override void Initialize(CameraController controller)
     {
         base.Initialize(controller);
-        refTransform = new GameObject("CameraReference").transform;
-        refTransform.SetParent(controller.transform);
     }
     public override void HandlePivotPosition(CameraController controller, float dt)
     {
-        //Update position of camera holder(pivot)
-        refTransform.rotation = Quaternion.LookRotation(Vector3.ProjectOnPlane(controller.cameraTransform.forward, Vector3.up), Vector3.up);
+        var camForwardOnPlane = Vector3.ProjectOnPlane(camTransform.forward, followTransform.up);
+        camForwardOnPlane = camForwardOnPlane == Vector3.zero ? Vector3.ProjectOnPlane(pivotTransform.forward, followTransform.up) : camForwardOnPlane;
+        refTransform.rotation = Quaternion.LookRotation(camForwardOnPlane, followTransform.up);
 
-        var targetPosition = followTarget.position
-            + pivotHeight * Vector3.up;
+        var targetPosition = followTransform.position + pivotHeight * followTransform.up;
 
         Vector3 localOffset = refTransform.InverseTransformDirection(controller.transform.position - targetPosition);
 
@@ -52,34 +49,36 @@ public class TargetingCamera : BaseCameraMode
     }
     public override void HandlePivotRotation(CameraController controller, float dt)
     {
-        var targetFwd = lookTarget.position - controller.transform.position;
-        controller.transform.forward = Vector3.SmoothDamp(controller.transform.forward, targetFwd, ref velo, targetCamSpeed * dt);
+        Vector3 targetForward = lookTarget.position - controller.transform.position;
+        targetForward = Vector3.ProjectOnPlane(targetForward, followTransform.up).normalized;
+        smoothedForward = Vector3.SmoothDamp(smoothedForward, targetForward, ref velo, targetCamSpeed * dt);
+        pivotTransform.rotation = Quaternion.LookRotation(smoothedForward, followTransform.up);
     }
     public override void HandleCamera(CameraController controller, float dt)
     {
         //Check for camera collision and move the camera
-        var dist = posOffset.magnitude;
-        var dir = (controller.transform.rotation * posOffset).normalized;
-        if (Physics.SphereCast(controller.transform.position, cameraRadius, dir, out RaycastHit cameraHit, dist, collisionLayer))
+        var dist = camPosOffset.magnitude;
+        var dir = (pivotTransform.rotation * camPosOffset).normalized;
+        if (Physics.SphereCast(pivotTransform.position, cameraRadius, dir, out RaycastHit cameraHit, dist, collisionLayer))
         {
-            var cameraCurrentPos = cameraTransform.position;
-            var cameraTargetPos = controller.transform.position + dir * cameraHit.distance;
-            cameraTransform.position = Vector3.Lerp(cameraCurrentPos, cameraTargetPos, cameraSpeed * dt);
+            var cameraCurrentPos = camTransform.position;
+            var cameraTargetPos = pivotTransform.position + dir * cameraHit.distance;
+            camTransform.position = Vector3.Lerp(cameraCurrentPos, cameraTargetPos, camSpeed * dt);
         }
         else
         {
-            var cameraCurrentPos = cameraTransform.localPosition;
-            var cameraTargetPos = posOffset;
-            cameraTransform.localPosition = Vector3.Lerp(cameraCurrentPos, cameraTargetPos, cameraSpeed * dt);
+            var cameraCurrentPos = camTransform.localPosition;
+            var cameraTargetPos = camPosOffset;
+            camTransform.localPosition = Vector3.Lerp(cameraCurrentPos, cameraTargetPos, camSpeed * dt);
         }
 
-        var targetFwd = lookTarget.position - cameraTransform.position;
-        cameraTransform.forward = Vector3.SmoothDamp(cameraTransform.forward, targetFwd, ref velo, targetCamSpeed * dt);
+        var targetFwd = lookTarget.position - camTransform.position;
+        camTransform.rotation = Quaternion.LookRotation(targetFwd, followTransform.up);
     }
     public override IEnumerator SetCameraTransform(CameraController controller)
     {
         Vector3 currentPos = controller.cameraTransform.localPosition;
-        Vector3 targetPos = posOffset;
+        Vector3 targetPos = camPosOffset;
 
         var remainingTime = switchTime;
         while (remainingTime > 0)

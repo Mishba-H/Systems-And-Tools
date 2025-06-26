@@ -51,8 +51,9 @@ public class PlayerCommandProcessor : MonoBehaviour
 
     private void ProcessInputs()
     {
-        Vector3 camForward = Vector3.ProjectOnPlane(cameraTransform.forward, transform.up);
-        Vector3 camRight = Vector3.ProjectOnPlane(cameraTransform.right, transform.up);
+        Vector3 camForward = Vector3.ProjectOnPlane(cameraTransform.forward, characterGameObject.transform.up).normalized;
+        Vector3 camRight = Vector3.ProjectOnPlane(cameraTransform.right, characterGameObject.transform.up).normalized;
+
         Vector3 worldMoveDir = (camRight * moveInput.x + camForward * moveInput.y).normalized;
         characterCommand.InvokeMoveDirCommand(worldMoveDir);
 

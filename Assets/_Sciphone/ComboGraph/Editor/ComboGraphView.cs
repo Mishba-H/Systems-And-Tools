@@ -177,6 +177,9 @@ namespace Sciphone.ComboGraph
         public void DrawFromAsset()
         {
             ClearGraph();
+
+            if (comboGraphAsset.nodeInfos == null) return;
+
             foreach (var nodeInfo in comboGraphAsset.nodeInfos)
             {
                 AddNodeFromAsset(nodeInfo);

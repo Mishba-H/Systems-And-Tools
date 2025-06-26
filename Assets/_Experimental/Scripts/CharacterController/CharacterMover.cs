@@ -2,11 +2,11 @@ using System;
 using Sciphone;
 using UnityEngine;
 
-#if UNITY_EDITOR
-using Physics = Nomnom.RaycastVisualization.VisualPhysics;
-#else
-using Physics = UnityEngine.Physics;
-#endif
+//#if UNITY_EDITOR
+//using Physics = Nomnom.RaycastVisualization.VisualPhysics;
+//#else
+//using Physics = UnityEngine.Physics;
+//#endif
 
 public class CharacterMover : MonoBehaviour
 {
@@ -58,6 +58,7 @@ public class CharacterMover : MonoBehaviour
     [TabGroup("Checker Settings")] public int sides = 8;
     [TabGroup("Checker Settings")] public int noOfLayers = 3;
     [TabGroup("Checker Settings")] public float groundCheckerRadius = 0.3f;
+    [TabGroup("Checker Settings")] public float groundCheckerHeight = 1f;
 
     [TabGroup("Checker Settings")] public int stepCheckerCount;
 
@@ -145,28 +146,6 @@ public class CharacterMover : MonoBehaviour
         }
 
         return collideAndSlideVector;
-
-
-
-
-        /*if (collideAndSlideVector.magnitude < moveVector.magnitude)
-        {
-            transform.position += collideAndSlideVector;
-            if (!gravityPass)
-            {
-                SnapToGround();
-            }
-            return collideAndSlideVector;
-        }
-        else
-        {
-            transform.position += collideAndSlideVector.normalized * moveVector.magnitude;
-            if (!gravityPass)
-            {
-                SnapToGround();
-            }
-            return collideAndSlideVector.normalized * moveVector.magnitude;
-        }*/
     }
 
     public Vector3 CollideAndSlide(Vector3 moveDir, Vector3 initialMoveDir, Vector3 pos, float checkDistance, bool gravityPass, int depth)
@@ -305,8 +284,8 @@ public class CharacterMover : MonoBehaviour
     {
         var groundCheckerDepth = GetGroundCheckerDepth();
 
-        if (Physics.Raycast(pos + transform.up * (maxStepHeight + skinWidth),
-            -transform.up, out groundHit, maxStepHeight + skinWidth + groundCheckerDepth, groundLayer, QueryTriggerInteraction.Ignore))
+        if (Physics.Raycast(pos + transform.up * (groundCheckerHeight + skinWidth),
+            -transform.up, out groundHit, groundCheckerHeight + skinWidth + groundCheckerDepth, groundLayer, QueryTriggerInteraction.Ignore))
         {
             if (Vector3.Angle(groundHit.normal, transform.up) <= criticalSlopeAngle)
             {
@@ -321,8 +300,9 @@ public class CharacterMover : MonoBehaviour
             {
                 float angle = j * angleStep;
                 Vector3 direction = Quaternion.AngleAxis(angle, transform.up) * transform.forward;
-                Vector3 rayStart = pos + transform.up * (maxStepHeight + skinWidth) + direction * radius;
-                if (Physics.Raycast(rayStart, -transform.up, out groundHit, maxStepHeight + skinWidth + groundCheckerDepth, groundLayer, QueryTriggerInteraction.Ignore))
+                Vector3 rayStart = pos + transform.up * (groundCheckerHeight + skinWidth) + direction * radius;
+                if (Physics.Raycast(rayStart, -transform.up, out groundHit, groundCheckerHeight + skinWidth + groundCheckerDepth, groundLayer, 
+                    QueryTriggerInteraction.Ignore))
                 {
                     if (Vector3.Angle(groundHit.normal, transform.up) <= criticalSlopeAngle)
                     {
@@ -517,10 +497,11 @@ public class CharacterMover : MonoBehaviour
 
     public void SetFaceDir(Vector3 faceDir)
     {
+        transform.up = -gravityDirection.normalized;    
         faceDir = Vector3.ProjectOnPlane(faceDir, transform.up).normalized;
         if (faceDir != Vector3.zero)
         {
-            transform.forward = faceDir;
+            transform.rotation = Quaternion.LookRotation(faceDir, transform.up);
         }
     }
 
