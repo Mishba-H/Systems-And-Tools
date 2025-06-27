@@ -171,7 +171,7 @@ public class CharacterMover : MonoBehaviour
                         IsGrounded = true;
                         CheckGround(transform.position, out groundHit);
                         SnapToGround();
-                        character.DetectEvaluateUpdateAllActions();
+                        character.EvaluateAndUpdateAllActions();
                         return distToSurface;
                     }
                 }

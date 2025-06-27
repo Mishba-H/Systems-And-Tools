@@ -56,8 +56,8 @@ public abstract class AnimationStateInfo
 [Serializable]
 public class AnimationClipState : AnimationStateInfo
 {
+    [PreviewAnimationClip(nameof(clip), nameof(properties))] public float preview;
     [ClipOrFBX] public AnimationClip clip;
-    [PreviewAnimationClip(nameof(clip))] public float preview;
     public override void AddToGraph(PlayableGraph graph)
     {
         playable = AnimationClipPlayable.Create(graph, clip);
@@ -92,12 +92,12 @@ public class AnimationClipState : AnimationStateInfo
 [Serializable]
 public class FourWayBlendState : AnimationStateInfo
 {
+    [PreviewAnimationClip(nameof(Forward), nameof(properties))] public float preview;
     [ClipOrFBX] public AnimationClip Forward;
     [ClipOrFBX] public AnimationClip Backward;
     [ClipOrFBX] public AnimationClip Right;
     [ClipOrFBX] public AnimationClip Left;
     [ClipOrFBX] public AnimationClip Center;
-    [PreviewAnimationClip(nameof(Forward))] public float preview;
     [Range(-1f, 1f)] public float blendX;
     [Range(-1f, 1f)] public float blendY;
     public float[] weights = new float[5];
@@ -196,6 +196,7 @@ public class FourWayBlendState : AnimationStateInfo
 [Serializable]
 public class EightWayBlendState : AnimationStateInfo
 {
+    [PreviewAnimationClip(nameof(Forward), nameof(properties))] public float preview;
     [ClipOrFBX] public AnimationClip ForwardLeft;
     [ClipOrFBX] public AnimationClip Forward;
     [ClipOrFBX] public AnimationClip ForwardRight;
@@ -205,7 +206,6 @@ public class EightWayBlendState : AnimationStateInfo
     [ClipOrFBX] public AnimationClip BackwardLeft;
     [ClipOrFBX] public AnimationClip Backward;
     [ClipOrFBX] public AnimationClip BackwardRight;
-    [PreviewAnimationClip(nameof(Forward))] public float preview;
     [Range(-1f, 1f)] public float blendX;
     [Range(-1f, 1f)] public float blendY;
     public float[] weights = new float[9];

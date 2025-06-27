@@ -157,4 +157,28 @@ public static class AnimationMachineExtensions
 
         return maxValue;
     }
+    public static Vector3 EvaluateScaleFactor(RootMotionCurvesProperty rootMotionProperty, ScaleModeProperty scaleMode)
+    {
+        var curves = rootMotionProperty.rootMotionData;
+        float totalTime = curves.totalTime;
+
+        float GetScale(AnimationCurve curve, ScaleMode mode)
+        {
+            return mode switch
+            {
+                ScaleMode.None => 1f,
+                ScaleMode.Zero => 0f,
+                ScaleMode.AvgValue => (curve.Evaluate(totalTime) - curve.Evaluate(0f)) / totalTime,
+                ScaleMode.MaxValue => GetMaxValue(curve) - curve.Evaluate(0f),
+                ScaleMode.TotalValue => curve.Evaluate(totalTime) - curve.Evaluate(0f),
+                _ => 1f
+            };
+        }
+
+        return new Vector3(
+        GetScale(curves.rootTX, scaleMode.scaleModeX),
+        GetScale(curves.rootTY, scaleMode.scaleModeY),
+        GetScale(curves.rootTZ, scaleMode.scaleModeZ)
+    );
+    }
 }

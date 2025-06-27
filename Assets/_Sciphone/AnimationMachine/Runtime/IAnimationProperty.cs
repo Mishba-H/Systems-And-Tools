@@ -58,7 +58,7 @@ public struct RootMotionData
 }
 
 [Serializable]
-public class ScaleModeProperty : IAnimationProperty
+public class ScaleModeProperty : AnimationStateProperty
 {
     public ScaleMode scaleModeX;
     public ScaleMode scaleModeY;
@@ -67,8 +67,10 @@ public class ScaleModeProperty : IAnimationProperty
 public enum ScaleMode
 {
     None,
-    TotalValue,
+    Zero,
+    AvgValue,
     MaxValue,
+    TotalValue
 }
 #endregion
 

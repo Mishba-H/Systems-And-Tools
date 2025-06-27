@@ -50,10 +50,6 @@ public class ClimbOverFromGround : ParkourAction
 
         this.condition = condition.Compile();
     }
-    public override void Detect()
-    {
-        controller.CheckClimbAvailability(controller.parkourDir);
-    }
     public override void EvaluateStatus()
     {
         base.EvaluateStatus();
@@ -104,7 +100,7 @@ public class ClimbOverFromGround : ParkourAction
             character.characterAnimator.ChangeAnimationState("ClimbOverFromGroundHigh", "Parkour");
         }
 
-        controller.CalculateScaleFactorAndStartingDistanceForClimb();
+        controller.CalculateScaleFactorAndStartingDistance(controller.climbHeight);
         controller.SetInitialTransform(controller.climbHit, controller.climbHeight);
     }
 }
@@ -154,10 +150,6 @@ public class VaultOverFence : ParkourAction
 
         this.condition = condition.Compile();
     }
-    public override void Detect()
-    {
-        controller.CheckFenceAvailability(controller.parkourDir);
-    }
     public override void EvaluateStatus()
     {
         base.EvaluateStatus();
@@ -180,7 +172,6 @@ public class VaultOverFence : ParkourAction
                 IsBeingPerformed = true;
             }
         }
-
         if (MathF.Abs(character.animMachine.activeState.NormalizedTime() - 1f) < 0.01f)
         {
             IsBeingPerformed = false;
@@ -208,7 +199,7 @@ public class VaultOverFence : ParkourAction
             character.characterAnimator.ChangeAnimationState("VaultOverFenceHigh", "Parkour");
         }
 
-        controller.CalculateScaleFactorAndStartingDistanceForFence();
+        controller.CalculateScaleFactorAndStartingDistance(controller.fenceHeight);
         controller.SetInitialTransform(controller.fenceHit, controller.fenceHeight);
     }
 }

@@ -74,10 +74,10 @@ public class Character : MonoBehaviour
         SynchronizeTime();
 
         PreUpdateLoop?.Invoke();
-        DetectEvaluateUpdateAllActions();
+        EvaluateAndUpdateAllActions();
         if (!PerformingAction<CharacterAction>())
         {
-            DetectEvaluateUpdateAllActions();
+            EvaluateAndUpdateAllActions();
         }
         UpdateLoop?.Invoke();
     }
@@ -94,11 +94,10 @@ public class Character : MonoBehaviour
         animMachine.timeScale = timeScale;
     }
 
-    public void DetectEvaluateUpdateAllActions()
+    public void EvaluateAndUpdateAllActions()
     {
         foreach (var action in actions)
         {
-            action.Detect();
             action.EvaluateStatus();
             action.Update();
         }

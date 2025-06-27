@@ -1,4 +1,5 @@
 #if UNITY_EDITOR
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
@@ -7,61 +8,131 @@ namespace Sciphone
     [CustomPropertyDrawer(typeof(PreviewAnimationClipAttribute))]
     public class PreviewAnimationClipDrawer : PropertyDrawer
     {
-        bool rootXZ = true;
-        bool rootY = true;
+        private static Dictionary<string, bool> rootXZMap = new Dictionary<string, bool>();
+        private static Dictionary<string, bool> rootYMap = new Dictionary<string, bool>();
+        private static Dictionary<string, bool> previewRangeToggleMap = new Dictionary<string, bool>();
+        private static Dictionary<string, Vector2> previewRangeMap = new Dictionary<string, Vector2>();
+
         private static GameObject lastSelectedObject;
+
+        private Vector2 defaultPreviewRange = new Vector2(0f, 1f);
+
         static PreviewAnimationClipDrawer()
         {
-            // Listen to hierarchy selection changes
             Selection.selectionChanged += OnSelectionChanged;
         }
         private static void OnSelectionChanged()
         {
             GameObject currentSelectedObject = Selection.activeGameObject;
+            
+            if (currentSelectedObject != null)
+            {
+                ResetToTPose(currentSelectedObject);
+            }
 
-            // Reset the previous object to T-pose if it had an Animator
             if (lastSelectedObject != null && lastSelectedObject != currentSelectedObject)
             {
                 ResetToTPose(lastSelectedObject);
             }
-
-            // Update the last selected object
             lastSelectedObject = currentSelectedObject;
         }
-        private void PreviewAnimationClip(AnimationClip clip, float progress)
+        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
-            GameObject target = Selection.activeGameObject;
-            Animator animator = target?.GetComponent<Animator>();
-            if (animator)
+            if (property.propertyType != SerializedPropertyType.Float)
             {
-                var hips = animator.GetBoneTransform(HumanBodyBones.Hips);
-                var hipsPosition = hips.position;
-                clip.SampleAnimation(target, progress * clip.length);
+                EditorGUI.LabelField(position, label.text, "Use [PreviewClip] with float.");
+                return;
+            }
 
-                var y = rootY ? hips.position.y : hipsPosition.y;
-                var x = rootXZ ? hips.position.x : hipsPosition.x;
-                var z = rootXZ ? hips.position.z : hipsPosition.z;
-                hips.position = new Vector3(x, y, z);
-            }
-            else
+            PreviewAnimationClipAttribute previewAttr = (PreviewAnimationClipAttribute)attribute;
+            SerializedProperty clipProperty = FindSiblingProperty(property, previewAttr.clipName);
+            SerializedProperty propertiesListProperty = FindSiblingProperty(property, previewAttr.propertiesListName);
+
+            if (clipProperty == null || clipProperty.propertyType != SerializedPropertyType.ObjectReference)
             {
-                Debug.LogWarning("No Animator found on selected object.");
+                EditorGUI.LabelField(position, label.text, "Invalid AnimationClip reference.");
+                return;
             }
-        }
-        private void ResetToTPose()
-        {
-            if (Selection.activeGameObject?.GetComponent<Animator>() is Animator animator)
+
+            AnimationClip clip = clipProperty.objectReferenceValue as AnimationClip;
+            if (clip == null)
             {
-                animator.Rebind();
-                animator.Update(0f);
+                EditorGUI.LabelField(position, label.text, "AnimationClip reference is null.");
+                return;
             }
-        }
-        private static void ResetToTPose(GameObject gameObject)
-        {
-            if (gameObject?.GetComponent<Animator>() != null && gameObject?.GetComponent<Animator>() is Animator animator)
+
+            string key = property.propertyPath;
+            if (!rootXZMap.ContainsKey(key)) rootXZMap[key] = true;
+            if (!rootYMap.ContainsKey(key)) rootYMap[key] = true;
+            if (!previewRangeToggleMap.ContainsKey(key)) previewRangeToggleMap[key] = true;
+            if (propertiesListProperty != null && propertiesListProperty.isArray)
             {
-                animator.Rebind(); // Reset to T-pose
-                animator.Update(0f); // Apply the reset immediately
+                previewRangeMap[key] = GetPlayWindowFromProperties(propertiesListProperty);
+            }
+            else if (!previewRangeMap.ContainsKey(key))
+            {
+                previewRangeMap[key] = new Vector2(0f, 1f);
+            }
+
+            // --- First Line: float slider ---
+            Rect line1 = new Rect(position.x, position.y, position.width, EditorGUIUtility.singleLineHeight);
+            Rect labelPos = new Rect(line1.x, line1.y, line1.width * 0.2f, line1.height);
+            Rect sliderPos = new Rect(labelPos.xMax, line1.y, line1.width * 0.8f, line1.height);
+
+            EditorGUI.BeginChangeCheck();
+            EditorGUI.LabelField(labelPos, label);
+            property.floatValue = EditorGUI.Slider(sliderPos, property.floatValue, 0f, 1f);
+            if (EditorGUI.EndChangeCheck() && clip && !Application.isPlaying)
+            {
+                if (previewRangeToggleMap[key])
+                {
+                    PreviewAnimationClip(clip, property.floatValue, rootXZMap[key], rootYMap[key], previewRangeMap[key]);
+                }
+                else
+                {
+                    PreviewAnimationClip(clip, property.floatValue, rootXZMap[key], rootYMap[key], defaultPreviewRange);
+                }
+            }
+
+            // --- Second Line: Preview Range + Toggles + Button ---
+            Rect line2 = new Rect(position.x, position.y + EditorGUIUtility.singleLineHeight + 2f, position.width, EditorGUIUtility.singleLineHeight);
+
+            float labelWidth = line2.width * 0.2f;
+            float fieldSpacing = 4f;
+            float floatFieldWidth = 30f;
+            float toggleWidth = 40f;
+            float buttonWidth = 20f;
+
+            Rect previewLabel = new Rect(line2.x, line2.y, labelWidth, line2.height);
+            EditorGUI.LabelField(previewLabel, "Preview Range");
+
+            Vector2 range = previewRangeMap[key];
+            float min = range.x;
+            float max = range.y;
+
+            Rect minField = new Rect(previewLabel.xMax, line2.y, floatFieldWidth, line2.height);
+            Rect slider = new Rect(minField.xMax + fieldSpacing, line2.y, line2.width - labelWidth - floatFieldWidth * 2 - toggleWidth * 3 - buttonWidth - fieldSpacing * 7, line2.height);
+            Rect maxField = new Rect(slider.xMax + fieldSpacing, line2.y, floatFieldWidth, line2.height);
+
+            Rect previewToggle = new Rect(maxField.xMax + fieldSpacing, line2.y, toggleWidth, line2.height);
+            Rect xzToggle = new Rect(previewToggle.xMax + fieldSpacing, line2.y, toggleWidth, line2.height);
+            Rect yToggle = new Rect(xzToggle.xMax + fieldSpacing, line2.y, toggleWidth, line2.height);
+            Rect button = new Rect(yToggle.xMax + fieldSpacing, line2.y, buttonWidth, line2.height);
+
+            min = EditorGUI.FloatField(minField, min);
+            max = EditorGUI.FloatField(maxField, max);
+            EditorGUI.MinMaxSlider(slider, ref min, ref max, 0f, 1f);
+            range = new Vector2(Mathf.Clamp01(min), Mathf.Clamp01(max));
+            previewRangeMap[key] = range;
+
+            previewRangeToggleMap[key] = GUI.Toggle(previewToggle, previewRangeToggleMap[key], "Crop", EditorStyles.miniButton);
+            rootXZMap[key] = GUI.Toggle(xzToggle, rootXZMap[key], "XZ", EditorStyles.miniButton);
+            rootYMap[key] = GUI.Toggle(yToggle, rootYMap[key], "Y", EditorStyles.miniButton);
+
+            if (GUI.Button(button, new GUIContent("T", "Reset to T-Pose")))
+            {
+                ResetToTPose();
+                property.floatValue = 0f;
             }
         }
         private SerializedProperty FindSiblingProperty(SerializedProperty property, string siblingName)
@@ -78,57 +149,67 @@ namespace Sciphone
 
             return property.serializedObject.FindProperty(siblingPath);
         }
-        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+        private Vector2 GetPlayWindowFromProperties(SerializedProperty parentProperty)
         {
-            if (property.propertyType != SerializedPropertyType.Float)
+            for (int i = 0; i < parentProperty.arraySize; i++)
             {
-                EditorGUI.LabelField(position, label.text, "Use [PreviewClip] with float.");
-                return;
+                var element = parentProperty.GetArrayElementAtIndex(i);
+                var playWindowProp = element.FindPropertyRelative("playWindow");
+                if (playWindowProp != null && playWindowProp.propertyType == SerializedPropertyType.Vector2)
+                {
+                    return playWindowProp.vector2Value;
+                }
             }
+            return new Vector2(0f, 1f);
+        }
+        private void PreviewAnimationClip(AnimationClip clip, float progress, bool rootXZ, bool rootY, Vector2 previewRange)
+        {
+            GameObject target = Selection.activeGameObject;
+            if (target.TryGetComponent(out Animator animator))
+            {
+                Transform hips = animator.GetBoneTransform(HumanBodyBones.Hips);
 
-            PreviewAnimationClipAttribute previewAttr = (PreviewAnimationClipAttribute)attribute;
-            SerializedProperty clipProperty = FindSiblingProperty(property, previewAttr.clipName);
-            if (clipProperty == null || clipProperty.propertyType != SerializedPropertyType.ObjectReference)
-            {
-                EditorGUI.LabelField(position, label.text, "Invalid AnimationClip reference.");
-                return;
-            }
-            AnimationClip clip = clipProperty.objectReferenceValue as AnimationClip;
-            if (clip == null)
-            {
-                EditorGUI.LabelField(position, label.text, " AnimationClip reference is null.");
-                return;
-            }
 
-            EditorGUI.BeginChangeCheck();
-            Rect labelPos = position;
-            labelPos.width = position.width * 0.2f;
-            EditorGUI.LabelField(labelPos, label);
-            Rect sliderPosition = position;
-            sliderPosition.xMin = labelPos.xMax;
-            sliderPosition.width = position.xMax - 90f - labelPos.xMax - 3f;
-            property.floatValue = EditorGUI.Slider(sliderPosition, property.floatValue, 0f, 1f);
-            if (EditorGUI.EndChangeCheck() && clip && !Application.isPlaying)
-            {
-                PreviewAnimationClip(clip, property.floatValue);
+                clip.SampleAnimation(target, 0f);
+                Vector3 hipsPositionAtZero = hips.position;
+
+                clip.SampleAnimation(target, previewRange.x * clip.length);
+                Vector3 hipsPositionAtPreviewStart = hips.position;
+
+                Vector3 hipsStartOffset = hipsPositionAtPreviewStart - hipsPositionAtZero;
+
+                var previewProgress = Mathf.Lerp(previewRange.x, previewRange.y, progress);
+                clip.SampleAnimation(target, previewProgress * clip.length);
+
+                var y = rootY ? hips.position.y - hipsStartOffset.y : hipsPositionAtZero.y;
+                var x = rootXZ ? hips.position.x - hipsStartOffset.x : hipsPositionAtZero.x;
+                var z = rootXZ ? hips.position.z - hipsStartOffset.z : hipsPositionAtZero.z;
+                hips.position = new Vector3(x, y, z);
             }
-            Rect rect = position;
-            rect.xMin = position.xMax - 90;
-            rect.width = 40;
-            rootXZ = EditorGUI.ToggleLeft(rect, "XZ", rootXZ);
-            rect.xMin += 40;
-            rect.width = 30;
-            rootY = EditorGUI.ToggleLeft(rect, "Y", rootY);
-            rect.xMin += 30;
-            rect.width = 20f;
-            if (GUI.Button(rect, new GUIContent("T", "Reset to T-Pose")))
+            else
             {
-                ResetToTPose();
+                Debug.LogWarning("No Animator found on selected object.");
+            }
+        }
+        private void ResetToTPose()
+        {
+            if (Selection.activeGameObject.TryGetComponent(out Animator animator))
+            {
+                animator.Rebind();
+                animator.Update(0f);
+            }
+        }
+        private static void ResetToTPose(GameObject gameObject)
+        {
+            if (gameObject.TryGetComponent(out Animator animator))
+            {
+                animator.Rebind();
+                animator.Update(0f);
             }
         }
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
-            return EditorGUIUtility.singleLineHeight;
+            return EditorGUIUtility.singleLineHeight * 2f + 4f;
         }
     }
 }

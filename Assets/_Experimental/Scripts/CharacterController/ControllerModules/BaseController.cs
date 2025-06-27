@@ -100,27 +100,22 @@ public class BaseController : MonoBehaviour, IControllerModule
     {
         if (recalculateScaleFactor)
         {
-            CalculateTargetSpeed();
-            if (character.PerformingAction<Idle>())
+            UpdateTargetSpeed();
+            if (character.PerformingAction<Idle>() || character.PerformingAction<Walk>() || character.PerformingAction<Run>() ||
+                character.PerformingAction<Sprint>())
             {
-                scaleFactor = new Vector3(1f, 0f, 1f);
-            }
-            else if (character.PerformingAction<Walk>() || character.PerformingAction<Run>() ||
-                character.PerformingAction<Sprint>() || character.PerformingAction<Crouch>())
-            {
-                if (character.animMachine.activeState.TryGetProperty<RootMotionCurvesProperty>(out var property))
+                if (character.animMachine.activeState.TryGetProperty<RootMotionCurvesProperty>(out var rootMotionProp)
+                    && character.animMachine.activeState.TryGetProperty<ScaleModeProperty>(out var scaleModeProp))
                 {
-                    RootMotionData curves = ((RootMotionCurvesProperty)property).rootMotionData;
-                    var totalTime = curves.totalTime;
-                    var totalZDisp = curves.rootTZ.Evaluate(totalTime) - curves.rootTZ.Evaluate(0f);
+                    scaleFactor = AnimationMachineExtensions.EvaluateScaleFactor(rootMotionProp as RootMotionCurvesProperty, scaleModeProp as ScaleModeProperty);
 
-                    scaleFactor = new Vector3(1f, 0f, targetSpeed / (totalZDisp / totalTime));
+                    scaleFactor = scaleFactor.With(z: targetSpeed / scaleFactor.z);
                 }
             }
         }
     }
 
-    public void CalculateTargetSpeed()
+    public void UpdateTargetSpeed()
     {
         if (character.PerformingAction<Idle>())
         {
@@ -184,7 +179,7 @@ public class BaseController : MonoBehaviour, IControllerModule
     public void HandleRotation(float dt)
     {
         if (character.PerformingAction<Idle>() || character.PerformingAction<Walk>() || character.PerformingAction<Run>() ||
-            character.PerformingAction<Sprint>() || character.PerformingAction<Crouch>())
+            character.PerformingAction<Sprint>())
         {
             if (movementMode == MovementMode.Forward || character.PerformingAction<Sprint>())
             {

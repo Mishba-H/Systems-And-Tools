@@ -72,6 +72,8 @@ public class ParkourController : MonoBehaviour, IControllerModule
     private void Character_PreUpdateLoop()
     {
         parkourDir = worldMoveDir == Vector3.zero ? transform.forward : worldMoveDir;
+        CheckClimbAvailability(parkourDir);
+        CheckFenceAvailability(parkourDir);
     }
 
     public void CheckClimbAvailability(Vector3 direction)
@@ -165,29 +167,16 @@ public class ParkourController : MonoBehaviour, IControllerModule
         return false;
     }
 
-    public void CalculateScaleFactorAndStartingDistanceForClimb()
+    public void CalculateScaleFactorAndStartingDistance(float targetHeight)
     {
-        if (character.animMachine.activeState.TryGetProperty<RootMotionCurvesProperty>(out AnimationStateProperty property))
+        if (character.animMachine.activeState.TryGetProperty<RootMotionCurvesProperty>(out var rootMotionProp)
+            && character.animMachine.activeState.TryGetProperty<ScaleModeProperty>(out var scaleModeProp))
         {
-            RootMotionData curves = ((RootMotionCurvesProperty)property).rootMotionData;
-            float totalTime = curves.totalTime;
-
-            if (character.animMachine.activeState.TryGetData<TimeOfContact>(out IAnimationData data))
-            {
-                var timeOfContact = character.animMachine.activeState.GetAdjustedNormalizedTime((data as TimeOfContact).timeOfContact) * totalTime;
-
-                AnimationCurve rootTZCurve = curves.rootTZ;
-                startingDistFromWall = rootTZCurve.Evaluate(timeOfContact) - rootTZCurve.Evaluate(0f);
-
-                AnimationCurve rootTYCurve = curves.rootTY;
-                animHeight = rootTYCurve.Evaluate(totalTime) - rootTYCurve.Evaluate(0f);
-                scaleFactor = new Vector3(1f, climbHeight / animHeight, 1f);
-            }
+            scaleFactor = AnimationMachineExtensions.EvaluateScaleFactor(rootMotionProp as RootMotionCurvesProperty, scaleModeProp as ScaleModeProperty);
+            animHeight = scaleFactor.y;
+            scaleFactor = scaleFactor.With(y: targetHeight / scaleFactor.y);
         }
-    }
 
-    public void CalculateScaleFactorAndStartingDistanceForFence()
-    {
         if (character.animMachine.activeState.TryGetProperty<RootMotionCurvesProperty>(out AnimationStateProperty property))
         {
             RootMotionData curves = ((RootMotionCurvesProperty)property).rootMotionData;
@@ -195,21 +184,17 @@ public class ParkourController : MonoBehaviour, IControllerModule
 
             if (character.animMachine.activeState.TryGetData<TimeOfContact>(out IAnimationData data))
             {
-                var timeOfContact = character.animMachine.activeState.GetAdjustedNormalizedTime((data as TimeOfContact).timeOfContact) * totalTime;
+                var timeOfContact = (data as TimeOfContact).timeOfContact * totalTime;
 
                 AnimationCurve rootTZCurve = curves.rootTZ;
                 startingDistFromWall = rootTZCurve.Evaluate(timeOfContact) - rootTZCurve.Evaluate(0f);
-
-                AnimationCurve rootTYCurve = curves.rootTY;
-                animHeight = rootTYCurve.GetMaxValue() - rootTYCurve.Evaluate(0f);
-                scaleFactor = new Vector3(1f, fenceHeight / animHeight, 1f);
             }
         }
     }
 
     public void SetInitialTransform(RaycastHit hitInfo, float totalHeight)
     {
-        Vector3 wallNormalOnPlane = Vector3.ProjectOnPlane(wallHit.normal, transform.up);
+        Vector3 wallNormalOnPlane = Vector3.ProjectOnPlane(wallHit.normal, transform.up).normalized;
         var localHitPoint = transform.InverseTransformPoint(hitInfo.point);
         var localWallPoint = transform.InverseTransformPoint(wallHit.point);
         var localAnchorPoint = new Vector3(localWallPoint.x, localHitPoint.y, localWallPoint.z);
@@ -224,7 +209,7 @@ public class ParkourController : MonoBehaviour, IControllerModule
     public void HandleParkourMovement(float dt)
     {
         Vector3 up = transform.up;
-        Vector3 forward = transform.forward;
+        Vector3 forward = targetForward;
         Vector3 right = Vector3.Cross(up, forward).normalized;
 
         Vector3 rootDeltaPosition = character.animMachine.rootLinearVelocity * dt;

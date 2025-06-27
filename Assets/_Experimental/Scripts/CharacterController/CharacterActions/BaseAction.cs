@@ -498,7 +498,7 @@ public class Jump : BaseAction
         controller.HandlePhysicsSimulation();
         controller.InitiateJump();
         character.characterMover.IsGrounded = false;
-        character.DetectEvaluateUpdateAllActions();
+        character.EvaluateAndUpdateAllActions();
 
         character.characterAnimator.ChangeAnimationState("Jump", "Base");
     }

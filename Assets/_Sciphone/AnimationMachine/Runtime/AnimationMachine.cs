@@ -38,7 +38,6 @@ public class AnimationMachine : MonoBehaviour
     [TabGroup("Root Motion Properties")] public Vector3 rootDeltaPosition;
     [TabGroup("Root Motion Properties")] public Quaternion rootDeltaRotation;
     [TabGroup("Root Motion Properties")] public Vector3 rootLinearVelocity;
-    [TabGroup("Root Motion Properties")] public Vector3 rootAngularVelocity;
 
     [SerializeReference, Polymorphic] public List<AnimationLayerInfo> layers;
 
@@ -128,6 +127,9 @@ public class AnimationMachine : MonoBehaviour
         if (activeState == newState) return;
         
         activeState = newState;
+
+        // Resets root motion parameters on active state change
+        EvaluateRootMotionData(1f, 0f, 0f);
 
         /*// This calculates root motion parameters for one frame when the active state is changed
         if (enableStopMotion)
@@ -396,12 +398,6 @@ public class AnimationMachine : MonoBehaviour
         }
 
         rootLinearVelocity = rootDeltaPosition / dt;
-
-        rootDeltaRotation.ToAngleAxis(out float angleInDegrees, out Vector3 axis); 
-        if (angleInDegrees > 180f)
-            angleInDegrees -= 360f;
-        float angleInRadians = angleInDegrees * Mathf.Deg2Rad;
-        rootAngularVelocity = axis * angleInRadians / dt;
 
         if (activeState.TryGetProperty<PlaybackSpeedProperty>(out var speedProperty))
         {
