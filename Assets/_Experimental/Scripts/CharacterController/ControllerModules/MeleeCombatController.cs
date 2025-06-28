@@ -34,7 +34,7 @@ public class MeleeCombatController : MonoBehaviour, IControllerModule
     [TabGroup("Attack")] public float attackCacheDuration;
     [TabGroup("Attack")] public float attackCommandTime;
     [TabGroup("Attack")] public AttackType cachedAttack;
-    [TabGroup("Attack")] public Vector3 attackDir;
+    [TabGroup("Attack")] public Vector3 worldAttackDir;
     [TabGroup("Attack")] public float rotateSpeed;
     
     [TabGroup("Attack")][Header("Detector Settings")] public int noOfRays;
@@ -59,6 +59,7 @@ public class MeleeCombatController : MonoBehaviour, IControllerModule
     private void Start()
     {
         character.characterCommand.MoveDirCommand += OnMoveDirCommand;
+        character.characterCommand.AttackDirCommand += OnAttackDirCommand;
 
         character.UpdateLoop += Character_UpdateLoop;
         foreach (var action in character.actions)
@@ -89,29 +90,60 @@ public class MeleeCombatController : MonoBehaviour, IControllerModule
         worldMoveDir = vector;
     }
 
+    private void OnAttackDirCommand(Vector3 vector)
+    {
+        worldAttackDir = vector == Vector3.zero ? transform.forward : vector;
+    }
+
     public void CalculateScaleFactor()
     {
         if (recalculateScaleFactor)
         {
-            if (character.animMachine.activeState.TryGetProperty<RootMotionCurvesProperty>(out AnimationStateProperty property))
+            if (character.animMachine.activeState.TryGetProperty<RootMotionCurvesProperty>(out var rootMotionProp) &&
+                character.animMachine.activeState.TryGetProperty<ScaleModeProperty>(out var scaleModeProp))
             {
-                var curves = (property as RootMotionCurvesProperty).rootMotionData;
-                float totalTime = curves.totalTime;
-                float totalDisplacement = curves.rootTZ.Evaluate(totalTime) - curves.rootTZ.Evaluate(0f);
-                totalDisplacement = Mathf.Abs(totalDisplacement) < 0.1f ? curves.rootTZ.GetMaxValue() : totalDisplacement;
+                scaleFactor = AnimationMachineExtensions.EvaluateScaleFactor(rootMotionProp as RootMotionCurvesProperty, scaleModeProp as ScaleModeProperty);
 
                 if (character.PerformingAction<Evade>())
                 {
-                    scaleFactor = new Vector3(0f, 0f, evadeDistance / totalDisplacement);
+                    scaleFactor = scaleFactor.With(z: evadeDistance / scaleFactor.z);
                 }
                 else if (character.PerformingAction<Roll>())
                 {
-                    scaleFactor = new Vector3(0f, 0f, rollDistance / totalDisplacement);
+                    scaleFactor = scaleFactor.With(z: rollDistance / scaleFactor.z);
                 }
-                else if (character.PerformingAction<Attack>())
-                {
-                    scaleFactor = new Vector3(1f, 0f, 1f);
-                }
+            }
+        }
+    }
+
+    public void InitiateDodge()
+    {
+        if (character.PerformingAction<Evade>())
+            worldDodgeDir = worldMoveDir == Vector3.zero ? transform.forward : worldMoveDir;
+        else if (character.PerformingAction<Roll>())
+            worldDodgeDir = worldMoveDir == Vector3.zero ? worldDodgeDir : worldMoveDir;
+
+        if (character.PerformingAction<Sprint>())
+        {
+            relativeDodgeDir = Vector2.up;
+        }
+        else
+        {
+            if (Vector3.Angle(transform.forward, worldDodgeDir) <= 45)
+            {
+                relativeDodgeDir = Vector2.up;
+            }
+            else if (Vector3.Angle(transform.right, worldDodgeDir) <= 45)
+            {
+                relativeDodgeDir = Vector2.right;
+            }
+            else if (Vector3.Angle(-transform.right, worldDodgeDir) <= 45)
+            {
+                relativeDodgeDir = Vector2.left;
+            }
+            else if (Vector3.Angle(-transform.forward, worldDodgeDir) <= 45)
+            {
+                relativeDodgeDir = Vector2.down;
             }
         }
     }
@@ -195,39 +227,7 @@ public class MeleeCombatController : MonoBehaviour, IControllerModule
         }
         if (character.PerformingAction<Attack>())
         {
-            character.characterMover.SetFaceDir(Vector3.RotateTowards(transform.forward, attackDir, rotateSpeed * dt * Mathf.Deg2Rad, 0f));
-        }
-    }
-
-    public void InitiateDodge()
-    {
-        if (character.PerformingAction<Evade>()) 
-            worldDodgeDir = worldMoveDir == Vector3.zero ? transform.forward : worldMoveDir;
-        else if (character.PerformingAction<Roll>())
-            worldDodgeDir = worldMoveDir == Vector3.zero ? worldDodgeDir : worldMoveDir;
-
-        if (character.PerformingAction<Sprint>())
-        {
-            relativeDodgeDir = Vector2.up;
-        }
-        else
-        {
-            if (Vector3.Angle(transform.forward, worldDodgeDir) <= 45)
-            {
-                relativeDodgeDir = Vector2.up;
-            }
-            else if (Vector3.Angle(transform.right, worldDodgeDir) <= 45)
-            {
-                relativeDodgeDir = Vector2.right;
-            }
-            else if (Vector3.Angle(-transform.right, worldDodgeDir) <= 45)
-            {
-                relativeDodgeDir = Vector2.left;
-            }
-            else if (Vector3.Angle(-transform.forward, worldDodgeDir) <= 45)
-            {
-                relativeDodgeDir = Vector2.down;
-            }
+            character.characterMover.SetFaceDir(Vector3.RotateTowards(transform.forward, worldAttackDir, rotateSpeed * dt * Mathf.Deg2Rad, 0f));
         }
     }
 
@@ -281,9 +281,9 @@ public class MeleeCombatController : MonoBehaviour, IControllerModule
             {
                 lastAttackTime = Time.time;
                 attacksPerformed.Add(attackData);
-                if (TrySelectTarget(attackDir, attackData.attackRange, out RaycastHit attackHit))
+                if (TrySelectTarget(worldAttackDir, attackData.attackRange, out RaycastHit attackHit))
                 {
-                    attackDir = Vector3.ProjectOnPlane(attackHit.point - transform.position, transform.up).normalized;
+                    worldAttackDir = Vector3.ProjectOnPlane(attackHit.point - transform.position, transform.up).normalized;
                 }
                 OnAttackSelected?.Invoke();
                 return true;

@@ -1277,15 +1277,15 @@ MonoBehaviour:
       data:
         stateName: ClimbOverFromGroundLow
         properties:
-        - rid: 3179478967124492383
         - rid: 3179478967124492382
         - rid: 3179479269880627317
+        - rid: 3179478967124492383
         events: []
         data:
         - rid: 3179478989386547292
         animMachine: {fileID: 0}
         length: 0
-        preview: 0.851
+        preview: 0.826
         clip: {fileID: -203655887218126122, guid: 6f97b28fd8672a9438e37ad1e5a2e7cd, type: 3}
     - rid: 3179478967124492289
       type: {class: AnimationClipState, ns: , asm: Sciphone.AnimationMachine}
@@ -1293,8 +1293,8 @@ MonoBehaviour:
         stateName: ClimbOverFromGroundMedium
         properties:
         - rid: 3179478967124492384
-        - rid: 3179478967124492385
         - rid: 3179479269880627321
+        - rid: 3179478967124492385
         events: []
         data:
         - rid: 3179478989386547302
@@ -7710,14 +7710,14 @@ MonoBehaviour:
         stateName: ClimbOverFromGroundHigh
         properties:
         - rid: 3179478967124492387
-        - rid: 3179478967124492388
         - rid: 3179479269880627322
+        - rid: 3179478967124492388
         events: []
         data:
         - rid: 3179478989386547303
         animMachine: {fileID: 0}
         length: 0
-        preview: 0
+        preview: 0.742
         clip: {fileID: -203655887218126122, guid: 7b8bb2885ab27c8479713af1dc012d84, type: 3}
     - rid: 3179478967124492387
       type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone.AnimationMachine}
@@ -16727,11 +16727,11 @@ MonoBehaviour:
     - rid: 3179478989386547303
       type: {class: TimeOfContact, ns: , asm: Experimental}
       data:
-        timeOfContact: 0.588
+        timeOfContact: 0.67
     - rid: 3179479052709527644
       type: {class: TimeOfContact, ns: , asm: Experimental}
       data:
-        timeOfContact: 0.583
+        timeOfContact: 0.475
     - rid: 3179479052709527645
       type: {class: TimeOfContact, ns: , asm: Experimental}
       data:
@@ -16741,15 +16741,15 @@ MonoBehaviour:
       data:
         stateName: VaultOverFenceMedium
         properties:
-        - rid: 3179479052709527647
         - rid: 3179479052709527648
         - rid: 3179479269880627319
+        - rid: 3179479052709527647
         events: []
         data:
         - rid: 3179479052709527649
         animMachine: {fileID: 0}
         length: 0
-        preview: 0.516
+        preview: 0.507
         clip: {fileID: 1827226128182048838, guid: 904aa70e908d97a43bbb49b970ae63dd, type: 3}
     - rid: 3179479052709527647
       type: {class: PlayWindowProperty, ns: , asm: Sciphone.AnimationMachine}
@@ -18506,7 +18506,7 @@ MonoBehaviour:
     - rid: 3179479052709527649
       type: {class: TimeOfContact, ns: , asm: Experimental}
       data:
-        timeOfContact: 0.516
+        timeOfContact: 0.507
     - rid: 3179479062193111143
       type: {class: PlayWindowProperty, ns: , asm: Sciphone.AnimationMachine}
       data:
@@ -19653,30 +19653,30 @@ MonoBehaviour:
       data:
         stateName: VaultOverFenceLow
         properties:
-        - rid: 3179479062193111143
         - rid: 4945720422352290288
         - rid: 3179479269880627318
+        - rid: 3179479062193111143
         events: []
         data:
         - rid: 3179479052709527645
         animMachine: {fileID: 0}
         length: 0
-        preview: 0
+        preview: 0.387
         clip: {fileID: 1827226128182048838, guid: 58acc1209d1cb93419b300f8869389c1, type: 3}
     - rid: 4945720422352290232
       type: {class: AnimationClipState, ns: , asm: Sciphone.AnimationMachine}
       data:
         stateName: VaultOverFenceHigh
         properties:
-        - rid: 4945720422352290290
         - rid: 4945720422352290291
         - rid: 3179479269880627320
+        - rid: 4945720422352290290
         events: []
         data:
         - rid: 3179479052709527644
         animMachine: {fileID: 0}
         length: 0
-        preview: 0.583
+        preview: 0
         clip: {fileID: 1827226128182048838, guid: 4205c330c7cd6a64589732566dc2e6db, type: 3}
     - rid: 4945720422352290233
       type: {class: AnimationClipState, ns: , asm: Sciphone.AnimationMachine}
@@ -83197,8 +83197,8 @@ MonoBehaviour:
   attackCacheDuration: 0.3
   attackCommandTime: 0
   cachedAttack: 0
-  attackDir: {x: 0, y: 0, z: 0}
-  rotateSpeed: 0
+  worldAttackDir: {x: 0, y: 0, z: 0}
+  rotateSpeed: 1000
   noOfRays: 15
   seperationAngle: 5
   targetCheckerHeight: 1.2
@@ -83550,7 +83550,7 @@ MonoBehaviour:
         camPosOffset: {x: 0, y: 1.25, z: -3.5}
         camRotOffset: {x: 15, y: 0, z: 0}
         camSpeed: 15
-        pitchRange: {x: 75, y: 75}
+        pitchRange: {x: 60, y: 75}
         yawRange: {x: 180, y: 180}
         pitchAngle: 0
         yawAngle: 0

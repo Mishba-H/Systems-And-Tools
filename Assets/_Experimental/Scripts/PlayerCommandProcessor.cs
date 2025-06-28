@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Sciphone;
 using Sciphone.ComboGraph;
 using UnityEngine;
@@ -20,6 +21,10 @@ public class PlayerCommandProcessor : MonoBehaviour
 
     public bool sprint = false;
     public bool walk = false;
+    
+    [SerializeReference, Polymorphic] public List<ComboData> activeCombos;
+    public float comboEndTime;
+    public List<AttackData> attacksPerformed;
 
     private void Awake()
     {
@@ -39,7 +44,7 @@ public class PlayerCommandProcessor : MonoBehaviour
         inputReader.Subscribe("Jump", OnJumpInput);
         inputReader.Subscribe("Dodge", OnDodgeInput);
 
-        inputProcessor.OnProcessInput += OnAttackInput;
+        inputProcessor.OnProcessInputSequence += OnAttackInput;
 
         characterCommand.InvokeChangeMovementModeCommand(movementMode);
     }
@@ -51,10 +56,10 @@ public class PlayerCommandProcessor : MonoBehaviour
 
     private void ProcessInputs()
     {
-        Vector3 camForward = Vector3.ProjectOnPlane(cameraTransform.forward, characterGameObject.transform.up).normalized;
-        Vector3 camRight = Vector3.ProjectOnPlane(cameraTransform.right, characterGameObject.transform.up).normalized;
+        Vector3 camForwardOnPlane = Vector3.ProjectOnPlane(cameraTransform.forward, characterGameObject.transform.up).normalized;
+        Vector3 camRightOnPlane = Vector3.ProjectOnPlane(cameraTransform.right, characterGameObject.transform.up).normalized;
 
-        Vector3 worldMoveDir = (camRight * moveInput.x + camForward * moveInput.y).normalized;
+        Vector3 worldMoveDir = (camRightOnPlane * moveInput.x + camForwardOnPlane * moveInput.y).normalized;
         characterCommand.InvokeMoveDirCommand(worldMoveDir);
 
         if (moveInput.sqrMagnitude == 0f)
@@ -93,7 +98,7 @@ public class PlayerCommandProcessor : MonoBehaviour
         }
         else if (movementMode == BaseController.MovementMode.EightWay)
         {
-            characterCommand.InvokeFaceDirCommand(camForward);
+            characterCommand.InvokeFaceDirCommand(camForwardOnPlane);
         }
     }
 
@@ -164,8 +169,16 @@ public class PlayerCommandProcessor : MonoBehaviour
         }
     }
 
-    private void OnAttackInput(InputSequenceType sequenceType)
+    private void OnAttackInput(InputSequenceType sequenceType, Vector2 attackInput)
     {
+        Vector3 camForwardOnPlane = Vector3.ProjectOnPlane(cameraTransform.forward, characterGameObject.transform.up).normalized;
+        Vector3 camRightOnPlane = Vector3.ProjectOnPlane(cameraTransform.right, characterGameObject.transform.up).normalized;
+
+        var inputDir = attackInput == Vector2.zero ? moveInput : attackInput;
+        inputDir.Normalize();
+        Vector3 worldAttackDir = (camRightOnPlane * inputDir.x + camForwardOnPlane * inputDir.y).normalized;
+        characterCommand.InvokeAttackDirCommand(worldAttackDir);
+
         switch (sequenceType)
         {
             case InputSequenceType.AttackTap:
@@ -204,7 +217,6 @@ public class PlayerCommandProcessor : MonoBehaviour
                 break;
         }
     }
-
 
     [Button(nameof(SwitchMovementMode))]
     public void SwitchMovementMode()

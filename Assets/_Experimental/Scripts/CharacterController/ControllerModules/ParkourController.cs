@@ -84,7 +84,6 @@ public class ParkourController : MonoBehaviour, IControllerModule
             climbHeight = localClimbPoint.y;
             if (climbHeight > climbLowRange.x && climbHeight < climbHighRange.y && 
                 DetectWall(direction, climbCheckerDistance + character.characterMover.skinWidth, climbHeight, out wallHit))
-
             {
                 climbAvailable = true;
             }
@@ -109,23 +108,6 @@ public class ParkourController : MonoBehaviour, IControllerModule
             }
         }
         climbHit = new RaycastHit();
-        return false;
-    }
-
-    public bool DetectWall(Vector3 direction, float distance, float height, out RaycastHit wallHit)
-    {
-        int count = Mathf.FloorToInt(height / allCheckerInterval);
-        var pos = transform.position + climbHeight * transform.up;
-        for (int i = 0; i <= count; i++)
-        {
-            if (Physics.Raycast(pos + i * allCheckerInterval * -transform.up, direction, out wallHit, distance,
-                wallLayer, QueryTriggerInteraction.Ignore)
-                && Vector3.Angle(wallHit.normal, transform.up) > character.characterMover.criticalSlopeAngle)
-            {
-                return true;
-            }
-        }
-        wallHit = new RaycastHit();
         return false;
     }
 
@@ -164,6 +146,23 @@ public class ParkourController : MonoBehaviour, IControllerModule
             }
         }
         fenceHit = new RaycastHit();
+        return false;
+    }
+
+    public bool DetectWall(Vector3 direction, float distance, float height, out RaycastHit wallHit)
+    {
+        int count = Mathf.FloorToInt(height / allCheckerInterval);
+        var pos = transform.position + climbHeight * transform.up;
+        for (int i = 0; i <= count; i++)
+        {
+            if (Physics.Raycast(pos + i * allCheckerInterval * -transform.up, direction, out wallHit, distance,
+                wallLayer, QueryTriggerInteraction.Ignore)
+                && Vector3.Angle(wallHit.normal, transform.up) > character.characterMover.criticalSlopeAngle)
+            {
+                return true;
+            }
+        }
+        wallHit = new RaycastHit();
         return false;
     }
 

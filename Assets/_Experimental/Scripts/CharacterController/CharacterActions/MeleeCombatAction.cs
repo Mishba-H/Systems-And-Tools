@@ -182,7 +182,6 @@ public class Attack : MeleeCombatAction
         
         controller.cachedAttack = attackType;
         controller.attackCommandTime = character.time;
-        controller.attackDir = controller.worldMoveDir == Vector3.zero ? controller.transform.forward : controller.worldMoveDir;
     }
     private void Controller_OnAttackSelected()
     {
@@ -265,10 +264,6 @@ public class Attack : MeleeCombatAction
             controller.readyToAttack = true;
             controller.attacksPerformed.Clear();
         }
-    }
-    public override void OnPerform()
-    {
-        character.EvaluateAndUpdateAllActions();
     }
     public override void OnStop()
     {

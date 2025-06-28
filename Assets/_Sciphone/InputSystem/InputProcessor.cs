@@ -8,16 +8,16 @@ using ZLinq;
 
 public class InputProcessor : MonoBehaviour
 {
-    public Action<InputSequenceType> OnProcessInput { get; set; }
+    public event Action<InputSequenceType, Vector2> OnProcessInputSequence;
 
     private InputReader inputReader;
 
     public List<InputSequence> allSequences;
-
     public int memorySize = 10; // Max no. of buffered inputs
     public float inputBufferTime = 1.0f;
     public float moveInputThreshold = 0.7f; // Min magnitude to register a directional input
-    private Vector2 storedMoveDir;
+    private Vector2 moveInput;
+    private Vector2 refMoveInput;
     private float previousMagnitude;
 
     [SerializeReference, Polymorphic] public List<ProcessedInput> inputBuffer;
@@ -85,26 +85,28 @@ public class InputProcessor : MonoBehaviour
             InputType currentType = InputType.None;
             if (inputDir.magnitude > moveInputThreshold)
             {
-                if (Vector2.Angle(inputDir, storedMoveDir) > 150)
+                if (Vector2.Angle(inputDir, refMoveInput) > 150)
                 {
                     currentType = InputType.Back;
-                    storedMoveDir = -inputDir;
+                    refMoveInput = -inputDir;
                 }
-                else if (Vector2.Angle(inputDir, storedMoveDir) < 30)
+                else if (Vector2.Angle(inputDir, refMoveInput) < 30)
                 {
                     currentType = InputType.Front;
-                    storedMoveDir = inputDir;
+                    refMoveInput = inputDir;
                 }
                 else
                 {
                     currentType = InputType.Front;
-                    storedMoveDir = inputDir;
+                    refMoveInput = inputDir;
                     inputBuffer.Clear();
                 }
             }
+            // the condition : {previousMagnitude < moveInputThreshold} makes sure move inputs are registered when crossing above the threshold
             if (currentType != InputType.None && previousMagnitude < moveInputThreshold)
             {
                 RegisterInput(currentType);
+                moveInput = inputDir;
             }
         }
         else
@@ -112,7 +114,8 @@ public class InputProcessor : MonoBehaviour
             if (inputDir.magnitude > moveInputThreshold)
             {
                 RegisterInput(InputType.Front);
-                storedMoveDir = inputDir;
+                refMoveInput = inputDir;
+                moveInput = inputDir;
             }
         }
         previousMagnitude = inputDir.magnitude;
@@ -146,17 +149,31 @@ public class InputProcessor : MonoBehaviour
                 continue;
             }
             bool sequenceMatched = true;
+            bool moveInputPresent = false;
             for (int i = 0; i < inputSequence.sequence.Count; i++)
             {
-                if (inputSequence.sequence[i] != inputBuffer[inputBuffer.Count - inputSequence.sequence.Count + i].inputType ||
+                var bufferedElement = inputBuffer[inputBuffer.Count - inputSequence.sequence.Count + i];
+                if (inputSequence.sequence[i] != bufferedElement.inputType ||
                     Time.time - inputBuffer[inputBuffer.Count - inputSequence.sequence.Count + i].inputTime > inputSequence.time)
                 {
                     sequenceMatched = false;
                 }
+
+                if (bufferedElement.inputType == InputType.Front || bufferedElement.inputType == InputType.Back)
+                {
+                    moveInputPresent = true;
+                }
             }
             if (sequenceMatched)
             {
-                OnProcessInput?.Invoke(inputSequence.sequenceType);
+                if (moveInputPresent)
+                {
+                    OnProcessInputSequence?.Invoke(inputSequence.sequenceType, moveInput);
+                }
+                else
+                {
+                    OnProcessInputSequence?.Invoke(inputSequence.sequenceType, Vector2.zero);
+                }
                 break;
             }
         }
