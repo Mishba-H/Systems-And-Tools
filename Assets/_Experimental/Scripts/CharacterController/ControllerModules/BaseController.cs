@@ -107,9 +107,8 @@ public class BaseController : MonoBehaviour, IControllerModule
                 if (character.animMachine.activeState.TryGetProperty<RootMotionCurvesProperty>(out var rootMotionProp)
                     && character.animMachine.activeState.TryGetProperty<ScaleModeProperty>(out var scaleModeProp))
                 {
-                    scaleFactor = AnimationMachineExtensions.EvaluateScaleFactor(rootMotionProp as RootMotionCurvesProperty, scaleModeProp as ScaleModeProperty);
-
-                    scaleFactor = scaleFactor.With(z: targetSpeed / scaleFactor.z);
+                    scaleFactor = AnimationMachineExtensions.EvaluateScaleFactor(rootMotionProp as RootMotionCurvesProperty, scaleModeProp as ScaleModeProperty,
+                        new Vector3(0f, 0f, targetSpeed));
                 }
             }
         }

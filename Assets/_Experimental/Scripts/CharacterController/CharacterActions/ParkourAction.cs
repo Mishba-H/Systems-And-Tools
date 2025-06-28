@@ -100,7 +100,10 @@ public class ClimbOverFromGround : ParkourAction
             character.characterAnimator.ChangeAnimationState("ClimbOverFromGroundHigh", "Parkour");
         }
 
-        controller.CalculateScaleFactorAndStartingDistance(controller.climbHeight);
+        character.characterMover.ApplyCapsulePreset("Zero");
+
+        controller.CalculateScaleFactor(controller.climbHeight);
+        controller.CalculateStartingDistanceFromWall();
         controller.SetInitialTransform(controller.climbHit, controller.climbHeight);
     }
 }
@@ -199,7 +202,10 @@ public class VaultOverFence : ParkourAction
             character.characterAnimator.ChangeAnimationState("VaultOverFenceHigh", "Parkour");
         }
 
-        controller.CalculateScaleFactorAndStartingDistance(controller.fenceHeight);
+        character.characterMover.ApplyCapsulePreset("Zero");
+
+        controller.CalculateScaleFactor(controller.fenceHeight);
+        controller.CalculateStartingDistanceFromWall();
         controller.SetInitialTransform(controller.fenceHit, controller.fenceHeight);
     }
 }

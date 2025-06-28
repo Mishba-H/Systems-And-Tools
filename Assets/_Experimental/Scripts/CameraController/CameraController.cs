@@ -2,14 +2,6 @@ using System;
 using System.Collections;
 using UnityEngine;
 using Sciphone;
-using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.XR;
-
-#if UNITY_EDITOR
-using Physics = Nomnom.RaycastVisualization.VisualPhysics;
-#else
-using Physics = UnityEngine.Physics;
-#endif
 
 
 public class CameraController : MonoBehaviour

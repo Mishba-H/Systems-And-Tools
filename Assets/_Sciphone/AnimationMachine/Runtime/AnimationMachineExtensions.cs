@@ -157,28 +157,27 @@ public static class AnimationMachineExtensions
 
         return maxValue;
     }
-    public static Vector3 EvaluateScaleFactor(RootMotionCurvesProperty rootMotionProperty, ScaleModeProperty scaleMode)
+    public static Vector3 EvaluateScaleFactor(RootMotionCurvesProperty rootMotionProperty, ScaleModeProperty scaleMode, Vector3 targetValue)
     {
         var curves = rootMotionProperty.rootMotionData;
         float totalTime = curves.totalTime;
 
-        float GetScale(AnimationCurve curve, ScaleMode mode)
+        float GetScale(AnimationCurve curve, ScaleMode mode, float targetValue)
         {
             return mode switch
             {
                 ScaleMode.None => 1f,
                 ScaleMode.Zero => 0f,
-                ScaleMode.AvgValue => (curve.Evaluate(totalTime) - curve.Evaluate(0f)) / totalTime,
-                ScaleMode.MaxValue => GetMaxValue(curve) - curve.Evaluate(0f),
-                ScaleMode.TotalValue => curve.Evaluate(totalTime) - curve.Evaluate(0f),
+                ScaleMode.AvgValue => targetValue / ((curve.Evaluate(totalTime) - curve.Evaluate(0f)) / totalTime),
+                ScaleMode.MaxValue => targetValue / (GetMaxValue(curve) - curve.Evaluate(0f)),
+                ScaleMode.TotalValue => targetValue / (curve.Evaluate(totalTime) - curve.Evaluate(0f)),
                 _ => 1f
             };
         }
 
         return new Vector3(
-        GetScale(curves.rootTX, scaleMode.scaleModeX),
-        GetScale(curves.rootTY, scaleMode.scaleModeY),
-        GetScale(curves.rootTZ, scaleMode.scaleModeZ)
-    );
+        GetScale(curves.rootTX, scaleMode.scaleModeX, targetValue.x),
+        GetScale(curves.rootTY, scaleMode.scaleModeY, targetValue.y),
+        GetScale(curves.rootTZ, scaleMode.scaleModeZ, targetValue.z));
     }
 }

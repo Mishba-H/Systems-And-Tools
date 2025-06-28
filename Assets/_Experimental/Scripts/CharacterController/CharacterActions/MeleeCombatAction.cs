@@ -83,6 +83,7 @@ public class Evade : MeleeCombatAction
         controller.InitiateDodge();
 
         character.characterAnimator.ChangeAnimationState("Evade", "Base");
+        character.characterMover.ApplyCapsulePreset("Medium");
     }
     public override void OnStop()
     {
@@ -167,6 +168,7 @@ public class Roll : MeleeCombatAction
         controller.InitiateDodge();
 
         character.characterAnimator.ChangeAnimationState("Roll", "Base");
+        character.characterMover.ApplyCapsulePreset("Large");
     }
     public override void OnStop()
     {
@@ -189,6 +191,7 @@ public class Attack : MeleeCombatAction
         controller.cachedAttack = AttackType.None;
 
         character.characterAnimator.ChangeAnimationState(controller.attacksPerformed.AsValueEnumerable().Last().attackName, "GreatSword");
+        character.characterMover.ApplyCapsulePreset("Medium");
     }
 
     public override void OnEnable()

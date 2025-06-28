@@ -4,11 +4,11 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-#if UNITY_EDITOR
-using Physics = Nomnom.RaycastVisualization.VisualPhysics;
-#else
-using Physics = UnityEngine.Physics;
-#endif
+//#if UNITY_EDITOR
+//using Physics = Nomnom.RaycastVisualization.VisualPhysics;
+//#else
+//using Physics = UnityEngine.Physics;
+//#endif
 
 [Serializable]
 public class BasicFollow : BaseCameraMode
@@ -83,9 +83,9 @@ public class BasicFollow : BaseCameraMode
         Vector3 refRight = Vector3.Normalize(Vector3.Cross(arbitrary, refUp));
         Vector3 refForward = Vector3.Normalize(Vector3.Cross(refUp, refRight));
 
-        Debug.DrawRay(pivotTransform.position, refUp, Color.green);
-        Debug.DrawRay(pivotTransform.position, refRight, Color.red);
-        Debug.DrawRay(pivotTransform.position, refForward, Color.blue);
+        //Debug.DrawRay(pivotTransform.position, refUp, Color.green);
+        //Debug.DrawRay(pivotTransform.position, refRight, Color.red);
+        //Debug.DrawRay(pivotTransform.position, refForward, Color.blue);
 
         HandleRecentering(dt, refUp, refRight, refForward);
 

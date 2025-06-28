@@ -5,7 +5,6 @@ using Sciphone;
 using UnityEngine.Animations;
 using System.Collections;
 using UnityEngine.Playables;
-using UnityEditor;
 
 [Serializable]
 public class AnimationLayerInfo

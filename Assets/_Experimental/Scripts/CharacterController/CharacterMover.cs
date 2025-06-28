@@ -1,6 +1,9 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using Sciphone;
 using UnityEngine;
+using static UnityEditor.PlayerSettings;
 
 //#if UNITY_EDITOR
 //using Physics = Nomnom.RaycastVisualization.VisualPhysics;
@@ -12,30 +15,46 @@ public class CharacterMover : MonoBehaviour
 {
     public event Action<bool> OnIsGroundedValueChanged;
 
-    enum CapsuleOrientation
+    public enum CapsuleOrientation
     {
         X,
         Y,
         Z
     }
 
+    [Serializable]
+    public class CapsulePreset
+    {
+        public string presetName;
+        public CapsuleOrientation capsuleOrientation;
+        public Vector3 capsuleOffset;
+        public float capsuleRadius;
+        public float capsuleSize;
+    }
+
     [HideInInspector] public Character character;
+
+    [SerializeReference, Polymorphic] public List<CapsulePreset> presets;
 
     #region ALGORITH_SETTINGS
     [TabGroup("Algorithm Settings")] public int maxDepth = 3;
     [TabGroup("Algorithm Settings")] public int noOfSpheres = 5;
     [TabGroup("Algorithm Settings")] public float sweepDistance = 1.5f;
 
-    [TabGroup("Algorithm Settings")][SerializeField] private CapsuleOrientation capsuleOrientation = CapsuleOrientation.Y;
-    [TabGroup("Algorithm Settings")] public float skinWidth = 0.015f;
+    [TabGroup("Algorithm Settings")] public CapsuleOrientation capsuleOrientation = CapsuleOrientation.Y;
     [TabGroup("Algorithm Settings")] public Vector3 capsuleOffset;
     [TabGroup("Algorithm Settings")] public float capsuleRadius;
     [TabGroup("Algorithm Settings")] public float capsuleSize;
+
+    [TabGroup("Algorithm Settings")] public float skinWidth = 0.015f;
 
     [TabGroup("Algorithm Settings")] public float criticalSlopeAngle = 75f;
     [TabGroup("Algorithm Settings")] public float criticalWallAngle = 30f;
 
     [TabGroup("Algorithm Settings")] public float maxStepHeight;
+    [TabGroup("Algorithm Settings")] public AnimationCurve pushSpeedCurve;
+    private Collider[] overlappingColliders;
+    private Collider myCollider;
     #endregion
 
     #region GRAVITY_SETTINGS    
@@ -51,10 +70,9 @@ public class CharacterMover : MonoBehaviour
     #endregion
 
     #region CHECKER_SETTINGS
-
-    [TabGroup("Checker Settings")] public bool isGrounded;
+    [TabGroup("Checker Settings")] public LayerMask collisionLayer;
+    [TabGroup("Checker Settings")][SerializeReference] private bool isGrounded;
     [TabGroup("Checker Settings")] public RaycastHit groundHit;
-    [TabGroup("Checker Settings")] public LayerMask groundLayer;
     [TabGroup("Checker Settings")] public int sides = 8;
     [TabGroup("Checker Settings")] public int noOfLayers = 3;
     [TabGroup("Checker Settings")] public float groundCheckerRadius = 0.3f;
@@ -76,11 +94,20 @@ public class CharacterMover : MonoBehaviour
     }
     #endregion
 
+    #region TARGET_MATCHING
+    [TabGroup("Target Mathcing")] public Vector3 targetPosition;
+    [TabGroup("Target Mathcing")] public Vector3 targetForward;
+    [TabGroup("Target Mathcing")] public float lerpTime;
+    private Coroutine lerpToTargetCoroutine;
+    #endregion
+
     public Vector3 worldVelocity;
 
     private void Awake()
     {
         character = GetComponent<Character>();
+        myCollider = GetComponent<Collider>();
+        overlappingColliders = new Collider[10];
     }
 
     private void Start()
@@ -124,6 +151,140 @@ public class CharacterMover : MonoBehaviour
             float alpha = accumulatedTime / simulationStep;
             transform.position = Vector3.Lerp(previousPosition, currentPosition, alpha);
         }
+
+        ResolveOverlaps(Time.deltaTime * character.timeScale);
+    }
+
+    private void SimulateGravity()
+    {
+        Vector3 localVelocity = transform.InverseTransformDirection(worldVelocity);
+
+        if (localVelocity.y <= terminalVelocity)
+        {
+            localVelocity = localVelocity.With(y: terminalVelocity);
+            worldVelocity = transform.TransformDirection(localVelocity);
+        }
+        else
+        {
+            worldVelocity += simulationStep * gravityMagnitude * gravityDirection;
+        }
+
+        worldVelocity = ProcessCollideAndSlide(worldVelocity * simulationStep) / simulationStep;
+    }
+
+    private void ResolveOverlaps(float dt)
+    {
+        Vector3 localOffset = transform.TransformDirection(capsuleOffset);
+        Vector3 capsuleDir = Vector3.zero;
+        switch (capsuleOrientation)
+        {
+            case CapsuleOrientation.X:
+                capsuleDir = transform.TransformDirection(Vector3.right);
+                break;
+            case CapsuleOrientation.Y:
+                capsuleDir = transform.TransformDirection(Vector3.up);
+                break;
+            case CapsuleOrientation.Z:
+                capsuleDir = transform.TransformDirection(Vector3.forward);
+                break;
+        }
+
+        Vector3 point1 = transform.position + localOffset + capsuleDir * (capsuleSize / 2f - capsuleRadius);
+        Vector3 point2 = transform.position + localOffset - capsuleDir * (capsuleSize / 2f - capsuleRadius);
+        int count = Physics.OverlapCapsuleNonAlloc(point1, point2, capsuleRadius, overlappingColliders, collisionLayer);
+        //Debug.Log(count);
+
+        Vector3 resultantPushDir = Vector3.zero;
+        for (int i = 0; i < count; i++)
+        {
+            Collider other = overlappingColliders[i];
+
+            if (other == null || other == myCollider)
+                continue;
+
+            bool overlapped = Physics.ComputePenetration(myCollider, transform.position, transform.rotation,
+                other, other.transform.position, other.transform.rotation, out Vector3 pushDir, out float distance);
+
+            if (overlapped && distance > 0f)
+            {
+                Debug.DrawRay(transform.position, pushDir.normalized, Color.yellow);
+                if (CheckStep(transform.position, Vector3.ProjectOnPlane(-pushDir, transform.up), capsuleRadius, out _, out _, out _))
+                {
+                    //Debug.Log("Ignoring because of step");
+                    continue;
+                }
+
+                if (CheckGroundOnCollider(other))
+                {
+                    //Debug.Log("Ignoring because of walkable slope");
+                    continue;
+                }
+
+                resultantPushDir += pushDir * distance;
+            }
+        }
+
+        //if (resultantPushDir != Vector3.zero)
+        //{
+        //    Debug.Log("Overlapping");
+        //}
+        //else
+        //{
+        //    Debug.Log("Not Overlapping");
+        //}
+        float t = Mathf.Clamp01(resultantPushDir.magnitude / capsuleRadius);
+        float pushSpeed = pushSpeedCurve.Evaluate(t);
+        transform.position += pushSpeed * dt * resultantPushDir.normalized;
+    }
+
+    private bool CheckGroundOnCollider(Collider other)
+    {
+        for (int i = 1; i < noOfLayers; i++)
+        {
+            float angleStep = 360f / sides;
+            var radius = capsuleRadius * i / (noOfLayers - 1);
+            for (int j = 0; j < sides; j++)
+            {
+                float angle = j * angleStep;
+                Vector3 direction = Quaternion.AngleAxis(angle, transform.up) * transform.forward;
+                Vector3 rayStart = transform.position + transform.up * (groundCheckerHeight + skinWidth) + direction * radius;
+                if (other.Raycast(new Ray(rayStart, -transform.up), out groundHit, groundCheckerHeight + skinWidth))
+                {
+                    if (Vector3.Angle(groundHit.normal, transform.up) <= criticalSlopeAngle)
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    public void TargetMatching(Vector3 targetPosition, Vector3 targetForward, bool initiateLerp)
+    {
+        this.targetPosition = targetPosition;
+        this.targetForward = targetForward;
+        if (initiateLerp && lerpToTargetCoroutine == null)
+        {
+            lerpToTargetCoroutine = StartCoroutine(LerpToTarget());
+        }
+        if (lerpToTargetCoroutine == null)
+        {
+            transform.position = targetPosition;
+        }
+    }
+
+    private IEnumerator LerpToTarget()
+    {
+        float elapsedTime = 0f;
+        while (elapsedTime <= lerpTime)
+        {
+            elapsedTime += Time.deltaTime * character.timeScale;
+            transform.position = Vector3.Lerp(transform.position, targetPosition, elapsedTime / lerpTime);
+            transform.forward = Vector3.Slerp(transform.forward, targetForward, elapsedTime / lerpTime);
+            yield return null;
+        }
+        lerpToTargetCoroutine = null;
     }
 
     public Vector3 ProcessCollideAndSlide(Vector3 moveVector)
@@ -195,9 +356,9 @@ public class CharacterMover : MonoBehaviour
         }
         else
         {
-            if (depth == 0 && CheckGround(pos, out RaycastHit groundHit))
+            if (depth == 0)
             {
-                moveDir = Vector3.ProjectOnPlane(moveDir, groundHit.normal).normalized;
+                moveDir = Vector3.ProjectOnPlane(moveDir, groundHit.normal).normalized; 
             }
 
             if (checkDistance >= capsuleRadius)
@@ -208,29 +369,6 @@ public class CharacterMover : MonoBehaviour
                     return lowerStairHit.distance * moveDir +
                         CollideAndSlide(moveDir, initialMoveDir, lowerStairHit.point + transform.up * (stepHeight + skinWidth),
                         checkDistance - lowerStairHit.distance, gravityPass, depth + 1);
-                }
-            }
-
-            if (Physics.Raycast(pos + transform.up * skinWidth, moveDir, out RaycastHit lowerStepHit, 
-                checkDistance + skinWidth, groundLayer, QueryTriggerInteraction.Ignore) &&
-                Vector3.Angle(lowerStepHit.normal, transform.up) > criticalSlopeAngle &&
-                Vector3.ProjectOnPlane(lowerStepHit.distance * moveDir, transform.up).magnitude <= capsuleRadius)
-            {
-                Vector3 wallNormal = Vector3.ProjectOnPlane(lowerStepHit.normal, transform.up).normalized;
-                float wallAngle = Vector3.Angle(Vector3.ProjectOnPlane(moveDir, transform.up), -wallNormal);
-                if (wallAngle <= criticalWallAngle)
-                {
-                    //Debug.Log(depth + "will stop against wall");
-                    return lowerStepHit.normal;
-                }
-                else
-                {
-                    //Debug.Log(depth + "will move along wall");
-                    Vector3 leftOverMovement = checkDistance * moveDir;
-                    float leftOverMagnitude = leftOverMovement.magnitude;
-                    leftOverMovement = Vector3.ProjectOnPlane(leftOverMovement, wallNormal);
-                    leftOverMovement = Vector3.ProjectOnPlane(leftOverMovement, transform.up);
-                    return lowerStepHit.normal + CollideAndSlide(leftOverMovement, initialMoveDir, pos, leftOverMagnitude, gravityPass, depth + 1);
                 }
             }
 
@@ -285,7 +423,7 @@ public class CharacterMover : MonoBehaviour
         var groundCheckerDepth = GetGroundCheckerDepth();
 
         if (Physics.Raycast(pos + transform.up * (groundCheckerHeight + skinWidth),
-            -transform.up, out groundHit, groundCheckerHeight + skinWidth + groundCheckerDepth, groundLayer, QueryTriggerInteraction.Ignore))
+            -transform.up, out groundHit, groundCheckerHeight + skinWidth + groundCheckerDepth, collisionLayer, QueryTriggerInteraction.Ignore))
         {
             if (Vector3.Angle(groundHit.normal, transform.up) <= criticalSlopeAngle)
             {
@@ -301,7 +439,7 @@ public class CharacterMover : MonoBehaviour
                 float angle = j * angleStep;
                 Vector3 direction = Quaternion.AngleAxis(angle, transform.up) * transform.forward;
                 Vector3 rayStart = pos + transform.up * (groundCheckerHeight + skinWidth) + direction * radius;
-                if (Physics.Raycast(rayStart, -transform.up, out groundHit, groundCheckerHeight + skinWidth + groundCheckerDepth, groundLayer, 
+                if (Physics.Raycast(rayStart, -transform.up, out groundHit, groundCheckerHeight + skinWidth + groundCheckerDepth, collisionLayer, 
                     QueryTriggerInteraction.Ignore))
                 {
                     if (Vector3.Angle(groundHit.normal, transform.up) <= criticalSlopeAngle)
@@ -343,7 +481,7 @@ public class CharacterMover : MonoBehaviour
             upwardsRoom = maxStepHeight - skinWidth;
 
         RaycastHit upperStepHit = new RaycastHit();
-        if (Physics.Raycast(pos + transform.up * skinWidth, moveDir, out lowerStepHit, distance, groundLayer, QueryTriggerInteraction.Ignore) &&
+        if (Physics.Raycast(pos + transform.up * skinWidth, moveDir, out lowerStepHit, distance, collisionLayer, QueryTriggerInteraction.Ignore) &&
             Vector3.Angle(lowerStepHit.normal, transform.up) > criticalSlopeAngle)
         {
             bool allRaysHit = true;
@@ -353,7 +491,7 @@ public class CharacterMover : MonoBehaviour
             for (int i = 0; i <= stepCheckerCount; i++)
             {
                 if (!(Physics.Raycast(lowerStepHit.point + i * seperation * transform.up + lowerStepNormal * skinWidth, -lowerStepNormal, out upperStepHit,
-                    distance - lowerStepHit.distance + skinWidth, groundLayer, QueryTriggerInteraction.Ignore) &&
+                    distance - lowerStepHit.distance + skinWidth, collisionLayer, QueryTriggerInteraction.Ignore) &&
                     Vector3.Angle(upperStepHit.normal, transform.up) > criticalSlopeAngle))
                 {
                     allRaysHit = false;
@@ -365,7 +503,7 @@ public class CharacterMover : MonoBehaviour
             if (allRaysHit)
             {
                 if (Physics.Raycast(upperStepHit.point + lowerStepNormal * skinWidth, -transform.up, out RaycastHit stepSurfaceHit, maxStepHeight + skinWidth, 
-                    groundLayer, QueryTriggerInteraction.Ignore) &&
+                    collisionLayer, QueryTriggerInteraction.Ignore) &&
                     Vector3.Angle(stepSurfaceHit.normal, transform.up) <= criticalSlopeAngle)
                 {
                     stepHeight = Vector3.Dot(stepSurfaceHit.point - lowerStepHit.point, transform.up);
@@ -380,12 +518,12 @@ public class CharacterMover : MonoBehaviour
             else
             {
                 if (Physics.Raycast(lowerStepHit.point + notHitIndex * seperation * transform.up - lowerStepNormal * skinWidth,
-                    -transform.up, out RaycastHit stepSurfaceHit, maxStepHeight + skinWidth * 2f, groundLayer, QueryTriggerInteraction.Ignore) &&
+                    -transform.up, out RaycastHit stepSurfaceHit, maxStepHeight + skinWidth * 2f, collisionLayer, QueryTriggerInteraction.Ignore) &&
                     Vector3.Angle(stepSurfaceHit.normal, transform.up) <= criticalSlopeAngle)
                 {
                     stepHeight = Vector3.Dot(stepSurfaceHit.point - lowerStepHit.point, transform.up);
                     stepWidth = stepHeight / Mathf.Tan(criticalSlopeAngle * Mathf.Deg2Rad); // Min Required width to be a step
-                    if (!Physics.Raycast(stepSurfaceHit.point, -lowerStepNormal, stepWidth - skinWidth, groundLayer, QueryTriggerInteraction.Ignore))
+                    if (!Physics.Raycast(stepSurfaceHit.point, -lowerStepNormal, stepWidth - skinWidth, collisionLayer, QueryTriggerInteraction.Ignore))
                     {
                         return true;
                     }
@@ -428,12 +566,12 @@ public class CharacterMover : MonoBehaviour
         {
             Vector3 center = point1 + i * seperation * point1to2.normalized;
             if (Physics.SphereCast(center, capsuleRadius - skinWidth, sweepDir, out RaycastHit sphereHit, sweepDistance,
-                groundLayer, QueryTriggerInteraction.Ignore) &&
+                collisionLayer, QueryTriggerInteraction.Ignore) &&
                 sphereHit.distance < capsuleHit.distance)
             {
                 capsuleHit = sphereHit;
                 Vector3 centerAtHit = center + sphereHit.distance * sweepDir;
-                if (Physics.Raycast(centerAtHit, -sphereHit.normal, out surfaceHit, capsuleRadius, groundLayer, QueryTriggerInteraction.Ignore))
+                if (Physics.Raycast(centerAtHit, -sphereHit.normal, out surfaceHit, capsuleRadius, collisionLayer, QueryTriggerInteraction.Ignore))
                 {
                     returnValue = true;
                 }
@@ -443,23 +581,6 @@ public class CharacterMover : MonoBehaviour
         return returnValue;
     }
 
-    private void SimulateGravity()
-    {
-        Vector3 localVelocity = transform.InverseTransformDirection(worldVelocity);
-
-        if (localVelocity.y <= terminalVelocity)
-        {
-            localVelocity = localVelocity.With(y: terminalVelocity);
-            worldVelocity = transform.TransformDirection(localVelocity);
-        }
-        else
-        {
-            worldVelocity += simulationStep * gravityMagnitude * gravityDirection;
-        }
-
-        worldVelocity = ProcessCollideAndSlide(worldVelocity * simulationStep) / simulationStep;
-    }
-
     public void SnapToGround()
     {
         if (CheckGround(transform.position, out RaycastHit groundHit))
@@ -467,6 +588,31 @@ public class CharacterMover : MonoBehaviour
             Vector3 toGround = groundHit.point - transform.position;
             toGround = Vector3.Project(toGround, transform.up);
             transform.position += toGround;
+        }
+    }
+
+    public void ApplyCapsulePreset(string presetName)
+    {
+        foreach (var preset in presets)
+        {
+            if (preset.presetName == presetName)
+            {
+                capsuleOrientation = preset.capsuleOrientation;
+                capsuleOffset = preset.capsuleOffset;
+                capsuleRadius = preset.capsuleRadius;
+                capsuleSize = preset.capsuleSize;
+
+                var collider = myCollider as CapsuleCollider;
+                switch (preset.capsuleOrientation)
+                {
+                    case CapsuleOrientation.X: collider.direction = 0; break;
+                    case CapsuleOrientation.Y: collider.direction = 1; break;
+                    case CapsuleOrientation.Z: collider.direction = 2; break;
+                }
+                collider.center = preset.capsuleOffset;
+                collider.radius = preset.capsuleRadius;
+                collider.height = preset.capsuleSize;
+            }
         }
     }
 
@@ -495,9 +641,13 @@ public class CharacterMover : MonoBehaviour
         transform.up = gravityDirection;
     }
 
-    public void SetFaceDir(Vector3 faceDir)
+    public void SetWorldPosition(Vector3 worldPosition)
     {
-        transform.up = -gravityDirection.normalized;    
+        transform.position = worldPosition;
+    }
+
+    public void SetFaceDir(Vector3 faceDir)
+    {   
         faceDir = Vector3.ProjectOnPlane(faceDir, transform.up).normalized;
         if (faceDir != Vector3.zero)
         {

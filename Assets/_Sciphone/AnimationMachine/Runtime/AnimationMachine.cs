@@ -21,12 +21,11 @@ public class AnimationMachine : MonoBehaviour
     [TabGroup("Graph Settings")] public float stepTime;
     [TabGroup("Graph Settings")] public float accumulatedTime = 0f;
 
-    public PlayableGraph playableGraph;
-    public AnimationPlayableOutput playableOutput;
-    public AnimationLayerMixerPlayable layerMixer;
+    internal PlayableGraph playableGraph;
+    private AnimationPlayableOutput playableOutput;
+    private AnimationLayerMixerPlayable layerMixer;
 
-    public AnimationStateInfo activeState;
-
+    [HideInInspector] public AnimationStateInfo activeState;
     [HideInInspector] public AnimationLayerInfo activeLayer;
     public Coroutine layersBlendCoroutine;
 
@@ -212,11 +211,6 @@ public class AnimationMachine : MonoBehaviour
     private float PrecidctOverflowTime(AnimationStateInfo stateInfo, float prevNT, float graphEvaluationTime)
     {
         return graphEvaluationTime - (1 - prevNT) * stateInfo.length;
-    }
-
-    public void PlayActive(string stateName)
-    {
-        PlayActive(stateName, activeLayer.layerName);
     }
 
     public void PlayActive(string stateName, string layerName)

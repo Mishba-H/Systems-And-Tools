@@ -102,16 +102,18 @@ public class MeleeCombatController : MonoBehaviour, IControllerModule
             if (character.animMachine.activeState.TryGetProperty<RootMotionCurvesProperty>(out var rootMotionProp) &&
                 character.animMachine.activeState.TryGetProperty<ScaleModeProperty>(out var scaleModeProp))
             {
-                scaleFactor = AnimationMachineExtensions.EvaluateScaleFactor(rootMotionProp as RootMotionCurvesProperty, scaleModeProp as ScaleModeProperty);
+                Vector3 targetValue = Vector3.zero;
 
                 if (character.PerformingAction<Evade>())
                 {
-                    scaleFactor = scaleFactor.With(z: evadeDistance / scaleFactor.z);
+                    targetValue = new Vector3(0f, 0f, evadeDistance);
                 }
                 else if (character.PerformingAction<Roll>())
                 {
-                    scaleFactor = scaleFactor.With(z: rollDistance / scaleFactor.z);
+                    targetValue = new Vector3(0f, 0f, rollDistance);
                 }
+
+                scaleFactor = AnimationMachineExtensions.EvaluateScaleFactor(rootMotionProp as RootMotionCurvesProperty, scaleModeProp as ScaleModeProperty, targetValue);
             }
         }
     }

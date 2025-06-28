@@ -67,9 +67,15 @@ public class Idle : BaseAction
     public override void OnPerform()
     {
         if (character.PerformingAction<Crouch>())
+        {
             character.characterAnimator.ChangeAnimationState("CrouchIdle", "Base");
+            character.characterMover.ApplyCapsulePreset("Short");
+        }
         else
+        {
             character.characterAnimator.ChangeAnimationState("Idle", "Base");
+            character.characterMover.ApplyCapsulePreset("Large");
+        }
     }
 }
 
@@ -148,9 +154,15 @@ public class Walk : BaseAction
     public override void OnPerform()
     {
         if (character.PerformingAction<Crouch>())
+        {
             character.characterAnimator.ChangeAnimationState("CrouchMoveSlow", "Base");
+            character.characterMover.ApplyCapsulePreset("Short");
+        }
         else
+        {
             character.characterAnimator.ChangeAnimationState("Walk", "Base");
+            character.characterMover.ApplyCapsulePreset("Small");
+        }
     }
 }
 
@@ -231,9 +243,15 @@ public class Run : BaseAction
     public override void OnPerform()
     {
         if (character.PerformingAction<Crouch>())
+        {
             character.characterAnimator.ChangeAnimationState("CrouchMoveFast", "Base");
+            character.characterMover.ApplyCapsulePreset("Short");
+        }
         else
+        {
             character.characterAnimator.ChangeAnimationState("Run", "Base");
+            character.characterMover.ApplyCapsulePreset("Medium");
+        }
     }
 }
 
@@ -318,6 +336,7 @@ public class Sprint : BaseAction
             character.characterMover.SetFaceDir(controller.worldMoveDir);
 
         character.characterAnimator.ChangeAnimationState("Sprint", "Base");
+        character.characterMover.ApplyCapsulePreset("Large");
     }
 }
 
@@ -393,20 +412,24 @@ public class Crouch : BaseAction
         {
             character.characterAnimator.ChangeAnimationState("CrouchMoveFast", "Base");
         }
+        character.characterMover.ApplyCapsulePreset("Short");
     }
     public override void OnStop()
     {
         if (character.PerformingAction<Idle>())
         {
             character.characterAnimator.ChangeAnimationState("Idle", "Base");
+            character.characterMover.ApplyCapsulePreset("Large");
         }
         else if (character.PerformingAction<Walk>())
         {
             character.characterAnimator.ChangeAnimationState("Walk", "Base");
+            character.characterMover.ApplyCapsulePreset("Small");
         }
         else if (character.PerformingAction<Run>())
         {
             character.characterAnimator.ChangeAnimationState("Run", "Base");
+            character.characterMover.ApplyCapsulePreset("Medium");
         }
     }
 }
@@ -501,6 +524,7 @@ public class Jump : BaseAction
         character.EvaluateAndUpdateAllActions();
 
         character.characterAnimator.ChangeAnimationState("Jump", "Base");
+        character.characterMover.ApplyCapsulePreset("Medium");
     }
     public override void OnStop()
     {
@@ -599,6 +623,7 @@ public class AirJump : BaseAction
         controller.HandlePhysicsSimulation();
         controller.InitiateJump();
         character.characterAnimator.ChangeAnimationState("AirJump", "Base");
+        character.characterMover.ApplyCapsulePreset("Medium");
     }
     public override void OnStop()
     {
@@ -691,6 +716,7 @@ public class Fall : BaseAction
         {
             character.characterAnimator.ChangeAnimationState("Fall", "Base");
         }
+        character.characterMover.ApplyCapsulePreset("Medium");
     }
     public override void OnStop()
     {

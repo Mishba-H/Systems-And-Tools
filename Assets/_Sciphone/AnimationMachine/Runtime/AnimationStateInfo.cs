@@ -4,7 +4,6 @@ using UnityEngine.Playables;
 using UnityEngine;
 using Sciphone;
 using UnityEngine.Animations;
-using UnityEngine.Scripting.APIUpdating;
 using ZLinq;
 
 [Serializable]

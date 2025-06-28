@@ -37,9 +37,9 @@ public class ParkourController : MonoBehaviour, IControllerModule
     [TabGroup("Vault Over Fence")][Header("Detector Settings")] public LayerMask fenceLayer;
     [TabGroup("Vault Over Fence")] public Vector2 fenceCheckerOffset;
     [TabGroup("Vault Over Fence")] public float fenceCheckerDistance = 1f;
+    [TabGroup("Vault Over Fence")] public float criticalFenceWidth = 0.3f;
 
     public RaycastHit wallHit;
-    public float animHeight;
     public Vector3 scaleFactor = Vector3.one;
     public LayerMask wallLayer;
     public float startingDistFromWall;
@@ -83,7 +83,7 @@ public class ParkourController : MonoBehaviour, IControllerModule
             Vector3 localClimbPoint = transform.InverseTransformPoint(climbHit.point);
             climbHeight = localClimbPoint.y;
             if (climbHeight > climbLowRange.x && climbHeight < climbHighRange.y && 
-                DetectWall(direction, climbCheckerDistance + character.characterMover.skinWidth, climbHeight, out wallHit))
+                DetectWall(direction, climbCheckerDistance, climbHeight, out wallHit))
             {
                 climbAvailable = true;
             }
@@ -113,7 +113,7 @@ public class ParkourController : MonoBehaviour, IControllerModule
 
     public void CheckFenceAvailability(Vector3 direction)
     {
-        if (DetectFence(direction, out fenceHit))
+        if (DetectFence(direction, out fenceHit, out Vector3 fenceCheckerPosOnHit))
         {
             Vector3 localFenceHitPoint = transform.InverseTransformPoint(fenceHit.point);
             fenceHeight = localFenceHitPoint.y;
@@ -121,7 +121,9 @@ public class ParkourController : MonoBehaviour, IControllerModule
                 fenceHeight > vaultFenceMediumRange.x && fenceHeight <= vaultFenceMediumRange.y ||
                 fenceHeight > vaultFenceHighRange.x && fenceHeight <= vaultFenceHighRange.y)
             {
-                if (DetectWall(direction, fenceCheckerDistance + character.characterMover.skinWidth, fenceHeight, out wallHit))
+                if (DetectWall(direction, fenceCheckerDistance, fenceHeight, out wallHit) &&
+                    !Physics.Raycast(fenceCheckerPosOnHit - Vector3.ProjectOnPlane(wallHit.normal, transform.up) * criticalFenceWidth, 
+                    - transform.up, fenceHit.distance + character.characterMover.skinWidth, fenceLayer, QueryTriggerInteraction.Ignore))
                 {
                     fenceAvalilable = true;
                 }
@@ -133,7 +135,7 @@ public class ParkourController : MonoBehaviour, IControllerModule
         }
     }
 
-    public bool DetectFence(Vector3 direction, out RaycastHit fenceHit)
+    public bool DetectFence(Vector3 direction, out RaycastHit fenceHit, out Vector3 fenceCheckerPosOnHit)
     {
         var pos = transform.position + direction * fenceCheckerOffset.x + transform.up * fenceCheckerOffset.y;
         var fenceCheckerCount = Mathf.FloorToInt((fenceCheckerDistance - character.characterMover.capsuleRadius) / allCheckerInterval);
@@ -142,9 +144,11 @@ public class ParkourController : MonoBehaviour, IControllerModule
             if (Physics.Raycast(pos + allCheckerInterval * i * direction, -transform.up, out fenceHit, fenceCheckerOffset.y, fenceLayer, QueryTriggerInteraction.Ignore)
                 && Vector3.Angle(fenceHit.normal, transform.up) < character.characterMover.criticalSlopeAngle)
             {
+                fenceCheckerPosOnHit = pos + allCheckerInterval * i * direction;
                 return true;
             }
         }
+        fenceCheckerPosOnHit = Vector3.zero;
         fenceHit = new RaycastHit();
         return false;
     }
@@ -166,16 +170,18 @@ public class ParkourController : MonoBehaviour, IControllerModule
         return false;
     }
 
-    public void CalculateScaleFactorAndStartingDistance(float targetHeight)
+    public void CalculateScaleFactor(float targetHeight)
     {
         if (character.animMachine.activeState.TryGetProperty<RootMotionCurvesProperty>(out var rootMotionProp)
             && character.animMachine.activeState.TryGetProperty<ScaleModeProperty>(out var scaleModeProp))
         {
-            scaleFactor = AnimationMachineExtensions.EvaluateScaleFactor(rootMotionProp as RootMotionCurvesProperty, scaleModeProp as ScaleModeProperty);
-            animHeight = scaleFactor.y;
-            scaleFactor = scaleFactor.With(y: targetHeight / scaleFactor.y);
+            scaleFactor = AnimationMachineExtensions.EvaluateScaleFactor(rootMotionProp as RootMotionCurvesProperty, scaleModeProp as ScaleModeProperty, 
+                new Vector3(0f, targetHeight, 0f));
         }
+    }
 
+    public void CalculateStartingDistanceFromWall()
+    {
         if (character.animMachine.activeState.TryGetProperty<RootMotionCurvesProperty>(out AnimationStateProperty property))
         {
             RootMotionData curves = ((RootMotionCurvesProperty)property).rootMotionData;
@@ -201,6 +207,7 @@ public class ParkourController : MonoBehaviour, IControllerModule
 
         targetPos = anchorPoint - totalHeight * transform.up + startingDistFromWall * wallNormalOnPlane;
         targetForward = -wallNormalOnPlane;
+        character.characterMover.TargetMatching(targetPos, targetForward, true);
         character.characterMover.SetWorldVelocity(Vector3.zero);
         character.characterMover.SetGravitySimulation(false);
     }
@@ -218,7 +225,40 @@ public class ParkourController : MonoBehaviour, IControllerModule
         Vector3 worldDeltaPostition = scaledDeltaPosition.x * right + scaledDeltaPosition.y * up + scaledDeltaPosition.z * forward;
 
         targetPos += worldDeltaPostition;
-        transform.position = targetPos;
-        character.characterMover.SetFaceDir(targetForward);
+        character.characterMover.TargetMatching(targetPos, targetForward, false);
     }
+
+    //public bool FindNearestWall(Vector3 position, float radius, LayerMask wallLayer, out Vector3 wallNormal, out Vector3 wallPoint)
+    //{
+    //    wallNormal = Vector3.zero;
+    //    wallPoint = Vector3.zero;
+
+    //    Physics.OverlapSphereNonAlloc(position, radius, wallLayer);
+    //    float minDist = Mathf.Infinity;
+    //    bool found = false;
+
+    //    foreach (var col in colliders)
+    //    {
+    //        Vector3 closestPoint = col.ClosestPoint(position);
+    //        float dist = Vector3.Distance(position, closestPoint);
+
+    //        if (dist < minDist)
+    //        {
+    //            // Try to get the normal using raycast from the point toward the collider
+    //            Vector3 dir = (closestPoint - position).normalized;
+    //            Ray ray = new Ray(position, dir);
+    //            RaycastHit hit;
+
+    //            if (col.Raycast(ray, out hit, radius))
+    //            {
+    //                minDist = dist;
+    //                wallNormal = hit.normal;
+    //                wallPoint = hit.point;
+    //                found = true;
+    //            }
+    //        }
+    //    }
+
+    //    return found;
+    //}
 }
