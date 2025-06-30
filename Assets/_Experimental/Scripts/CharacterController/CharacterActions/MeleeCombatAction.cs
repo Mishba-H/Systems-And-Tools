@@ -59,7 +59,7 @@ public class Evade : MeleeCombatAction
     {
         base.EvaluateStatus();
 
-        if (IsBeingPerformed && (MathF.Abs(character.animMachine.activeState.NormalizedTime() - 1f) < 0.01f))
+        if (IsBeingPerformed && (MathF.Abs(character.animMachine.rootState.NormalizedTime() - 1f) < 0.01f))
         {
             IsBeingPerformed = false;
         }
@@ -140,7 +140,7 @@ public class Roll : MeleeCombatAction
     {
         base.EvaluateStatus();
 
-        if (IsBeingPerformed && (MathF.Abs(character.animMachine.activeState.NormalizedTime() - 1f) < 0.01f))
+        if (IsBeingPerformed && (MathF.Abs(character.animMachine.rootState.NormalizedTime() - 1f) < 0.01f))
         {
             IsBeingPerformed = false;
         }
@@ -244,7 +244,7 @@ public class Attack : MeleeCombatAction
             IsBeingPerformed = controller.TrySelectAttack(controller.cachedAttack);
         }
 
-        if (IsBeingPerformed && character.animMachine.activeState.NormalizedTime() >= 1f)
+        if (IsBeingPerformed && character.animMachine.rootState.NormalizedTime() >= 1f)
         {
             IsBeingPerformed = false;
         }

@@ -78,42 +78,21 @@ public enum ScaleMode
 [Serializable]
 public abstract class AnimationLayerProperty : IAnimationProperty
 {
-    public virtual object Value { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 }
 [Serializable]
 public class LayerTypeProperty : AnimationLayerProperty
 {
-    AnimationLayerType layerType = AnimationLayerType.Active;
-    public override object Value
-    {
-        get => layerType;
-        set => layerType = (AnimationLayerType)value;
-    }
+    public AnimationLayerType layerType = AnimationLayerType.Root;
 }
 public enum AnimationLayerType
 {
-    Active,
-    Additive,
-    Override
-}
-[Serializable]
-public class LayerWeightProperty : AnimationLayerProperty
-{
-    public float weight = 0f;
-    public override object Value
-    {
-        get => weight;
-        set => weight = (float)value;
-    }
+    Root,
+    Override,
+    Additive
 }
 [Serializable]
 public class AvatarMaskProperty : AnimationLayerProperty
 {
     public AvatarMask mask;
-    public override object Value
-    {
-        get => mask;
-        set => mask = (AvatarMask)value;
-    }
 }
 #endregion

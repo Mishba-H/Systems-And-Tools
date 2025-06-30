@@ -34,7 +34,7 @@ public class CharacterMover : MonoBehaviour
 
     [HideInInspector] public Character character;
 
-    [SerializeReference, Polymorphic] public List<CapsulePreset> presets;
+    [SerializeReference, Polymorphic] public List<CapsulePreset> capsulePresets;
 
     #region ALGORITH_SETTINGS
     [TabGroup("Algorithm Settings")] public int maxDepth = 3;
@@ -174,6 +174,9 @@ public class CharacterMover : MonoBehaviour
 
     private void ResolveOverlaps(float dt)
     {
+        var myCapsule = myCollider as CapsuleCollider;
+        if (myCapsule.radius == 0f || myCapsule.height == 0f) return;
+
         Vector3 localOffset = transform.TransformDirection(capsuleOffset);
         Vector3 capsuleDir = Vector3.zero;
         switch (capsuleOrientation)
@@ -207,7 +210,7 @@ public class CharacterMover : MonoBehaviour
 
             if (overlapped && distance > 0f)
             {
-                Debug.DrawRay(transform.position, pushDir.normalized, Color.yellow);
+                //Debug.DrawRay(transform.position, pushDir.normalized, Color.yellow);
                 if (CheckStep(transform.position, Vector3.ProjectOnPlane(-pushDir, transform.up), capsuleRadius, out _, out _, out _))
                 {
                     //Debug.Log("Ignoring because of step");
@@ -593,7 +596,7 @@ public class CharacterMover : MonoBehaviour
 
     public void ApplyCapsulePreset(string presetName)
     {
-        foreach (var preset in presets)
+        foreach (var preset in capsulePresets)
         {
             if (preset.presetName == presetName)
             {

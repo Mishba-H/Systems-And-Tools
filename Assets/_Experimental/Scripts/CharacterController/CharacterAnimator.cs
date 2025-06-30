@@ -26,7 +26,7 @@ public class CharacterAnimator : MonoBehaviour
 
     private void Character_PreUpdateLoop()
     {
-        if (isInTransition && Mathf.Abs(character.animMachine.activeState.NormalizedTime() - 1) < 0.01f)
+        if (isInTransition && Mathf.Abs(character.animMachine.rootState.NormalizedTime() - 1) < 0.01f)
         {
             isInTransition = false;
             character.animMachine.PlayActive(savedStateName, savedLayerName);
@@ -55,14 +55,6 @@ public class CharacterAnimator : MonoBehaviour
 
         currentStateName = newStateName;
         character.animMachine.PlayActive(currentStateName, layerName);
-    }
-
-    [SerializeReference, Polymorphic] public AnimationClipState oneShotTest;
-    
-    [Button(nameof(PlayOneShot))]
-    public void PlayOneShot()
-    {
-        character.animMachine.PlayOneShot(oneShotTest);
     }
 }
 

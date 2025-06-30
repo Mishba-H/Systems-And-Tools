@@ -47,8 +47,10 @@ public class ParkourController : MonoBehaviour, IControllerModule
     public Vector3 targetPos;
     public Vector3 targetForward;
 
+    private Collider[] surroundingColliders;
     private Vector3 worldMoveDir;
     public Vector3 parkourDir;
+    public float criticalParkourAngle;
 
     private void Start()
     {
@@ -62,6 +64,8 @@ public class ParkourController : MonoBehaviour, IControllerModule
 
         character.PreUpdateLoop += Character_PreUpdateLoop;
         character.characterCommand.MoveDirCommand += CharacterCommand_MoveDirCommand;
+
+        surroundingColliders = new Collider[15];
     }
 
     private void CharacterCommand_MoveDirCommand(Vector3 vector)
@@ -172,24 +176,24 @@ public class ParkourController : MonoBehaviour, IControllerModule
 
     public void CalculateScaleFactor(float targetHeight)
     {
-        if (character.animMachine.activeState.TryGetProperty<RootMotionCurvesProperty>(out var rootMotionProp)
-            && character.animMachine.activeState.TryGetProperty<ScaleModeProperty>(out var scaleModeProp))
+        if (character.animMachine.rootState.TryGetProperty<RootMotionCurvesProperty>(out var rootMotionProp)
+            && character.animMachine.rootState.TryGetProperty<ScaleModeProperty>(out var scaleModeProp))
         {
-            scaleFactor = AnimationMachineExtensions.EvaluateScaleFactor(rootMotionProp as RootMotionCurvesProperty, scaleModeProp as ScaleModeProperty, 
+            scaleFactor = AnimationMachineExtensions.EvaluateScaleFactor(rootMotionProp, scaleModeProp, 
                 new Vector3(0f, targetHeight, 0f));
         }
     }
 
     public void CalculateStartingDistanceFromWall()
     {
-        if (character.animMachine.activeState.TryGetProperty<RootMotionCurvesProperty>(out AnimationStateProperty property))
+        if (character.animMachine.rootState.TryGetProperty(out RootMotionCurvesProperty property))
         {
-            RootMotionData curves = ((RootMotionCurvesProperty)property).rootMotionData;
+            RootMotionData curves = property.rootMotionData;
             float totalTime = curves.totalTime;
 
-            if (character.animMachine.activeState.TryGetData<TimeOfContact>(out IAnimationData data))
+            if (character.animMachine.rootState.TryGetData(out TimeOfContact data))
             {
-                var timeOfContact = (data as TimeOfContact).timeOfContact * totalTime;
+                var timeOfContact = data.timeOfContact * totalTime;
 
                 AnimationCurve rootTZCurve = curves.rootTZ;
                 startingDistFromWall = rootTZCurve.Evaluate(timeOfContact) - rootTZCurve.Evaluate(0f);
@@ -228,37 +232,22 @@ public class ParkourController : MonoBehaviour, IControllerModule
         character.characterMover.TargetMatching(targetPos, targetForward, false);
     }
 
-    //public bool FindNearestWall(Vector3 position, float radius, LayerMask wallLayer, out Vector3 wallNormal, out Vector3 wallPoint)
-    //{
-    //    wallNormal = Vector3.zero;
-    //    wallPoint = Vector3.zero;
+    public bool CheckSurroundingSurfaces(Vector3 position, Vector3 checkDirection, float radius, LayerMask checkLayer)
+    {
+        int count = Physics.OverlapSphereNonAlloc(position, radius, surroundingColliders, checkLayer);
 
-    //    Physics.OverlapSphereNonAlloc(position, radius, wallLayer);
-    //    float minDist = Mathf.Infinity;
-    //    bool found = false;
+        for (int i = 0; i < count; i++)
+        {
+            Collider other = surroundingColliders[i];
+            Vector3 otherDirection = Vector3.ProjectOnPlane(other.ClosestPoint(position) - position, transform.up).normalized;
+            
+            if (Vector3.Angle(checkDirection, otherDirection) <= criticalParkourAngle &&
+                other.Raycast(new Ray(position, otherDirection), out RaycastHit otherHit, radius))
+            {
+                return true;
+            }
+        }
 
-    //    foreach (var col in colliders)
-    //    {
-    //        Vector3 closestPoint = col.ClosestPoint(position);
-    //        float dist = Vector3.Distance(position, closestPoint);
-
-    //        if (dist < minDist)
-    //        {
-    //            // Try to get the normal using raycast from the point toward the collider
-    //            Vector3 dir = (closestPoint - position).normalized;
-    //            Ray ray = new Ray(position, dir);
-    //            RaycastHit hit;
-
-    //            if (col.Raycast(ray, out hit, radius))
-    //            {
-    //                minDist = dist;
-    //                wallNormal = hit.normal;
-    //                wallPoint = hit.point;
-    //                found = true;
-    //            }
-    //        }
-    //    }
-
-    //    return found;
-    //}
+        return false;
+    }
 }

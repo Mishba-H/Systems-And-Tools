@@ -73,7 +73,7 @@ public class ClimbOverFromGround : ParkourAction
             }
         }
 
-        if (MathF.Abs(character.animMachine.activeState.NormalizedTime() - 1f) < 0.01f)
+        if (MathF.Abs(character.animMachine.rootState.NormalizedTime() - 1f) < 0.01f)
         {
             IsBeingPerformed = false;
         }
@@ -175,7 +175,7 @@ public class VaultOverFence : ParkourAction
                 IsBeingPerformed = true;
             }
         }
-        if (MathF.Abs(character.animMachine.activeState.NormalizedTime() - 1f) < 0.01f)
+        if (MathF.Abs(character.animMachine.rootState.NormalizedTime() - 1f) < 0.01f)
         {
             IsBeingPerformed = false;
         }

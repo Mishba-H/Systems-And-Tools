@@ -56,8 +56,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 47434677592526497}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.10603634, y: -0.058368478, z: -0.9631808, w: 0.24006705}
-  m_LocalPosition: {x: 0.730104, y: 0.36372223, z: 0.65715325}
+  m_LocalRotation: {x: -0.34285384, y: 0.05138107, z: 0.8420552, w: -0.41322422}
+  m_LocalPosition: {x: -0.011104011, y: 0.2529174, z: 0.7788361}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -307,8 +307,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1054841811385503970}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.1335226, y: 0.08176508, z: 0.987643, w: 0.0068987054}
-  m_LocalPosition: {x: 0.081929244, y: -0.031235466, z: -0.0033232116}
+  m_LocalRotation: {x: 0.23821917, y: 0.027892755, z: 0.9559093, w: 0.16944325}
+  m_LocalPosition: {x: 0.12581635, y: -0.057260282, z: 0.028552856}
   m_LocalScale: {x: 1, y: 0.999999, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -463,10 +463,257 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   characterGameObject: {fileID: 3733807259692305122}
   cameraTransform: {fileID: 1694065059000660567}
-  movementMode: 1
+  movementMode: 0
   moveInput: {x: 0, y: 0}
   sprint: 0
   walk: 0
+  activeCombos:
+  - rid: 3179479286295822582
+  - rid: 3179479286295822590
+  - rid: 3179479286295822595
+  - rid: 3179479286295822600
+  - rid: 3179479286295822604
+  - rid: 3179479286295822606
+  - rid: 3179479286295822608
+  - rid: 3179479286295822610
+  - rid: 3179479286295822612
+  - rid: 3179479286295822614
+  - rid: 3179479286295822616
+  comboEndTime: 0.3
+  attacksPerformed: []
+  references:
+    version: 2
+    RefIds:
+    - rid: 3179479286295822582
+      type: {class: ComboData, ns: , asm: Experimental}
+      data:
+        comboName: Combo_1
+        attacks:
+        - rid: 3179479286295822583
+        - rid: 3179479286295822584
+        - rid: 3179479286295822585
+        - rid: 3179479286295822586
+        - rid: 3179479286295822587
+        - rid: 3179479286295822588
+        - rid: 3179479286295822589
+    - rid: 3179479286295822583
+      type: {class: AttackData, ns: , asm: Experimental}
+      data:
+        attackName: Combo_1_1
+        attackType: 2
+        attackRange: 3
+    - rid: 3179479286295822584
+      type: {class: AttackData, ns: , asm: Experimental}
+      data:
+        attackName: Combo_1_2
+        attackType: 2
+        attackRange: 3
+    - rid: 3179479286295822585
+      type: {class: AttackData, ns: , asm: Experimental}
+      data:
+        attackName: Combo_1_3
+        attackType: 2
+        attackRange: 3
+    - rid: 3179479286295822586
+      type: {class: AttackData, ns: , asm: Experimental}
+      data:
+        attackName: Combo_1_4
+        attackType: 1
+        attackRange: 3
+    - rid: 3179479286295822587
+      type: {class: AttackData, ns: , asm: Experimental}
+      data:
+        attackName: Combo_1_5
+        attackType: 1
+        attackRange: 3
+    - rid: 3179479286295822588
+      type: {class: AttackData, ns: , asm: Experimental}
+      data:
+        attackName: Combo_1_6
+        attackType: 2
+        attackRange: 3
+    - rid: 3179479286295822589
+      type: {class: AttackData, ns: , asm: Experimental}
+      data:
+        attackName: Combo_1_7
+        attackType: 2
+        attackRange: 3
+    - rid: 3179479286295822590
+      type: {class: ComboData, ns: , asm: Experimental}
+      data:
+        comboName: Combo_2
+        attacks:
+        - rid: 3179479286295822591
+        - rid: 3179479286295822592
+        - rid: 3179479286295822593
+        - rid: 3179479286295822594
+    - rid: 3179479286295822591
+      type: {class: AttackData, ns: , asm: Experimental}
+      data:
+        attackName: Combo_2_1
+        attackType: 1
+        attackRange: 3
+    - rid: 3179479286295822592
+      type: {class: AttackData, ns: , asm: Experimental}
+      data:
+        attackName: Combo_2_2
+        attackType: 1
+        attackRange: 3
+    - rid: 3179479286295822593
+      type: {class: AttackData, ns: , asm: Experimental}
+      data:
+        attackName: Combo_2_3
+        attackType: 1
+        attackRange: 3
+    - rid: 3179479286295822594
+      type: {class: AttackData, ns: , asm: Experimental}
+      data:
+        attackName: Combo_2_4
+        attackType: 2
+        attackRange: 3
+    - rid: 3179479286295822595
+      type: {class: ComboData, ns: , asm: Experimental}
+      data:
+        comboName: Combo_3
+        attacks:
+        - rid: 3179479286295822596
+        - rid: 3179479286295822597
+        - rid: 3179479286295822598
+        - rid: 3179479286295822599
+    - rid: 3179479286295822596
+      type: {class: AttackData, ns: , asm: Experimental}
+      data:
+        attackName: Combo_3_1
+        attackType: 3
+        attackRange: 3
+    - rid: 3179479286295822597
+      type: {class: AttackData, ns: , asm: Experimental}
+      data:
+        attackName: Combo_3_2
+        attackType: 1
+        attackRange: 3
+    - rid: 3179479286295822598
+      type: {class: AttackData, ns: , asm: Experimental}
+      data:
+        attackName: Combo_3_3
+        attackType: 1
+        attackRange: 3
+    - rid: 3179479286295822599
+      type: {class: AttackData, ns: , asm: Experimental}
+      data:
+        attackName: Combo_3_4
+        attackType: 1
+        attackRange: 3
+    - rid: 3179479286295822600
+      type: {class: ComboData, ns: , asm: Experimental}
+      data:
+        comboName: Combo_4
+        attacks:
+        - rid: 3179479286295822601
+        - rid: 3179479286295822602
+        - rid: 3179479286295822603
+    - rid: 3179479286295822601
+      type: {class: AttackData, ns: , asm: Experimental}
+      data:
+        attackName: Combo_4_1
+        attackType: 4
+        attackRange: 3
+    - rid: 3179479286295822602
+      type: {class: AttackData, ns: , asm: Experimental}
+      data:
+        attackName: Combo_4_2
+        attackType: 2
+        attackRange: 3
+    - rid: 3179479286295822603
+      type: {class: AttackData, ns: , asm: Experimental}
+      data:
+        attackName: Combo_4_3
+        attackType: 2
+        attackRange: 3
+    - rid: 3179479286295822604
+      type: {class: ComboData, ns: , asm: Experimental}
+      data:
+        comboName: Combo_5
+        attacks:
+        - rid: 3179479286295822605
+    - rid: 3179479286295822605
+      type: {class: AttackData, ns: , asm: Experimental}
+      data:
+        attackName: Combo_5_1
+        attackType: 5
+        attackRange: 3
+    - rid: 3179479286295822606
+      type: {class: ComboData, ns: , asm: Experimental}
+      data:
+        comboName: Combo_6
+        attacks:
+        - rid: 3179479286295822607
+    - rid: 3179479286295822607
+      type: {class: AttackData, ns: , asm: Experimental}
+      data:
+        attackName: Combo_6_1
+        attackType: 6
+        attackRange: 3
+    - rid: 3179479286295822608
+      type: {class: ComboData, ns: , asm: Experimental}
+      data:
+        comboName: Combo_7
+        attacks:
+        - rid: 3179479286295822609
+    - rid: 3179479286295822609
+      type: {class: AttackData, ns: , asm: Experimental}
+      data:
+        attackName: Combo_7_1
+        attackType: 7
+        attackRange: 3
+    - rid: 3179479286295822610
+      type: {class: ComboData, ns: , asm: Experimental}
+      data:
+        comboName: Combo_8
+        attacks:
+        - rid: 3179479286295822611
+    - rid: 3179479286295822611
+      type: {class: AttackData, ns: , asm: Experimental}
+      data:
+        attackName: Combo_8_1
+        attackType: 8
+        attackRange: 3
+    - rid: 3179479286295822612
+      type: {class: ComboData, ns: , asm: Experimental}
+      data:
+        comboName: Combo_9
+        attacks:
+        - rid: 3179479286295822613
+    - rid: 3179479286295822613
+      type: {class: AttackData, ns: , asm: Experimental}
+      data:
+        attackName: Combo_9_1
+        attackType: 9
+        attackRange: 3
+    - rid: 3179479286295822614
+      type: {class: ComboData, ns: , asm: Experimental}
+      data:
+        comboName: Combo_10
+        attacks:
+        - rid: 3179479286295822615
+    - rid: 3179479286295822615
+      type: {class: AttackData, ns: , asm: Experimental}
+      data:
+        attackName: Combo_10_1
+        attackType: 10
+        attackRange: 3
+    - rid: 3179479286295822616
+      type: {class: ComboData, ns: , asm: Experimental}
+      data:
+        comboName: Combo_11
+        attacks:
+        - rid: 3179479286295822617
+    - rid: 3179479286295822617
+      type: {class: AttackData, ns: , asm: Experimental}
+      data:
+        attackName: Combo_11_1
+        attackType: 11
+        attackRange: 3
 --- !u!1 &1151722586270275646
 GameObject:
   m_ObjectHideFlags: 0
@@ -1157,6 +1404,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1858878076488655643}
   - component: {fileID: 4547122928958592557}
+  - component: {fileID: 7601605148240578427}
   - component: {fileID: 3159268173772345648}
   - component: {fileID: 3824912786589865051}
   - component: {fileID: 1263092472546482360}
@@ -1213,10 +1461,33 @@ Rigidbody:
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
   m_UseGravity: 0
-  m_IsKinematic: 0
+  m_IsKinematic: 1
   m_Interpolate: 0
   m_Constraints: 112
   m_CollisionDetection: 0
+--- !u!136 &7601605148240578427
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3733807259692305122}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.3
+  m_Height: 1.8
+  m_Direction: 1
+  m_Center: {x: 0, y: 0.9, z: 0}
 --- !u!95 &3159268173772345648
 Animator:
   serializedVersion: 7
@@ -1269,6 +1540,7 @@ MonoBehaviour:
   - rid: 4945720422352290216
   - rid: 4945720422352290217
   - rid: 4945720422352290218
+  - rid: 3179479309507625057
   references:
     version: 2
     RefIds:
@@ -19320,15 +19592,15 @@ MonoBehaviour:
     - rid: 3179479269880627315
       type: {class: ScaleModeProperty, ns: , asm: Sciphone.AnimationMachine}
       data:
-        scaleModeX: 0
+        scaleModeX: 1
         scaleModeY: 1
-        scaleModeZ: 2
+        scaleModeZ: 4
     - rid: 3179479269880627316
       type: {class: ScaleModeProperty, ns: , asm: Sciphone.AnimationMachine}
       data:
-        scaleModeX: 0
+        scaleModeX: 1
         scaleModeY: 1
-        scaleModeZ: 2
+        scaleModeZ: 4
     - rid: 3179479269880627317
       type: {class: ScaleModeProperty, ns: , asm: Sciphone.AnimationMachine}
       data:
@@ -19364,6 +19636,364 @@ MonoBehaviour:
       data:
         scaleModeX: 0
         scaleModeY: 4
+        scaleModeZ: 0
+    - rid: 3179479286295822430
+      type: {class: ScaleModeProperty, ns: , asm: Sciphone.AnimationMachine}
+      data:
+        scaleModeX: 0
+        scaleModeY: 1
+        scaleModeZ: 0
+    - rid: 3179479286295822431
+      type: {class: ScaleModeProperty, ns: , asm: Sciphone.AnimationMachine}
+      data:
+        scaleModeX: 0
+        scaleModeY: 1
+        scaleModeZ: 0
+    - rid: 3179479286295822432
+      type: {class: ScaleModeProperty, ns: , asm: Sciphone.AnimationMachine}
+      data:
+        scaleModeX: 0
+        scaleModeY: 1
+        scaleModeZ: 0
+    - rid: 3179479286295822433
+      type: {class: ScaleModeProperty, ns: , asm: Sciphone.AnimationMachine}
+      data:
+        scaleModeX: 0
+        scaleModeY: 1
+        scaleModeZ: 0
+    - rid: 3179479286295822434
+      type: {class: ScaleModeProperty, ns: , asm: Sciphone.AnimationMachine}
+      data:
+        scaleModeX: 0
+        scaleModeY: 1
+        scaleModeZ: 0
+    - rid: 3179479286295822435
+      type: {class: ScaleModeProperty, ns: , asm: Sciphone.AnimationMachine}
+      data:
+        scaleModeX: 0
+        scaleModeY: 1
+        scaleModeZ: 0
+    - rid: 3179479286295822436
+      type: {class: ScaleModeProperty, ns: , asm: Sciphone.AnimationMachine}
+      data:
+        scaleModeX: 0
+        scaleModeY: 1
+        scaleModeZ: 0
+    - rid: 3179479286295822437
+      type: {class: ScaleModeProperty, ns: , asm: Sciphone.AnimationMachine}
+      data:
+        scaleModeX: 0
+        scaleModeY: 1
+        scaleModeZ: 0
+    - rid: 3179479286295822438
+      type: {class: ScaleModeProperty, ns: , asm: Sciphone.AnimationMachine}
+      data:
+        scaleModeX: 0
+        scaleModeY: 1
+        scaleModeZ: 0
+    - rid: 3179479286295822439
+      type: {class: ScaleModeProperty, ns: , asm: Sciphone.AnimationMachine}
+      data:
+        scaleModeX: 0
+        scaleModeY: 1
+        scaleModeZ: 0
+    - rid: 3179479286295822440
+      type: {class: ScaleModeProperty, ns: , asm: Sciphone.AnimationMachine}
+      data:
+        scaleModeX: 0
+        scaleModeY: 1
+        scaleModeZ: 0
+    - rid: 3179479286295822442
+      type: {class: ScaleModeProperty, ns: , asm: Sciphone.AnimationMachine}
+      data:
+        scaleModeX: 0
+        scaleModeY: 1
+        scaleModeZ: 0
+    - rid: 3179479286295822443
+      type: {class: ScaleModeProperty, ns: , asm: Sciphone.AnimationMachine}
+      data:
+        scaleModeX: 0
+        scaleModeY: 1
+        scaleModeZ: 0
+    - rid: 3179479286295822444
+      type: {class: ScaleModeProperty, ns: , asm: Sciphone.AnimationMachine}
+      data:
+        scaleModeX: 0
+        scaleModeY: 1
+        scaleModeZ: 0
+    - rid: 3179479286295822445
+      type: {class: ScaleModeProperty, ns: , asm: Sciphone.AnimationMachine}
+      data:
+        scaleModeX: 0
+        scaleModeY: 1
+        scaleModeZ: 0
+    - rid: 3179479286295822446
+      type: {class: ScaleModeProperty, ns: , asm: Sciphone.AnimationMachine}
+      data:
+        scaleModeX: 0
+        scaleModeY: 1
+        scaleModeZ: 0
+    - rid: 3179479286295822447
+      type: {class: ScaleModeProperty, ns: , asm: Sciphone.AnimationMachine}
+      data:
+        scaleModeX: 0
+        scaleModeY: 1
+        scaleModeZ: 0
+    - rid: 3179479286295822448
+      type: {class: ScaleModeProperty, ns: , asm: Sciphone.AnimationMachine}
+      data:
+        scaleModeX: 0
+        scaleModeY: 1
+        scaleModeZ: 0
+    - rid: 3179479286295822449
+      type: {class: ScaleModeProperty, ns: , asm: Sciphone.AnimationMachine}
+      data:
+        scaleModeX: 0
+        scaleModeY: 1
+        scaleModeZ: 0
+    - rid: 3179479286295822450
+      type: {class: ScaleModeProperty, ns: , asm: Sciphone.AnimationMachine}
+      data:
+        scaleModeX: 0
+        scaleModeY: 1
+        scaleModeZ: 0
+    - rid: 3179479286295822451
+      type: {class: ScaleModeProperty, ns: , asm: Sciphone.AnimationMachine}
+      data:
+        scaleModeX: 0
+        scaleModeY: 1
+        scaleModeZ: 0
+    - rid: 3179479286295822452
+      type: {class: ScaleModeProperty, ns: , asm: Sciphone.AnimationMachine}
+      data:
+        scaleModeX: 0
+        scaleModeY: 1
+        scaleModeZ: 0
+    - rid: 3179479286295822453
+      type: {class: ScaleModeProperty, ns: , asm: Sciphone.AnimationMachine}
+      data:
+        scaleModeX: 0
+        scaleModeY: 1
+        scaleModeZ: 0
+    - rid: 3179479286295822454
+      type: {class: ScaleModeProperty, ns: , asm: Sciphone.AnimationMachine}
+      data:
+        scaleModeX: 0
+        scaleModeY: 1
+        scaleModeZ: 0
+    - rid: 3179479286295822455
+      type: {class: ScaleModeProperty, ns: , asm: Sciphone.AnimationMachine}
+      data:
+        scaleModeX: 0
+        scaleModeY: 1
+        scaleModeZ: 0
+    - rid: 3179479309507625057
+      type: {class: AnimationLayerInfo, ns: , asm: Sciphone.AnimationMachine}
+      data:
+        layerName: Transitions
+        animMachine: {fileID: 0}
+        properties: []
+        states:
+        - rid: 3179479309507625060
+        - rid: 3179479309507625063
+        - rid: 3179479309507625066
+    - rid: 3179479309507625060
+      type: {class: AnimationClipState, ns: , asm: Sciphone.AnimationMachine}
+      data:
+        stateName: WalkToIdle
+        properties:
+        - rid: 3179479309507625061
+        - rid: 3179479309507625062
+        events: []
+        data: []
+        animMachine: {fileID: 0}
+        length: 0
+        preview: 0
+        clip: {fileID: 7400000, guid: 4a958ed7d50d90746a3dba2375494668, type: 3}
+    - rid: 3179479309507625061
+      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone.AnimationMachine}
+      data:
+        rootMotionData:
+          rootTX:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          rootTY:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          rootTZ:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          rootQX:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          rootQY:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          rootQZ:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          rootQW:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          totalTime: 0
+    - rid: 3179479309507625062
+      type: {class: ScaleModeProperty, ns: , asm: Sciphone.AnimationMachine}
+      data:
+        scaleModeX: 0
+        scaleModeY: 1
+        scaleModeZ: 0
+    - rid: 3179479309507625063
+      type: {class: AnimationClipState, ns: , asm: Sciphone.AnimationMachine}
+      data:
+        stateName: RunToIdle
+        properties:
+        - rid: 3179479309507625064
+        - rid: 3179479309507625065
+        events: []
+        data: []
+        animMachine: {fileID: 0}
+        length: 0
+        preview: 0
+        clip: {fileID: 7400000, guid: 57371571cce624642b6571c5fa7c2311, type: 3}
+    - rid: 3179479309507625064
+      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone.AnimationMachine}
+      data:
+        rootMotionData:
+          rootTX:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          rootTY:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          rootTZ:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          rootQX:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          rootQY:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          rootQZ:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          rootQW:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          totalTime: 0
+    - rid: 3179479309507625065
+      type: {class: ScaleModeProperty, ns: , asm: Sciphone.AnimationMachine}
+      data:
+        scaleModeX: 0
+        scaleModeY: 1
+        scaleModeZ: 0
+    - rid: 3179479309507625066
+      type: {class: AnimationClipState, ns: , asm: Sciphone.AnimationMachine}
+      data:
+        stateName: SprintToIdle
+        properties:
+        - rid: 3179479309507625067
+        - rid: 3179479309507625068
+        events: []
+        data: []
+        animMachine: {fileID: 0}
+        length: 0
+        preview: 0
+        clip: {fileID: 7400000, guid: 1656a222d03c8b74db420a6de9ad9676, type: 3}
+    - rid: 3179479309507625067
+      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone.AnimationMachine}
+      data:
+        rootMotionData:
+          rootTX:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          rootTY:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          rootTZ:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          rootQX:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          rootQY:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          rootQZ:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          rootQW:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          totalTime: 0
+    - rid: 3179479309507625068
+      type: {class: ScaleModeProperty, ns: , asm: Sciphone.AnimationMachine}
+      data:
+        scaleModeX: 0
+        scaleModeY: 1
         scaleModeZ: 0
     - rid: 4945720422352290216
       type: {class: AnimationLayerInfo, ns: , asm: Sciphone.AnimationMachine}
@@ -19524,7 +20154,7 @@ MonoBehaviour:
         animMachine: {fileID: 0}
         length: 0
         preview: 0
-        clip: {fileID: 1827226128182048838, guid: af49e2a0250cd474ba2acf1dc162154f, type: 3}
+        clip: {fileID: 7400000, guid: 853577903942cfd4186e6d130f76a84c, type: 3}
     - rid: 4945720422352290223
       type: {class: EightWayBlendState, ns: , asm: Sciphone.AnimationMachine}
       data:
@@ -19684,6 +20314,7 @@ MonoBehaviour:
         stateName: Combo_1_1
         properties:
         - rid: 4945720422352290293
+        - rid: 3179479286295822430
         events:
         - rid: 4945720422352290294
         data: []
@@ -19697,6 +20328,7 @@ MonoBehaviour:
         stateName: Combo_1_2
         properties:
         - rid: 4945720422352290295
+        - rid: 3179479286295822431
         events:
         - rid: 4945720422352290296
         data: []
@@ -19710,6 +20342,7 @@ MonoBehaviour:
         stateName: Combo_1_3
         properties:
         - rid: 4945720422352290297
+        - rid: 3179479286295822432
         events:
         - rid: 4945720422352290298
         data: []
@@ -19723,6 +20356,7 @@ MonoBehaviour:
         stateName: Combo_1_4
         properties:
         - rid: 4945720422352290299
+        - rid: 3179479286295822433
         events:
         - rid: 4945720422352290300
         data: []
@@ -19736,6 +20370,7 @@ MonoBehaviour:
         stateName: Combo_1_5
         properties:
         - rid: 4945720422352290301
+        - rid: 3179479286295822434
         events:
         - rid: 4945720422352290302
         data: []
@@ -19749,6 +20384,7 @@ MonoBehaviour:
         stateName: Combo_1_6
         properties:
         - rid: 4945720422352290303
+        - rid: 3179479286295822435
         events:
         - rid: 4945720422352290304
         data: []
@@ -19762,6 +20398,7 @@ MonoBehaviour:
         stateName: Combo_1_7
         properties:
         - rid: 4945720422352290305
+        - rid: 3179479286295822436
         events:
         - rid: 4945720422352290306
         data: []
@@ -19775,6 +20412,7 @@ MonoBehaviour:
         stateName: Combo_2_1
         properties:
         - rid: 4945720422352290307
+        - rid: 3179479286295822437
         events:
         - rid: 4945720422352290308
         data: []
@@ -19788,6 +20426,7 @@ MonoBehaviour:
         stateName: Combo_2_2
         properties:
         - rid: 4945720422352290309
+        - rid: 3179479286295822438
         events:
         - rid: 4945720422352290310
         data: []
@@ -19801,6 +20440,7 @@ MonoBehaviour:
         stateName: Combo_2_3
         properties:
         - rid: 4945720422352290311
+        - rid: 3179479286295822439
         events:
         - rid: 4945720422352290312
         data: []
@@ -19814,6 +20454,7 @@ MonoBehaviour:
         stateName: Combo_2_4
         properties:
         - rid: 4945720422352290313
+        - rid: 3179479286295822440
         events:
         - rid: 4945720422352290314
         data: []
@@ -19827,6 +20468,7 @@ MonoBehaviour:
         stateName: Combo_3_1
         properties:
         - rid: 4945720422352290315
+        - rid: 3179479286295822442
         events:
         - rid: 4945720422352290316
         data: []
@@ -19840,6 +20482,7 @@ MonoBehaviour:
         stateName: Combo_3_2
         properties:
         - rid: 4945720422352290317
+        - rid: 3179479286295822443
         events:
         - rid: 4945720422352290318
         data: []
@@ -19853,6 +20496,7 @@ MonoBehaviour:
         stateName: Combo_3_3
         properties:
         - rid: 4945720422352290319
+        - rid: 3179479286295822444
         events:
         - rid: 4945720422352290320
         data: []
@@ -19866,6 +20510,7 @@ MonoBehaviour:
         stateName: Combo_3_4
         properties:
         - rid: 4945720422352290321
+        - rid: 3179479286295822445
         events:
         - rid: 4945720422352290322
         data: []
@@ -19879,6 +20524,7 @@ MonoBehaviour:
         stateName: Combo_4_1
         properties:
         - rid: 4945720422352290323
+        - rid: 3179479286295822446
         events:
         - rid: 4945720422352290324
         data: []
@@ -19892,6 +20538,7 @@ MonoBehaviour:
         stateName: Combo_4_2
         properties:
         - rid: 4945720422352290325
+        - rid: 3179479286295822447
         events:
         - rid: 4945720422352290326
         data: []
@@ -19905,6 +20552,7 @@ MonoBehaviour:
         stateName: Combo_4_3
         properties:
         - rid: 4945720422352290327
+        - rid: 3179479286295822448
         events:
         - rid: 4945720422352290328
         data: []
@@ -19918,6 +20566,7 @@ MonoBehaviour:
         stateName: Combo_5_1
         properties:
         - rid: 4945720422352290329
+        - rid: 3179479286295822449
         events:
         - rid: 4945720422352290330
         data: []
@@ -19931,6 +20580,7 @@ MonoBehaviour:
         stateName: Combo_6_1
         properties:
         - rid: 4945720422352290331
+        - rid: 3179479286295822450
         events:
         - rid: 4945720422352290332
         data: []
@@ -19944,6 +20594,7 @@ MonoBehaviour:
         stateName: Combo_7_1
         properties:
         - rid: 4945720422352290333
+        - rid: 3179479286295822451
         events:
         - rid: 4945720422352290334
         data: []
@@ -19957,6 +20608,7 @@ MonoBehaviour:
         stateName: Combo_8_1
         properties:
         - rid: 4945720422352290335
+        - rid: 3179479286295822452
         events:
         - rid: 4945720422352290336
         data: []
@@ -19970,6 +20622,7 @@ MonoBehaviour:
         stateName: Combo_9_1
         properties:
         - rid: 4945720422352290337
+        - rid: 3179479286295822453
         events:
         - rid: 4945720422352290338
         data: []
@@ -19983,6 +20636,7 @@ MonoBehaviour:
         stateName: Combo_10_1
         properties:
         - rid: 4945720422352290339
+        - rid: 3179479286295822454
         events:
         - rid: 4945720422352290340
         data: []
@@ -19996,6 +20650,7 @@ MonoBehaviour:
         stateName: Combo_11_1
         properties:
         - rid: 4945720422352290341
+        - rid: 3179479286295822455
         events:
         - rid: 4945720422352290342
         data: []
@@ -83018,33 +83673,109 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   character: {fileID: 0}
+  presets:
+  - rid: 3179479309507625054
+  - rid: 3179479309507625055
+  - rid: 3179479309507625056
+  - rid: 3179479309507625072
+  - rid: 3179479309507625073
   maxDepth: 5
   noOfSpheres: 5
   sweepDistance: 1.5
   capsuleOrientation: 1
-  skinWidth: 0.015
   capsuleOffset: {x: 0, y: 0.9, z: 0}
   capsuleRadius: 0.3
   capsuleSize: 1.8
+  skinWidth: 0.015
   criticalSlopeAngle: 50
   criticalWallAngle: 15
   maxStepHeight: 0.3
+  pushSpeedCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: -3.1716218
+      outSlope: -3.1716218
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.22308688
+    - serializedVersion: 3
+      time: 1
+      value: 100
+      inSlope: 454.59894
+      outSlope: 441.60812
+      tangentMode: 1
+      weightedMode: 1
+      inWeight: 0.19974065
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
   simulateGravity: 0
   simulationStep: 0.033333335
   accumulatedTime: 0
   gravityDirection: {x: 0, y: -1, z: 0}
   gravityMagnitude: 35
   terminalVelocity: -50
-  isGrounded: 1
-  groundLayer:
+  collisionLayer:
     serializedVersion: 2
-    m_Bits: 192
+    m_Bits: 2147483840
+  isGrounded: 1
   sides: 6
   noOfLayers: 3
   groundCheckerRadius: 0.27
   groundCheckerHeight: 1
   stepCheckerCount: 5
+  targetPosition: {x: 0, y: 0, z: 0}
+  targetForward: {x: 0, y: 0, z: 0}
+  lerpTime: 0.2
   worldVelocity: {x: 0, y: 1, z: 0}
+  references:
+    version: 2
+    RefIds:
+    - rid: 3179479309507625054
+      type: {class: CharacterMover/CapsulePreset, ns: , asm: Experimental}
+      data:
+        presetName: Zero
+        capsuleOrientation: 1
+        capsuleOffset: {x: 0, y: 0, z: 0}
+        capsuleRadius: 0
+        capsuleSize: 0
+    - rid: 3179479309507625055
+      type: {class: CharacterMover/CapsulePreset, ns: , asm: Experimental}
+      data:
+        presetName: Small
+        capsuleOrientation: 1
+        capsuleOffset: {x: 0, y: 0.9, z: 0}
+        capsuleRadius: 0.3
+        capsuleSize: 1.8
+    - rid: 3179479309507625056
+      type: {class: CharacterMover/CapsulePreset, ns: , asm: Experimental}
+      data:
+        presetName: Medium
+        capsuleOrientation: 1
+        capsuleOffset: {x: 0, y: 0.9, z: 0}
+        capsuleRadius: 0.5
+        capsuleSize: 1.8
+    - rid: 3179479309507625072
+      type: {class: CharacterMover/CapsulePreset, ns: , asm: Experimental}
+      data:
+        presetName: Large
+        capsuleOrientation: 1
+        capsuleOffset: {x: 0, y: 0.9, z: 0}
+        capsuleRadius: 0.7
+        capsuleSize: 1.8
+    - rid: 3179479309507625073
+      type: {class: CharacterMover/CapsulePreset, ns: , asm: Experimental}
+      data:
+        presetName: Short
+        capsuleOrientation: 1
+        capsuleOffset: {x: 0, y: 0.6, z: 0}
+        capsuleRadius: 0.5
+        capsuleSize: 1.2
 --- !u!114 &9161128315152787253
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -83058,6 +83789,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   currentStateName: Idle
+  isInTransition: 0
+  transitions:
+  - rid: 3179479309507625069
+  - rid: 3179479309507625070
+  - rid: 3179479309507625071
   oneShotTest:
     rid: 3049075540678411223
   references:
@@ -83074,6 +83810,24 @@ MonoBehaviour:
         length: 0
         preview: 0
         clip: {fileID: -3335195926406645739, guid: 3fe49fd7ac147f940baff8c2d3c21e3b, type: 3}
+    - rid: 3179479309507625069
+      type: {class: TransitionInfo, ns: , asm: Experimental}
+      data:
+        transitionStateName: WalkToIdle
+        previousStateName: Walk
+        nextStateName: Idle
+    - rid: 3179479309507625070
+      type: {class: TransitionInfo, ns: , asm: Experimental}
+      data:
+        transitionStateName: RunToIdle
+        previousStateName: Run
+        nextStateName: Idle
+    - rid: 3179479309507625071
+      type: {class: TransitionInfo, ns: , asm: Experimental}
+      data:
+        transitionStateName: SprintToIdle
+        previousStateName: Sprint
+        nextStateName: Idle
 --- !u!114 &4007063791175795665
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -83146,7 +83900,7 @@ MonoBehaviour:
     m_Bits: 128
   fenceCheckerOffset: {x: 0, y: 0}
   fenceCheckerDistance: 1.2
-  animHeight: 0
+  criticalFenceWidth: 0.3
   scaleFactor: {x: 1, y: 1, z: 1}
   wallLayer:
     serializedVersion: 2
@@ -83156,6 +83910,7 @@ MonoBehaviour:
   targetPos: {x: 0, y: 0, z: 0}
   targetForward: {x: 0, y: 0, z: 0}
   parkourDir: {x: 0, y: 0, z: 0}
+  criticalParkourAngle: 0
 --- !u!114 &4646400752311590440
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -84932,8 +85687,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7811858900502696557}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.13352852, y: 0.08175807, z: 0.9876427, w: -0.006900953}
-  m_LocalPosition: {x: 0.08098198, y: -0.030945433, z: -0.013556022}
+  m_LocalRotation: {x: 0.2382258, y: 0.02788645, z: 0.9559076, w: -0.16944511}
+  m_LocalPosition: {x: 0.11088955, y: -0.018625945, z: -0.08532425}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

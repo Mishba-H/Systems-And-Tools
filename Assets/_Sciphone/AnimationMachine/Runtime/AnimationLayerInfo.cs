@@ -5,109 +5,127 @@ using Sciphone;
 using UnityEngine.Animations;
 using System.Collections;
 using UnityEngine.Playables;
+using static UnityEditor.Experimental.GraphView.GraphView;
 
 [Serializable]
 public class AnimationLayerInfo
 {
     public string layerName = "DefaultLayer";
-    [HideInInspector] public AnimationMachine animMachine;
     [SerializeReference, Polymorphic] public List<AnimationLayerProperty> properties = new List<AnimationLayerProperty>();
     [SerializeReference, Polymorphic] public List<AnimationStateInfo> states;
-    public AnimationMixerPlayable stateMixer;
 
-    [HideInInspector] public AnimationStateInfo activeState;
-    [HideInInspector] public Coroutine statesBlendCoroutine;
-    public void ChangeStateImmediate(AnimationStateInfo newState)
+    internal AnimationMachine animMachine;
+    internal Playable layerPlayable;
+    internal AnimationStateInfo currentState;
+    private Coroutine statesBlendCoroutine;
+    private float[] previousWeights;
+
+    public void Initialize(AnimationMachine animMachine)
     {
-        if (activeState == newState)
+        this.animMachine = animMachine;
+        layerPlayable = AnimationMixerPlayable.Create(animMachine.playableGraph, 0);
+
+        foreach (var state in states)
         {
-            activeState.ResetState();
+            state.Initialize(animMachine);
+            layerPlayable.AddInput(state.statePlayable, 0);
+        }
+
+        layerPlayable.SetInputWeight(0, 1);
+        currentState = states[0];
+        previousWeights = new float[layerPlayable.GetInputCount()];
+    }
+    public void ChangeStateImmediate(AnimationStateInfo targetState)
+    {
+        if (currentState == targetState)
+        {
+            currentState.ResetState();
             return;
         }
-        activeState = newState;
-        for (int i = 0; i < stateMixer.GetInputCount(); i++)
+        currentState = targetState;
+        for (int i = 0; i < layerPlayable.GetInputCount(); i++)
         {
-            if (i == ((Playable)stateMixer).GetIndexOf(newState.playable))
+            if (i == layerPlayable.GetIndexOf(targetState.statePlayable))
             {
-                stateMixer.SetInputWeight(i, 1);
+                layerPlayable.SetInputWeight(i, 1);
                 continue;
             }
-            stateMixer.SetInputWeight(i, 0);
+            layerPlayable.SetInputWeight(i, 0);
         }
-        activeState.ResetState();
+        currentState.ResetState();
     }
-    public void ChangeState(AnimationStateInfo newState, MonoBehaviour activeMonoBehaviour)
+    public void ChangeState(AnimationStateInfo targetState)
     {
-        if (activeState == newState)
+        if (currentState == targetState)
         {
-            activeState.ResetState();
+            currentState.ResetState();
             return;
         }
+
         if (statesBlendCoroutine != null)
         {
-            activeMonoBehaviour.StopCoroutine(statesBlendCoroutine);
+            animMachine.StopCoroutine(statesBlendCoroutine);
             statesBlendCoroutine = null;
-            int stateIndex = ((Playable)stateMixer).GetIndexOf(activeState.playable);
-            ((Playable)stateMixer).NormalizeWeights(stateIndex);
+            int stateIndex = layerPlayable.GetIndexOf(currentState.statePlayable);
+            layerPlayable.NormalizeWeights(stateIndex);
         }
-        activeState = newState;
-        statesBlendCoroutine = activeMonoBehaviour.StartCoroutine(BlendStates(newState, activeMonoBehaviour));
+        currentState = targetState;
+        statesBlendCoroutine = animMachine.StartCoroutine(BlendStates(targetState));
     }
-    public IEnumerator BlendStates(AnimationStateInfo stateInfo, MonoBehaviour activeMonoBehaviour)
+    public IEnumerator BlendStates(AnimationStateInfo targetState)
     {
-        stateInfo.ResetState();
+        targetState.ResetState();
 
-        float[] previousWeights = new float[stateMixer.GetInputCount()];
-        for (int i = 0; i < stateMixer.GetInputCount(); i++)
+        for (int i = 0; i < layerPlayable.GetInputCount(); i++)
         {
-            previousWeights[i] = stateMixer.GetInputWeight(i);
+            previousWeights[i] = layerPlayable.GetInputWeight(i);
         }
 
         float blendDuration = 0.2f;
-        if (stateInfo.TryGetProperty<BlendDurationProperty>(out AnimationStateProperty property))
+        if (targetState.TryGetProperty(out BlendDurationProperty property))
         {
-            blendDuration = (property as BlendDurationProperty).blendDuration;
+            blendDuration = property.blendDuration;
         }
 
         float elapsedTime = 0f;
-        int stateIndex = ((Playable)stateMixer).GetIndexOf(stateInfo.playable);
+        int stateIndex = layerPlayable.GetIndexOf(targetState.statePlayable);
         while (elapsedTime <= blendDuration)
         {
-            for (int i = 0; i < stateMixer.GetInputCount(); i++)
+            for (int i = 0; i < layerPlayable.GetInputCount(); i++)
             {
                 if (i == stateIndex)
                 {
-                    stateMixer.SetInputWeight(i, elapsedTime / blendDuration);
+                    layerPlayable.SetInputWeight(i, elapsedTime / blendDuration);
                 }
                 else
                 {
-                    stateMixer.SetInputWeight(i, previousWeights[i] * (1 - elapsedTime / blendDuration));
+                    layerPlayable.SetInputWeight(i, previousWeights[i] * (1 - elapsedTime / blendDuration));
                 }
             }
-            ((Playable)stateMixer).NormalizeWeights(stateIndex);
+            layerPlayable.NormalizeWeights(stateIndex);
             elapsedTime += Time.deltaTime * animMachine.timeScale;
             yield return null;
         }
 
-        for (int i = 0; i < stateMixer.GetInputCount(); i++)
+        for (int i = 0; i < layerPlayable.GetInputCount(); i++)
         {
-            if (i == ((Playable)stateMixer).GetIndexOf(stateInfo.playable))
+            if (i == layerPlayable.GetIndexOf(targetState.statePlayable))
             {
-                stateMixer.SetInputWeight(i, 1);
+                layerPlayable.SetInputWeight(i, 1);
                 continue;
             }
-            stateMixer.SetInputWeight(i, 0);
+            layerPlayable.SetInputWeight(i, 0);
         }
         statesBlendCoroutine = null;
     }
-    public bool TryGetProperty<T>(out AnimationLayerProperty property) where T : AnimationLayerProperty
+    public bool TryGetProperty<T>(out T property) where T : AnimationLayerProperty
     {
         foreach (var prop in properties)
         {
             if (prop == null) continue;
             if (prop.GetType() == typeof(T))
             {
-                property = prop;
+                property = prop as T;
                 return true;
             }
         }

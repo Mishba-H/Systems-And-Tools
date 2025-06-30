@@ -104,10 +104,10 @@ public class BaseController : MonoBehaviour, IControllerModule
             if (character.PerformingAction<Idle>() || character.PerformingAction<Walk>() || character.PerformingAction<Run>() ||
                 character.PerformingAction<Sprint>())
             {
-                if (character.animMachine.activeState.TryGetProperty<RootMotionCurvesProperty>(out var rootMotionProp)
-                    && character.animMachine.activeState.TryGetProperty<ScaleModeProperty>(out var scaleModeProp))
+                if (character.animMachine.rootState.TryGetProperty<RootMotionCurvesProperty>(out var rootMotionProp)
+                    && character.animMachine.rootState.TryGetProperty<ScaleModeProperty>(out var scaleModeProp))
                 {
-                    scaleFactor = AnimationMachineExtensions.EvaluateScaleFactor(rootMotionProp as RootMotionCurvesProperty, scaleModeProp as ScaleModeProperty,
+                    scaleFactor = AnimationMachineExtensions.EvaluateScaleFactor(rootMotionProp, scaleModeProp,
                         new Vector3(0f, 0f, targetSpeed));
                 }
             }

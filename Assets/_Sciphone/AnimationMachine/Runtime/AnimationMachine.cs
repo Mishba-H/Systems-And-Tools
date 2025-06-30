@@ -12,59 +12,60 @@ public class AnimationMachine : MonoBehaviour
     public event Action<float> OnGraphEvaluate;
     public event Action OnActiveStateChanged;
 
-    private Animator animator;
-
     [TabGroup("Graph Settings")] public string graphName = "Playable Graph";
     [TabGroup("Graph Settings")][Range(0.001f, 3f)] public float timeScale = 1f;
     [TabGroup("Graph Settings")] public bool enableStopMotion;
     [TabGroup("Graph Settings")][Range(1, 60)] public int stopMotionRate = 60;
-    [TabGroup("Graph Settings")] public float stepTime;
     [TabGroup("Graph Settings")] public float accumulatedTime = 0f;
 
-    internal PlayableGraph playableGraph;
-    private AnimationPlayableOutput playableOutput;
-    private AnimationLayerMixerPlayable layerMixer;
-
-    [HideInInspector] public AnimationStateInfo activeState;
-    [HideInInspector] public AnimationLayerInfo activeLayer;
-    public Coroutine layersBlendCoroutine;
-
-    public AnimationStateInfo oneShotState;
-    public Coroutine playOneShotCoroutine;
-
-    private float currNT;
-    private float prevNT;
     [TabGroup("Root Motion Properties")] public Vector3 rootDeltaPosition;
     [TabGroup("Root Motion Properties")] public Quaternion rootDeltaRotation;
     [TabGroup("Root Motion Properties")] public Vector3 rootLinearVelocity;
+    private float currNT;
+    private float prevNT;
 
     [SerializeReference, Polymorphic] public List<AnimationLayerInfo> layers;
+    private List<AnimationLayerInfo> rootLayers;
+    private List<AnimationLayerInfo> overrideLayers;
+    private List<AnimationLayerInfo> additiveLayers;
 
+    internal PlayableGraph playableGraph;
+    private AnimationPlayableOutput playableOutput;
+    private AnimationLayerMixerPlayable rootPlayable;
+    private Animator animator;
+
+    [HideInInspector] public AnimationStateInfo rootState;
+    internal AnimationLayerInfo currentRootLayer;
+
+    private Coroutine layersBlendCoroutine;
+    private Coroutine playOneShotCoroutine;
+
+    private float[] previousWeights;
 
     private void Awake()
     {
         animator = GetComponent<Animator>();
         DisableAnimatorGraph();
-        InitializeGraph();
-        activeState = activeLayer.activeState;
+        Initialize();
+        rootState = currentRootLayer.currentState;
     }
 
     public void Update()
     {
         HandleGraphEvaluation(Time.deltaTime);
-        StateUpdateLogic(activeState);
+        StateUpdateLogic(rootState);
     }
 
     void DisableAnimatorGraph()
     {
-        if (animator != null)
+        if (animator)
         {
             animator.playableGraph.SetTimeUpdateMode(DirectorUpdateMode.Manual);
             animator.playableGraph.Stop();
         }
     }
 
-    public void InitializeGraph()
+    public void Initialize()
     {
 #if UNITY_EDITOR
         InititalizeRootMotionProperty();
@@ -72,63 +73,65 @@ public class AnimationMachine : MonoBehaviour
 
         playableGraph = PlayableGraph.Create(graphName);
         playableGraph.SetTimeUpdateMode(DirectorUpdateMode.Manual);
+        playableGraph.Play();
         GraphVisualizerClient.Show(playableGraph);
 
-        layerMixer = AnimationLayerMixerPlayable.Create(playableGraph, 0);
+        rootPlayable = AnimationLayerMixerPlayable.Create(playableGraph, 0);
         playableOutput = AnimationPlayableOutput.Create(playableGraph, "AnimationOutput", animator);
-        playableOutput.SetSourcePlayable(layerMixer);
+        playableOutput.SetSourcePlayable(rootPlayable);
 
+        //Sort Layers by type
+        rootLayers = new();
+        overrideLayers = new();
+        additiveLayers = new();
         foreach (var layer in layers)
         {
-            layer.animMachine = this;
-
-            layer.stateMixer = AnimationMixerPlayable.Create(playableGraph, 0);
-            layerMixer.AddInput(layer.stateMixer, 0);
-
-            if (layer.TryGetProperty<LayerTypeProperty>(out AnimationLayerProperty prop))
+            if (layer.TryGetProperty(out LayerTypeProperty layerTypeProperty))
             {
-                switch ((AnimationLayerType)prop.Value)
+                switch (layerTypeProperty.layerType)
                 {
-                    case AnimationLayerType.Active:
-                        break;
-                    case AnimationLayerType.Additive:
-                        layerMixer.SetLayerAdditive((uint)layers.GetIndexOf(layer), true);
-                        break;
-                    case AnimationLayerType.Override:
-                        break;
+                    case AnimationLayerType.Root: rootLayers.Add(layer); break;
+                    case AnimationLayerType.Override: overrideLayers.Add(layer); break;
+                    case AnimationLayerType.Additive: additiveLayers.Add(layer); break;
                 }
             }
-            if (layer.TryGetProperty<AvatarMaskProperty>(out prop))
-                layerMixer.SetLayerMaskFromAvatarMask((uint)layers.GetIndexOf(layer), (AvatarMask)prop.Value);
-
-            foreach (var state in layer.states)
+            if (layer.TryGetProperty(out AvatarMaskProperty avatarMaskProperty))
             {
-                state.animMachine = this;
-                state.AddToGraph(playableGraph);
-                layer.stateMixer.AddInput(state.playable, 0);
-                foreach (var e in state.events)
-                {
-                    e.GameObject = gameObject;
-                }
+                rootPlayable.SetLayerMaskFromAvatarMask((uint)layers.GetIndexOf(layer), avatarMaskProperty.mask);
             }
-
-            layer.stateMixer.SetInputWeight(0, 1);
-            layer.activeState = layer.states[0];
         }
 
-        activeLayer = layers[0];
-        layerMixer.SetInputWeight(0, 1);
-        playableGraph.Play();
+        foreach (var layer in rootLayers)
+        {
+            layer.Initialize(this);
+            rootPlayable.AddInput(layer.layerPlayable, 0);
+        }
+        foreach (var layer in overrideLayers)
+        {
+            layer.Initialize(this);
+            rootPlayable.AddInput(layer.layerPlayable, 0);
+        }
+        foreach (var layer in additiveLayers)
+        {
+            layer.Initialize(this);
+            rootPlayable.AddInput(layer.layerPlayable, 0);
+        }
+
+        rootPlayable.SetInputWeight(0, 1);
+        currentRootLayer = layers[0];
+        previousWeights = new float[rootLayers.Count];
     }
 
-    private void ChangeActiveState(AnimationStateInfo newState)
+    private void ChangeRootState(AnimationStateInfo newState)
     {
-        if (activeState == newState) return;
+        if (rootState == newState) return;
         
-        activeState = newState;
+        rootState = newState;
 
-        // Resets root motion parameters on active state change
-        EvaluateRootMotionData(1f, 0f, 0f);
+        // Sets root motion parameters on active state change to zero
+        currNT = 0f;
+        prevNT = 0f;
+        EvaluateRootMotionData(1f, currNT, prevNT);
 
         /*// This calculates root motion parameters for one frame when the active state is changed
         if (enableStopMotion)
@@ -151,14 +154,14 @@ public class AnimationMachine : MonoBehaviour
     {
         if (enableStopMotion)
         {
-            stepTime = 1f / stopMotionRate;
+            float frameTime = 1f / stopMotionRate;
             accumulatedTime += dt * timeScale;
-            while (accumulatedTime > stepTime)
+            while (accumulatedTime > frameTime)
             {
-                accumulatedTime -= stepTime;
-                playableGraph.Evaluate(stepTime);
-                HandleLooping(stepTime);
-                OnGraphEvaluate?.Invoke(stepTime);
+                accumulatedTime -= frameTime;
+                playableGraph.Evaluate(frameTime);
+                HandleLooping(frameTime);
+                OnGraphEvaluate?.Invoke(frameTime);
             }
         }
         else
@@ -171,14 +174,14 @@ public class AnimationMachine : MonoBehaviour
 
     public void HandleLooping(float evaluationTime)
     {
-        currNT = activeState.NormalizedTime();
+        currNT = rootState.NormalizedTime();
         if (currNT == 1f)
         {
-            if (activeState.TryGetProperty<LoopProperty>(out _))
+            if (rootState.TryGetProperty(out LoopProperty propeerty))
             {
-                var overflowTime = PrecidctOverflowTime(activeState, prevNT, enableStopMotion ? stepTime : Time.deltaTime * timeScale);
-                currNT = overflowTime / activeState.length;
-                activeState.ResetState(currNT);
+                var overflowTime = PrecidctOverflowTime(rootState, prevNT, enableStopMotion ? 1f / stopMotionRate : Time.deltaTime * timeScale);
+                currNT = overflowTime / rootState.length;
+                rootState.ResetState(currNT);
             }
         }
         EvaluateRootMotionData(evaluationTime, currNT, prevNT);
@@ -187,9 +190,9 @@ public class AnimationMachine : MonoBehaviour
 
     public void StateUpdateLogic(AnimationStateInfo stateInfo)
     {
-        if (stateInfo.TryGetProperty<PlaybackSpeedProperty>(out AnimationStateProperty property))
+        if (stateInfo.TryGetProperty(out PlaybackSpeedProperty property))
         {
-            stateInfo.playable.SetSpeed((property as PlaybackSpeedProperty).playbackSpeed);
+            stateInfo.statePlayable.SetSpeed(property.playbackSpeed);
         }
 
         if (stateInfo.GetType() == typeof(FourWayBlendState))
@@ -215,124 +218,163 @@ public class AnimationMachine : MonoBehaviour
 
     public void PlayActive(string stateName, string layerName)
     {
-        if (activeState.TryGetProperty<NotCancellableProperty>(out _))
+        if (rootState.TryGetProperty<NotCancellableProperty>(out _))
         {
             return;
         }
 
         if (playOneShotCoroutine != null)
         {
-            layerMixer.DisconnectInput(layerMixer.GetInputCount() - 1);
-            layerMixer.SetInputCount(layers.AsValueEnumerable().Count());
-            oneShotState.playable.Destroy();
-            oneShotState = null;
+            rootPlayable.DisconnectInput(rootPlayable.GetInputCount() - 1);
+            rootPlayable.SetInputCount(layers.AsValueEnumerable().Count());
+            rootState.statePlayable.Destroy();
             StopCoroutine(playOneShotCoroutine);
             playOneShotCoroutine = null;
         }
 
-        AnimationLayerInfo newLayer = layers.GetLayerInfo(layerName);
-        if (newLayer == null)
+        AnimationLayerInfo targetLayer = rootLayers.GetLayerInfo(layerName);
+        if (targetLayer == null)
         {
             Debug.LogError($"The layer [{layerName}] was not found.");
             return;
         }
-        AnimationStateInfo newState = newLayer.GetStateInfo(stateName);
-        if (newState == null)
+        AnimationStateInfo targetState = targetLayer.GetStateInfo(stateName);
+        if (targetState == null)
         {
-            Debug.LogError($"The state [{stateName}] was not found on the layer [{activeLayer.layerName}]");
+            Debug.LogError($"The state [{stateName}] was not found on the layer [{currentRootLayer.layerName}]");
             return;
         }
 
-        currNT = 0f;
-        prevNT = 0f;
-
-        if (activeLayer == newLayer)
+        if (currentRootLayer == targetLayer)
         {
-            activeLayer.ChangeState(newState, this);
+            currentRootLayer.ChangeState(targetState);
         }
         else
         {
             if (layersBlendCoroutine != null)
+            {
                 StopCoroutine(layersBlendCoroutine);
-            var prevLayer = activeLayer;
-            activeLayer = newLayer;
-            activeLayer.ChangeStateImmediate(newState);
-            layersBlendCoroutine = StartCoroutine(LayersBlendCoroutine(newLayer, prevLayer));
+                layersBlendCoroutine = null;
+                int a = rootLayers.GetIndexOf(currentRootLayer);
+                for (int i = 0; i < rootLayers.Count; i++)
+                {
+                    if (i < a)
+                    {
+                        rootPlayable.SetInputWeight(i, 1f);
+                    }
+                    else if (a == i)
+                    {
+                        rootPlayable.SetInputWeight(i, 1f);
+                    }
+                    else if (i > a)
+                    {
+                        rootPlayable.SetInputWeight(i, 0f);
+                    }
+                }
+            }
+            currentRootLayer = targetLayer;
+            currentRootLayer.ChangeStateImmediate(targetState);
+            layersBlendCoroutine = StartCoroutine(LayersBlendCoroutine(targetLayer));
         }
 
-        ChangeActiveState(newState);
+        ChangeRootState(targetState);
+    }
+
+    public void PlayOverride(string stateName, string layerName)
+    {
+
+    }
+
+    public void PlayAdditive(string stateName, string layerName)
+    {
+
     }
 
     public void PlayOneShot(AnimationStateInfo state)
     {
-        if (activeState.TryGetProperty<NotCancellableProperty>(out _))
+        if (rootState.TryGetProperty<NotCancellableProperty>(out _))
         {
             return;
         }
 
-        currNT = 0f;
-        prevNT = 0f;
-
         if (playOneShotCoroutine != null)
         {
-            layerMixer.DisconnectInput(layerMixer.GetInputCount() - 1);
-            layerMixer.SetInputCount(layers.AsValueEnumerable().Count());
-            oneShotState.playable.Destroy();
-            oneShotState = null;
+            rootPlayable.DisconnectInput(rootPlayable.GetInputCount() - 1);
+            rootPlayable.SetInputCount(layers.AsValueEnumerable().Count());
+            rootState.statePlayable.Destroy();
             StopCoroutine(playOneShotCoroutine);
             playOneShotCoroutine = null;
         }
         playOneShotCoroutine = StartCoroutine(PlayOneShotCoroutine(state));
 
-        ChangeActiveState(state);
+        ChangeRootState(state);
     }
 
-    public IEnumerator LayersBlendCoroutine(AnimationLayerInfo nextLayer, AnimationLayerInfo prevLayer)
+    public IEnumerator LayersBlendCoroutine(AnimationLayerInfo targetLayer)
     {
+        for (int i = 0; i < rootLayers.Count; i++)
+        {
+            previousWeights[i] = rootPlayable.GetInputWeight(i);
+        }
+
         float blendDuration = 0.2f;
-        if (nextLayer.activeState.TryGetProperty<BlendDurationProperty>(out AnimationStateProperty property))
+        if (targetLayer.currentState.TryGetProperty(out BlendDurationProperty property))
         {
             blendDuration = (property as BlendDurationProperty).blendDuration;
         }
 
-        int i = layers.GetIndexOf(nextLayer);
-        int j = layers.GetIndexOf(prevLayer);
-        if (i > j)
+        int a = rootLayers.GetIndexOf(targetLayer);
+        float elapsedTime = 0f;
+        while (elapsedTime <= blendDuration)
         {
-            float elapsedTime = 0f;
-            while (elapsedTime < blendDuration)
+            for (int i = 0; i < rootLayers.Count; i++)
             {
-                layerMixer.SetInputWeight(i, elapsedTime / blendDuration);
-                elapsedTime += Time.deltaTime * timeScale;
-                yield return null;
+                if (i < a && previousWeights[i] == 0f)
+                {
+                    rootPlayable.SetInputWeight(i, elapsedTime / blendDuration);
+                }
+                else if (i == a)
+                {
+                    rootPlayable.SetInputWeight(i, elapsedTime / blendDuration);
+                }
+                else if (i > a && previousWeights[i] == 1f)
+                {
+                    rootPlayable.SetInputWeight(i, 1f - elapsedTime / blendDuration);
+                }
             }
-            layerMixer.SetInputWeight(i, 1);
+            elapsedTime += Time.deltaTime * timeScale;
+            yield return null;
         }
-        else
+
+        for (int i = 0; i < rootLayers.Count; i++)
         {
-            float elapsedTime = 0f;
-            while (elapsedTime < blendDuration)
+            if (i < a && previousWeights[i] == 0f)
             {
-                layerMixer.SetInputWeight(j, 1 - elapsedTime / blendDuration);
-                elapsedTime += Time.deltaTime * timeScale;
-                yield return null;
+                rootPlayable.SetInputWeight(i, 1f);
             }
-            layerMixer.SetInputWeight(j, 0);
+            else if (i == a)
+            {
+                rootPlayable.SetInputWeight(i, 1f);
+            }
+            else if (i > a && previousWeights[i] == 1f)
+            {
+                rootPlayable.SetInputWeight(i, 0f);
+            }
         }
+        rootPlayable.SetInputWeight(a, 1f);
         layersBlendCoroutine = null;
     }
 
     public IEnumerator PlayOneShotCoroutine(AnimationStateInfo state)
     {
         // Add to graph
-        oneShotState = state;
-        state.AddToGraph(playableGraph);
+        state.Initialize(this);
         state.ResetState();
-        layerMixer.AddInput(state.playable, 0);
+        rootPlayable.AddInput(state.statePlayable, 0);
 
         // Blend In
         float blendDuration = 0.2f;
-        if (state.TryGetProperty<BlendDurationProperty>(out AnimationStateProperty property))
+        if (state.TryGetProperty(out BlendDurationProperty property))
         {
             blendDuration = (property as BlendDurationProperty).blendDuration;
         }
@@ -340,11 +382,11 @@ public class AnimationMachine : MonoBehaviour
         float elapsedTime = 0f;
         while (elapsedTime < blendDuration)
         {
-            layerMixer.SetInputWeight(layerMixer.GetInputCount() - 1, elapsedTime / blendDuration);
+            rootPlayable.SetInputWeight(rootPlayable.GetInputCount() - 1, elapsedTime / blendDuration);
             elapsedTime += Time.deltaTime * timeScale;
             yield return null;
         }
-        layerMixer.SetInputWeight(layerMixer.GetInputCount() - 1, 1);
+        rootPlayable.SetInputWeight(rootPlayable.GetInputCount() - 1, 1f);
 
         // Wait until clip ends
         while (state.NormalizedTime() < 1f)
@@ -354,26 +396,25 @@ public class AnimationMachine : MonoBehaviour
         elapsedTime = 0f;
         while (elapsedTime < blendDuration)
         {
-            layerMixer.SetInputWeight(layerMixer.GetInputCount() - 1, (1 - elapsedTime / blendDuration));
+            rootPlayable.SetInputWeight(rootPlayable.GetInputCount() - 1, (1f - elapsedTime / blendDuration));
             elapsedTime += Time.deltaTime * timeScale;
             yield return null;
         }
-        layerMixer.SetInputWeight(layerMixer.GetInputCount() - 1, 0);
+        rootPlayable.SetInputWeight(rootPlayable.GetInputCount() - 1, 0f);
 
         // Remove from graph
-        layerMixer.DisconnectInput(layerMixer.GetInputCount() - 1);
-        layerMixer.SetInputCount(layers.Count);
-        state.playable.Destroy();
-        oneShotState = null;
+        rootPlayable.DisconnectInput(rootPlayable.GetInputCount() - 1);
+        rootPlayable.SetInputCount(layers.Count);
+        state.statePlayable.Destroy();
         playOneShotCoroutine = null;
-        ChangeActiveState(activeLayer.activeState);
+        ChangeRootState(currentRootLayer.currentState);
     }
 
     private void EvaluateRootMotionData(float dt, float currNT, float prevNT)
     {
-        if (activeState.TryGetProperty<RootMotionCurvesProperty>(out AnimationStateProperty property))
+        if (rootState.TryGetProperty(out RootMotionCurvesProperty property))
         {
-            var curves = (property as RootMotionCurvesProperty).rootMotionData;
+            var curves = property.rootMotionData;
             rootDeltaPosition = new Vector3(
                 GetCurveDelta(curves.rootTX, curves.totalTime, currNT, prevNT),
                 GetCurveDelta(curves.rootTY, curves.totalTime, currNT, prevNT),
@@ -393,7 +434,7 @@ public class AnimationMachine : MonoBehaviour
 
         rootLinearVelocity = rootDeltaPosition / dt;
 
-        if (activeState.TryGetProperty<PlaybackSpeedProperty>(out var speedProperty))
+        if (rootState.TryGetProperty<PlaybackSpeedProperty>(out var speedProperty))
         {
             float speed = (speedProperty as PlaybackSpeedProperty).playbackSpeed;
             rootLinearVelocity *= 1 / speed;

@@ -56,6 +56,49 @@ public static class AnimationMachineExtensions
             playable.SetInputWeight(i, playable.GetInputWeight(i) / weightSum);
         }
     }
+    public static float GetMaxValue(this AnimationCurve curve, float precision = 0.01f)
+    {
+        if (curve == null || curve.length == 0)
+            return 0f; // Return a very low value if the curve is empty
+
+        float startTime = curve.keys[0].time;
+        float endTime = curve.keys[curve.length - 1].time;
+        float maxValue = float.MinValue;
+
+        for (float t = startTime; t <= endTime; t += precision)
+        {
+            float value = curve.Evaluate(t);
+            if (value > maxValue)
+                maxValue = value;
+        }
+
+        return maxValue;
+    }
+    public static Vector3 EvaluateScaleFactor(RootMotionCurvesProperty rootMotionProperty, ScaleModeProperty scaleMode, Vector3 targetValue)
+    {
+        var curves = rootMotionProperty.rootMotionData;
+        float totalTime = curves.totalTime;
+
+        float GetScale(AnimationCurve curve, ScaleMode mode, float targetValue)
+        {
+            return mode switch
+            {
+                ScaleMode.None => 1f,
+                ScaleMode.Zero => 0f,
+                ScaleMode.AvgValue => targetValue / ((curve.Evaluate(totalTime) - curve.Evaluate(0f)) / totalTime),
+                ScaleMode.MaxValue => targetValue / (GetMaxValue(curve) - curve.Evaluate(0f)),
+                ScaleMode.TotalValue => targetValue / (curve.Evaluate(totalTime) - curve.Evaluate(0f)),
+                _ => 1f
+            };
+        }
+
+        return new Vector3(
+        GetScale(curves.rootTX, scaleMode.scaleModeX, targetValue.x),
+        GetScale(curves.rootTY, scaleMode.scaleModeY, targetValue.y),
+        GetScale(curves.rootTZ, scaleMode.scaleModeZ, targetValue.z));
+    }
+
+
 #if UNITY_EDITOR
     public static RootMotionData ExtractRootMotionData(this AnimationClip clip, float normalizedStart = 0f, float normalizedEnd = 1f)
     {
@@ -93,7 +136,6 @@ public static class AnimationMachineExtensions
         data.totalTime = data.rootTX.keys[data.rootTX.length - 1].time;
         return data;
     }
-#endif
     public static AnimationCurve CropAnimationCurve(this AnimationCurve curve, float normalizedStart = 0f, float normalizedEnd = 1f)
     {
         float startTime = curve.keys[0].time;
@@ -139,45 +181,5 @@ public static class AnimationMachineExtensions
 
         return (valueAfter - valueBefore) / (2 * delta);
     }
-    public static float GetMaxValue(this AnimationCurve curve, float precision = 0.01f)
-    {
-        if (curve == null || curve.length == 0)
-            return 0f; // Return a very low value if the curve is empty
-
-        float startTime = curve.keys[0].time;
-        float endTime = curve.keys[curve.length - 1].time;
-        float maxValue = float.MinValue;
-
-        for (float t = startTime; t <= endTime; t += precision)
-        {
-            float value = curve.Evaluate(t);
-            if (value > maxValue)
-                maxValue = value;
-        }
-
-        return maxValue;
-    }
-    public static Vector3 EvaluateScaleFactor(RootMotionCurvesProperty rootMotionProperty, ScaleModeProperty scaleMode, Vector3 targetValue)
-    {
-        var curves = rootMotionProperty.rootMotionData;
-        float totalTime = curves.totalTime;
-
-        float GetScale(AnimationCurve curve, ScaleMode mode, float targetValue)
-        {
-            return mode switch
-            {
-                ScaleMode.None => 1f,
-                ScaleMode.Zero => 0f,
-                ScaleMode.AvgValue => targetValue / ((curve.Evaluate(totalTime) - curve.Evaluate(0f)) / totalTime),
-                ScaleMode.MaxValue => targetValue / (GetMaxValue(curve) - curve.Evaluate(0f)),
-                ScaleMode.TotalValue => targetValue / (curve.Evaluate(totalTime) - curve.Evaluate(0f)),
-                _ => 1f
-            };
-        }
-
-        return new Vector3(
-        GetScale(curves.rootTX, scaleMode.scaleModeX, targetValue.x),
-        GetScale(curves.rootTY, scaleMode.scaleModeY, targetValue.y),
-        GetScale(curves.rootTZ, scaleMode.scaleModeZ, targetValue.z));
-    }
+#endif
 }

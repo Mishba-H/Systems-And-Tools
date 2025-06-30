@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 
 [Serializable]
-public class TimeOfContact : IAnimationData
+public class TimeOfContact : AnimationData
 {
     public float timeOfContact;
 }
