@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using Sciphone;
 using UnityEngine;
-using static UnityEditor.PlayerSettings;
 
 //#if UNITY_EDITOR
 //using Physics = Nomnom.RaycastVisualization.VisualPhysics;

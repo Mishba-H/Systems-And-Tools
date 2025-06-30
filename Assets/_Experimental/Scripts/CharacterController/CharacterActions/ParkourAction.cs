@@ -29,7 +29,9 @@ public class ClimbOverFromGround : ParkourAction
         if (baseController != null)
         {
             var baseExpression = (Expression<Func<bool>>)(() =>
-                true);
+                !character.PerformingAction<Jump>() &&
+                !character.PerformingAction<AirJump>() &&
+                !character.PerformingAction<Fall>());
             condition = CombineExpressions(condition, baseExpression);
         }
         var parkourController = character.GetControllerModule<ParkourController>();
@@ -207,5 +209,63 @@ public class VaultOverFence : ParkourAction
         controller.CalculateScaleFactor(controller.fenceHeight);
         controller.CalculateStartingDistanceFromWall();
         controller.SetInitialTransform(controller.fenceHit, controller.fenceHeight);
+    }
+}
+
+[Serializable]
+public class TraverseLadder : ParkourAction
+{
+    private void CharacterCommand_ParkourUpCommand()
+    {
+        if (CanPerform)
+        {
+            IsBeingPerformed = true;
+        }
+    }
+    private void CharacterCommand_ParkourDownCommand()
+    {
+        if (IsBeingPerformed)
+        {
+            IsBeingPerformed = false;
+        }
+    }
+    public override void OnEnable()
+    {
+        base.OnEnable();
+        character.characterCommand.ParkourUpCommand += CharacterCommand_ParkourUpCommand;
+        character.characterCommand.ParkourDownCommand += CharacterCommand_ParkourDownCommand;
+    }
+    public override void CompileCondition()
+    {
+        Expression<Func<bool>> condition = () => true;
+        var baseController = character.GetControllerModule<BaseController>();
+        if (baseController != null)
+        {
+            var baseExpression = (Expression<Func<bool>>)(() =>
+                !character.PerformingAction<Jump>() &&
+                !character.PerformingAction<AirJump>());
+            condition = CombineExpressions(condition, baseExpression);
+        }
+        var parkourController = character.GetControllerModule<ParkourController>();
+        if (parkourController != null)
+        {
+            var parkourExpression = (Expression<Func<bool>>)(() =>
+                controller.ladderAvailable &&
+                !character.PerformingAction<ParkourAction>());
+            condition = CombineExpressions(condition, parkourExpression);
+        }
+        var meleeCombatController = character.GetControllerModule<MeleeCombatController>();
+        if (meleeCombatController != null)
+        {
+            var meleeCombatExpression = (Expression<Func<bool>>)(() =>
+                !character.PerformingAction<MeleeCombatAction>());
+            condition = CombineExpressions(condition, meleeCombatExpression);
+        }
+
+        this.condition = condition.Compile();
+    }
+    public override void EvaluateStatus()
+    {
+        base.EvaluateStatus();
     }
 }

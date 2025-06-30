@@ -19,7 +19,6 @@ namespace Sciphone
                 if (x == null || y == null) return false;
                 return x.propertyPath == y.propertyPath;
             }
-
             public int GetHashCode(SerializedProperty obj)
             {
                 return obj.propertyPath.GetHashCode();
@@ -27,21 +26,20 @@ namespace Sciphone
         }
 
         private SerializedPropertyComparer comparer;
-
         private List<SerializedProperty> allProperties;
-
         private List<SerializedProperty> defaultProperties;
 
         private Dictionary<string, List<SerializedProperty>> tabGroups;
         private string[] tabNames;
-        private List<int> selectedTabIndices = new List<int>();
+        private static Dictionary<string, int> selectedTabIndices;
         private List<string> drawnTabs;
 
         private Dictionary<string, List<SerializedProperty>> foldoutGroups;
-        private Dictionary<string, bool> foldoutStates;
+        private static Dictionary<string, bool> foldoutStates;
         private List<string> drawnFoldouts;
 
-        private Dictionary<MethodInfo, object[]> methodParameters = new Dictionary<MethodInfo, object[]>();
+        private static Dictionary<MethodInfo, bool> methodFoldouts = new Dictionary<MethodInfo, bool>();
+        private static Dictionary<MethodInfo, object[]> methodParameters = new Dictionary<MethodInfo, object[]>();
 
         private void OnEnable()
         {
@@ -52,113 +50,55 @@ namespace Sciphone
 
             comparer = new SerializedPropertyComparer();
             allProperties = new List<SerializedProperty>();
-
             defaultProperties = new List<SerializedProperty>();
 
             tabGroups = new Dictionary<string, List<SerializedProperty>>();
+            if (selectedTabIndices == null)
+                selectedTabIndices = new ();
             drawnTabs = new List<string>();
 
             foldoutGroups = new Dictionary<string, List<SerializedProperty>>();
-            foldoutStates = new Dictionary<string, bool>();
+            if (foldoutStates == null)
+                foldoutStates = new ();
             drawnFoldouts = new List<string>();
 
             SerializedProperty property = serializedObject.GetIterator();
-            property.NextVisible(true); // Skip the script field
+            property.NextVisible(true);
             while (property.NextVisible(false))
             {
                 allProperties.Add(property.Copy());
 
-                var tabGroupAttribute = GetFieldAttribute<TabGroupAttribute>(property);
-                if (tabGroupAttribute != null)
+                var tabAttr = GetFieldAttribute<TabGroupAttribute>(property);
+                if (tabAttr != null)
                 {
-                    if (!tabGroups.ContainsKey(tabGroupAttribute.TabName))
-                    {
-                        tabGroups[tabGroupAttribute.TabName] = new List<SerializedProperty>();
-                    }
-                    tabGroups[tabGroupAttribute.TabName].Add(property.Copy());
+                    if (!tabGroups.ContainsKey(tabAttr.TabName))
+                        tabGroups[tabAttr.TabName] = new List<SerializedProperty>();
+                    tabGroups[tabAttr.TabName].Add(property.Copy());
                 }
 
-                var foldoutGroupAttribute = GetFieldAttribute<FoldoutGroupAttribute>(property);
-                if (foldoutGroupAttribute != null)
+                var foldoutAttr = GetFieldAttribute<FoldoutGroupAttribute>(property);
+                if (foldoutAttr != null)
                 {
-                    if (!foldoutGroups.ContainsKey(foldoutGroupAttribute.Label))
+                    if (!foldoutGroups.ContainsKey(foldoutAttr.Label))
                     {
-                        foldoutGroups[foldoutGroupAttribute.Label] = new List<SerializedProperty>();
-                        foldoutStates[foldoutGroupAttribute.Label] = true; // Default foldout state: expanded
+                        foldoutGroups[foldoutAttr.Label] = new List<SerializedProperty>();
+                        string foldoutId = GetFoldoutGroupID(foldoutAttr.Label);
+                        if (!foldoutStates.ContainsKey(foldoutId))
+                            foldoutStates[foldoutId] = true;
                     }
-                    foldoutGroups[foldoutGroupAttribute.Label].Add(property.Copy());
+                    foldoutGroups[foldoutAttr.Label].Add(property.Copy());
                 }
 
-                if (tabGroupAttribute == null && foldoutGroupAttribute == null)
+                if (tabAttr == null && foldoutAttr == null)
                 {
                     defaultProperties.Add(property.Copy());
                 }
             }
-            // Populate tab names
+
             if (tabGroups.Keys.Count > 0)
             {
                 tabNames = new string[tabGroups.Keys.Count];
                 tabGroups.Keys.CopyTo(tabNames, 0);
-            }
-        }
-
-        private bool IsPropertyInTabGroups(SerializedProperty property)
-        {
-            foreach (var list in tabGroups.Values)
-            {
-                if (list.Contains(property, comparer))
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        private bool IsPropertyInFoldoutGroups(SerializedProperty property)
-        {
-            foreach (var list in foldoutGroups.Values)
-            {
-                if (list.Contains(property, comparer))
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        private void DrawTabGroup(string[] tabNames, int tabGroupIndex)
-        {
-            tabNames = tabNames.Except(drawnTabs).ToArray();
-            if (tabNames.Length == 0) return;
-
-            if (selectedTabIndices.Count - 1 < tabGroupIndex)
-            {
-                selectedTabIndices.Add(0);
-            }
-
-            // Draw tab selection
-            selectedTabIndices[tabGroupIndex] = GUILayout.Toolbar(selectedTabIndices[tabGroupIndex], tabNames);
-            // Draw properties for the selected tab using Toolbox's property drawer
-            EditorGUILayout.Space();
-            foreach (var property in tabGroups[tabNames[selectedTabIndices[tabGroupIndex]]])
-            {
-                ToolboxEditorGui.DrawToolboxProperty(property);
-            }
-            DrawHorizontalLine(Color.grey);
-            EditorGUILayout.Space();
-        }
-
-        private void DrawFoldoutGroup(string key, List<SerializedProperty> value)
-        {
-            if (drawnFoldouts.Contains(key)) return;
-
-            foldoutStates[key] = EditorGUILayout.Foldout(foldoutStates[key], key, true);
-            if (foldoutStates[key])
-            {
-                foreach (var property in value)
-                {
-                    ToolboxEditorGui.DrawToolboxProperty(property);
-                }
             }
         }
 
@@ -173,6 +113,7 @@ namespace Sciphone
             drawnTabs.Clear();
             drawnFoldouts.Clear();
             int tabGroupIndex = 0;
+
             for (int i = 0; i < allProperties.Count; i++)
             {
                 var property = allProperties[i];
@@ -182,27 +123,25 @@ namespace Sciphone
                 }
                 else if (IsPropertyInTabGroups(property))
                 {
-                    HashSet<string> tabNames = new HashSet<string>();
+                    HashSet<string> groupTabs = new HashSet<string>();
                     while (IsPropertyInTabGroups(property))
                     {
-                        string tabName = GetFieldAttribute<TabGroupAttribute>(property).TabName;
-                        tabNames.Add(tabName);
+                        var tabName = GetFieldAttribute<TabGroupAttribute>(property).TabName;
+                        groupTabs.Add(tabName);
                         i++;
                         if (i == allProperties.Count) break;
                         else property = allProperties[i];
                     }
                     i--;
-                    DrawTabGroup(tabNames.ToArray(), tabGroupIndex);
-                    foreach (string tabName in tabNames)
-                    {
-                        drawnTabs.Add(tabName);
-                    }
+                    DrawTabGroup(groupTabs.ToArray());
+                    foreach (string tab in groupTabs)
+                        drawnTabs.Add(tab);
                     tabGroupIndex++;
                 }
                 else if (IsPropertyInFoldoutGroups(property))
                 {
-                    string foldoutKey = GetFieldAttribute<FoldoutGroupAttribute>(property).Label;
-                    DrawFoldoutGroup(foldoutKey, foldoutGroups[foldoutKey]);
+                    string label = GetFieldAttribute<FoldoutGroupAttribute>(property).Label;
+                    DrawFoldoutGroup(label, foldoutGroups[label]);
                     while (IsPropertyInFoldoutGroups(property))
                     {
                         i++;
@@ -210,11 +149,7 @@ namespace Sciphone
                         else property = allProperties[i];
                     }
                     i--;
-                    drawnFoldouts.Add(foldoutKey);
-                }
-                else
-                {
-                    EditorGUILayout.LabelField("not in all properties");
+                    drawnFoldouts.Add(label);
                 }
             }
 
@@ -235,50 +170,150 @@ namespace Sciphone
             serializedObject.ApplyModifiedProperties();
         }
 
+        private void DrawTabGroup(string[] tabNames)
+        {
+            tabNames = tabNames.Except(drawnTabs).ToArray();
+            if (tabNames.Length == 0) return;
+
+            string groupId = GetTabGroupID(tabNames); // Group ID based on all tab names
+            if (!selectedTabIndices.TryGetValue(groupId, out int selected))
+                selected = 0;
+
+            selected = GUILayout.Toolbar(selected, tabNames);
+            selectedTabIndices[groupId] = selected;
+
+            EditorGUILayout.Space();
+            foreach (var property in tabGroups[tabNames[selected]])
+            {
+                ToolboxEditorGui.DrawToolboxProperty(property);
+            }
+            DrawHorizontalLine(Color.grey);
+            EditorGUILayout.Space();
+        }
+
+        private void DrawFoldoutGroup(string label, List<SerializedProperty> properties)
+        {
+            if (drawnFoldouts.Contains(label)) return;
+
+            string foldoutId = GetFoldoutGroupID(label);
+            if (!foldoutStates.TryGetValue(foldoutId, out bool state))
+                state = true;
+
+            foldoutStates[foldoutId] = EditorGUILayout.Foldout(state, label, true);
+            if (foldoutStates[foldoutId])
+            {
+                foreach (var property in properties)
+                {
+                    ToolboxEditorGui.DrawToolboxProperty(property);
+                }
+            }
+        }
+
+        private string GetTabGroupID(string[] tabNames)
+        {
+            string combined = string.Join("_", tabNames.OrderBy(t => t));
+            return $"{target.GetInstanceID()}_TabGroup_{combined}";
+        }
+
+        private string GetFoldoutGroupID(string label)
+        {
+            return $"{target.GetInstanceID()}_Foldout_{label}";
+        }
+
+        private bool IsPropertyInTabGroups(SerializedProperty property)
+        {
+            foreach (var list in tabGroups.Values)
+            {
+                if (list.Contains(property, comparer))
+                    return true;
+            }
+            return false;
+        }
+
+        private bool IsPropertyInFoldoutGroups(SerializedProperty property)
+        {
+            foreach (var list in foldoutGroups.Values)
+            {
+                if (list.Contains(property, comparer))
+                    return true;
+            }
+            return false;
+        }
+
         private T GetFieldAttribute<T>(SerializedProperty property) where T : PropertyAttribute
         {
             var targetType = serializedObject.targetObject.GetType();
-            var fieldInfo = targetType.GetField(property.name, System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
-            if (fieldInfo != null)
+            var field = targetType.GetField(property.name, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+            if (field != null)
             {
-                var attributes = fieldInfo.GetCustomAttributes(typeof(T), true);
+                var attributes = field.GetCustomAttributes(typeof(T), true);
                 if (attributes.Length > 0)
-                {
                     return (T)attributes[0];
-                }
             }
             return null;
         }
 
         private void DrawButtonWithParameters(Object targetObject, MethodInfo method)
         {
-            GUILayout.Space(5f);
-            // Draw the button
-            if (GUILayout.Button($"{method.Name}"))
-            {
-                // Execute the method
-                object[] parameters = methodParameters.ContainsKey(method) ? methodParameters[method] : null;
-                method.Invoke(targetObject, parameters);
-            }
-
-            // Get method parameters
             ParameterInfo[] parametersInfo = method.GetParameters();
-            if (parametersInfo.Length > 0)
+            bool hasParameters = parametersInfo.Length > 0;
+
+            GUILayout.Space(5f);
+            Rect totalRect = GUILayoutUtility.GetRect(0, EditorGUIUtility.singleLineHeight, GUILayout.ExpandWidth(true));
+
+            if (hasParameters)
             {
-                // Ensure methodParameters dictionary is initialized
-                if (!methodParameters.ContainsKey(method))
+                if (!methodFoldouts.ContainsKey(method))
                 {
-                    methodParameters[method] = new object[parametersInfo.Length];
+                    methodFoldouts[method] = false;
                 }
 
-                // Draw fields for each parameter
-                for (int i = 0; i < parametersInfo.Length; i++)
-                {
-                    ParameterInfo param = parametersInfo[i];
-                    object currentValue = methodParameters[method][i];
+                // Define layout
+                float foldoutWidth = 45f;
+                float spacing = 12f;
+                float buttonWidth = totalRect.width - foldoutWidth - spacing;
 
-                    // Draw parameter field based on parameter type
-                    methodParameters[method][i] = DrawParameterField(param, currentValue);
+                // Draw the button
+                Rect buttonRect = new Rect(totalRect.x, totalRect.y, buttonWidth, totalRect.height);
+                if (GUI.Button(buttonRect, method.Name))
+                {
+                    object[] parameters = methodParameters.ContainsKey(method) ? methodParameters[method] : null;
+                    method.Invoke(targetObject, parameters);
+                }
+
+                // Draw the foldout
+                Rect foldoutRect = new Rect(totalRect.x + buttonWidth + spacing, totalRect.y, foldoutWidth, totalRect.height);
+                methodFoldouts[method] = EditorGUI.Foldout(
+                    foldoutRect,
+                    methodFoldouts[method],
+                    methodFoldouts[method] ? "Hide" : "Show",
+                    true
+                );
+
+                // Draw parameter fields if foldout is open
+                if (methodFoldouts[method])
+                {
+                    if (!methodParameters.ContainsKey(method))
+                    {
+                        methodParameters[method] = new object[parametersInfo.Length];
+                    }
+
+                    EditorGUI.indentLevel++;
+                    for (int i = 0; i < parametersInfo.Length; i++)
+                    {
+                        ParameterInfo param = parametersInfo[i];
+                        object currentValue = methodParameters[method][i];
+                        methodParameters[method][i] = DrawParameterField(param, currentValue);
+                    }
+                    EditorGUI.indentLevel--;
+                }
+            }
+            else
+            {
+                // No parameters: draw button directly
+                if (GUI.Button(totalRect, method.Name))
+                {
+                    method.Invoke(targetObject, null);
                 }
             }
         }

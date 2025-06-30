@@ -20,13 +20,12 @@ public class ParkourController : MonoBehaviour, IControllerModule
 
     public RaycastHit climbHit;
     [TabGroup("Climb Over From Ground")] public bool climbAvailable;
+    [TabGroup("Climb Over From Ground")] public float climbHeight;
     [TabGroup("Climb Over From Ground")] public Vector2 climbLowRange = new Vector2(0.3f, 0.75f);
     [TabGroup("Climb Over From Ground")] public Vector2 climbMediumRange = new Vector2(0.75f, 1.25f);
     [TabGroup("Climb Over From Ground")] public Vector2 climbHighRange = new Vector2(1.25f, 2.25f);
-    [TabGroup("Climb Over From Ground")] public float climbHeight;
     [TabGroup("Climb Over From Ground")][Header("Detector Settings")] public LayerMask climbLayer;
-    [TabGroup("Climb Over From Ground")] public float climbCheckerDistance = 1f;
-    [TabGroup("Climb Over From Ground")] public Vector2 climbCheckerOffset;
+    [TabGroup("Climb Over From Ground")] public float climbOverFromGroundRadius;
 
     public RaycastHit fenceHit;
     [TabGroup("Vault Over Fence")] public bool fenceAvalilable;
@@ -35,37 +34,38 @@ public class ParkourController : MonoBehaviour, IControllerModule
     [TabGroup("Vault Over Fence")] public Vector2 vaultFenceMediumRange;
     [TabGroup("Vault Over Fence")] public Vector2 vaultFenceHighRange;
     [TabGroup("Vault Over Fence")][Header("Detector Settings")] public LayerMask fenceLayer;
-    [TabGroup("Vault Over Fence")] public Vector2 fenceCheckerOffset;
-    [TabGroup("Vault Over Fence")] public float fenceCheckerDistance = 1f;
+    [TabGroup("Vault Over Fence")] public float vaultOverFenceRadius = 1f;
     [TabGroup("Vault Over Fence")] public float criticalFenceWidth = 0.3f;
 
-    public RaycastHit wallHit;
-    public Vector3 scaleFactor = Vector3.one;
-    public LayerMask wallLayer;
-    public float startingDistFromWall;
-    public float allCheckerInterval = 0.1f;
-    public Vector3 targetPos;
-    public Vector3 targetForward;
+    public RaycastHit ladderHit;
+    public bool ladderAvailable;
 
+    public LayerMask allParkourLayer;
+    public float criticalParkourAngle;
+    public float surroundingCheckerRadius = 3f;
+    private int surroundingCollidersCount;
     private Collider[] surroundingColliders;
+    private Vector3[] toSurroundingColliders;
+    public float allCheckerInterval = 0.1f;
+    private RaycastHit wallHit;
+
+    public Vector3 scaleFactor = Vector3.one;
+    public float startingDistFromWall;
+    private Vector3 targetPos;
+    private Vector3 targetForward;
     private Vector3 worldMoveDir;
     public Vector3 parkourDir;
-    public float criticalParkourAngle;
 
     private void Start()
     {
-        climbLowRange.x = character.characterMover.maxStepHeight;
-        climbCheckerOffset.x = character.characterMover.capsuleRadius;
-        climbCheckerOffset.y = climbHighRange.y + character.characterMover.skinWidth;
-
-        vaultFenceLowRange.x = character.characterMover.maxStepHeight;
-        fenceCheckerOffset.x = character.characterMover.capsuleRadius;
-        fenceCheckerOffset.y = vaultFenceHighRange.y + character.characterMover.skinWidth;
-
         character.PreUpdateLoop += Character_PreUpdateLoop;
         character.characterCommand.MoveDirCommand += CharacterCommand_MoveDirCommand;
 
         surroundingColliders = new Collider[15];
+        toSurroundingColliders = new Vector3[15];
+
+        climbLowRange.x = character.characterMover.maxStepHeight;
+        vaultFenceLowRange.x = character.characterMover.maxStepHeight;
     }
 
     private void CharacterCommand_MoveDirCommand(Vector3 vector)
@@ -76,36 +76,72 @@ public class ParkourController : MonoBehaviour, IControllerModule
     private void Character_PreUpdateLoop()
     {
         parkourDir = worldMoveDir == Vector3.zero ? transform.forward : worldMoveDir;
+        GetSurroundingSurfaces(transform.position, surroundingCheckerRadius);
         CheckClimbAvailability(parkourDir);
         CheckFenceAvailability(parkourDir);
     }
 
+    public void GetSurroundingSurfaces(Vector3 center, float radius)
+    {
+        surroundingCollidersCount = Physics.OverlapSphereNonAlloc(center, radius, surroundingColliders, allParkourLayer);
+
+        for (int i = 0; i < surroundingCollidersCount; i++)
+        {
+            Collider other = surroundingColliders[i];
+            Vector3 toOther = (other.ClosestPoint(center) - center);
+            toSurroundingColliders[i] = toOther;
+        }
+
+        for (int i = surroundingCollidersCount; i < toSurroundingColliders.Length; i++)
+        {
+            toSurroundingColliders[i] = Vector3.zero;
+        }
+    }
+
     public void CheckClimbAvailability(Vector3 direction)
     {
-        if (DetectClimbPoint(direction, out climbHit))
+        for (int i = 0; i < surroundingCollidersCount; i++)
         {
-            Vector3 localClimbPoint = transform.InverseTransformPoint(climbHit.point);
-            climbHeight = localClimbPoint.y;
-            if (climbHeight > climbLowRange.x && climbHeight < climbHighRange.y && 
-                DetectWall(direction, climbCheckerDistance, climbHeight, out wallHit))
+            Collider other = surroundingColliders[i];
+            Vector3 toOther = toSurroundingColliders[i];
+            Vector3 toOtherOnPlane = Vector3.ProjectOnPlane(toOther, transform.up);
+
+            if (toOther == Vector3.zero || toOtherOnPlane.magnitude > climbOverFromGroundRadius)
             {
-                climbAvailable = true;
+                continue;
+            }
+
+            if (climbLayer.Contains(other.gameObject.layer))
+            {
+                if (Vector3.Angle(Vector3.ProjectOnPlane(toOther, transform.up), direction) <= criticalParkourAngle)
+                {
+                    if (DetectClimbPoint(toOtherOnPlane, out RaycastHit climbHit))
+                    {
+                        climbHeight = transform.InverseTransformPoint(climbHit.point).y;
+                        if (climbHeight > climbLowRange.x && climbHeight < climbHighRange.y &&
+                            DetectWall(toOtherOnPlane, climbOverFromGroundRadius, climbHeight, out RaycastHit wallHit))
+                        {
+                            this.climbHit = climbHit;
+                            this.wallHit = wallHit;
+                            climbAvailable = true;
+                            return;
+                        }
+                    }
+                }
             }
         }
-        else
-        {
-            climbAvailable = false;
-        }
+        climbAvailable = false;
     }
 
     public bool DetectClimbPoint(Vector3 direction, out RaycastHit climbHit)
     {
-        var pos = transform.position + direction * climbCheckerOffset.x + transform.up * climbCheckerOffset.y;
-        var climbCheckerCount = Mathf.FloorToInt((climbCheckerDistance - character.characterMover.capsuleRadius) / allCheckerInterval);
-        for (int i = 0; i <= climbCheckerCount; i++)
+        direction.Normalize();
+        var pos = transform.position + transform.up * climbHighRange.y;
+        var climbCheckerCount = Mathf.CeilToInt(climbOverFromGroundRadius / allCheckerInterval);
+        for (int i = 0; i < climbCheckerCount; i++)
         {
-            if (Physics.Raycast(pos + allCheckerInterval * i * direction, -transform.up, out climbHit, climbHighRange.y + character.characterMover.skinWidth,
-                climbLayer, QueryTriggerInteraction.Ignore)
+            if (Physics.Raycast(pos + allCheckerInterval * i * direction, -transform.up, out climbHit, 
+                climbHighRange.y - climbLowRange.x + character.characterMover.skinWidth, climbLayer, QueryTriggerInteraction.Ignore) 
                 && Vector3.Angle(climbHit.normal, transform.up) < character.characterMover.criticalSlopeAngle)
             {
                 return true;
@@ -117,36 +153,54 @@ public class ParkourController : MonoBehaviour, IControllerModule
 
     public void CheckFenceAvailability(Vector3 direction)
     {
-        if (DetectFence(direction, out fenceHit, out Vector3 fenceCheckerPosOnHit))
+        for (int i = 0; i < surroundingCollidersCount; i++)
         {
-            Vector3 localFenceHitPoint = transform.InverseTransformPoint(fenceHit.point);
-            fenceHeight = localFenceHitPoint.y;
-            if (fenceHeight > vaultFenceLowRange.x && fenceHeight <= vaultFenceLowRange.y ||
-                fenceHeight > vaultFenceMediumRange.x && fenceHeight <= vaultFenceMediumRange.y ||
-                fenceHeight > vaultFenceHighRange.x && fenceHeight <= vaultFenceHighRange.y)
+            Collider other = surroundingColliders[i];
+            Vector3 toOther = toSurroundingColliders[i];
+            Vector3 toOtherOnPlane = Vector3.ProjectOnPlane(toOther, transform.up);
+
+            if (toOther == Vector3.zero || toOtherOnPlane.magnitude > vaultOverFenceRadius)
             {
-                if (DetectWall(direction, fenceCheckerDistance, fenceHeight, out wallHit) &&
-                    !Physics.Raycast(fenceCheckerPosOnHit - Vector3.ProjectOnPlane(wallHit.normal, transform.up) * criticalFenceWidth, 
-                    - transform.up, fenceHit.distance + character.characterMover.skinWidth, fenceLayer, QueryTriggerInteraction.Ignore))
+                continue;
+            }
+
+            if (fenceLayer.Contains(other.gameObject.layer))
+            {
+                if (Vector3.Angle(Vector3.ProjectOnPlane(toOther, transform.up), direction) <= criticalParkourAngle)
                 {
-                    fenceAvalilable = true;
+                    if (DetectFence(toOtherOnPlane, out RaycastHit fenceHit, out Vector3 fenceCheckerPosOnHit))
+                    {
+                        fenceHeight = transform.InverseTransformPoint(fenceHit.point).y;
+                        if ((fenceHeight > vaultFenceLowRange.x && fenceHeight <= vaultFenceLowRange.y ||
+                            fenceHeight > vaultFenceMediumRange.x && fenceHeight <= vaultFenceMediumRange.y ||
+                            fenceHeight > vaultFenceHighRange.x && fenceHeight <= vaultFenceHighRange.y) &&
+                            DetectWall(toOtherOnPlane, vaultOverFenceRadius, fenceHeight, out RaycastHit wallHit) &&
+                            !Physics.Raycast(fenceCheckerPosOnHit + Vector3.ProjectOnPlane(-wallHit.normal, transform.up) * criticalFenceWidth,
+                            -transform.up, fenceHit.distance + character.characterMover.skinWidth, fenceLayer, QueryTriggerInteraction.Ignore))
+                        {
+                            this.fenceHit = fenceHit;
+                            this.wallHit = wallHit;
+                            fenceAvalilable = true;
+                            return;
+                        }
+                    }
                 }
             }
         }
-        else
-        {
-            fenceAvalilable = false;
-        }
+        fenceAvalilable = false;
     }
 
     public bool DetectFence(Vector3 direction, out RaycastHit fenceHit, out Vector3 fenceCheckerPosOnHit)
     {
-        var pos = transform.position + direction * fenceCheckerOffset.x + transform.up * fenceCheckerOffset.y;
-        var fenceCheckerCount = Mathf.FloorToInt((fenceCheckerDistance - character.characterMover.capsuleRadius) / allCheckerInterval);
-        for (int i = 0; i <= fenceCheckerCount; i++)
+        direction.Normalize();
+        var pos = transform.position + transform.up * vaultFenceHighRange.y;
+        var fenceCheckerCount = Mathf.CeilToInt(vaultOverFenceRadius / allCheckerInterval);
+        for (int i = 0; i < fenceCheckerCount; i++)
         {
-            if (Physics.Raycast(pos + allCheckerInterval * i * direction, -transform.up, out fenceHit, fenceCheckerOffset.y, fenceLayer, QueryTriggerInteraction.Ignore)
-                && Vector3.Angle(fenceHit.normal, transform.up) < character.characterMover.criticalSlopeAngle)
+            if (Physics.Raycast(pos + allCheckerInterval * i * direction, -transform.up, out fenceHit, 
+                vaultFenceHighRange.y - vaultFenceLowRange.x + character.characterMover.skinWidth,
+                fenceLayer, QueryTriggerInteraction.Ignore) &&
+                Vector3.Angle(fenceHit.normal, transform.up) < character.characterMover.criticalSlopeAngle)
             {
                 fenceCheckerPosOnHit = pos + allCheckerInterval * i * direction;
                 return true;
@@ -157,14 +211,15 @@ public class ParkourController : MonoBehaviour, IControllerModule
         return false;
     }
 
-    public bool DetectWall(Vector3 direction, float distance, float height, out RaycastHit wallHit)
+    public bool DetectWall(Vector3 direction, float maxDistance, float maxHeight, out RaycastHit wallHit)
     {
-        int count = Mathf.FloorToInt(height / allCheckerInterval);
-        var pos = transform.position + climbHeight * transform.up;
-        for (int i = 0; i <= count; i++)
+        direction.Normalize();
+        int count = Mathf.CeilToInt(maxHeight / allCheckerInterval);
+        var pos = transform.position + maxHeight * transform.up;
+        for (int i = 0; i < count; i++)
         {
-            if (Physics.Raycast(pos + i * allCheckerInterval * -transform.up, direction, out wallHit, distance,
-                wallLayer, QueryTriggerInteraction.Ignore)
+            if (Physics.Raycast(pos + i * allCheckerInterval * -transform.up, direction, out wallHit, maxDistance,
+                allParkourLayer, QueryTriggerInteraction.Ignore)
                 && Vector3.Angle(wallHit.normal, transform.up) > character.characterMover.criticalSlopeAngle)
             {
                 return true;
@@ -230,24 +285,5 @@ public class ParkourController : MonoBehaviour, IControllerModule
 
         targetPos += worldDeltaPostition;
         character.characterMover.TargetMatching(targetPos, targetForward, false);
-    }
-
-    public bool CheckSurroundingSurfaces(Vector3 position, Vector3 checkDirection, float radius, LayerMask checkLayer)
-    {
-        int count = Physics.OverlapSphereNonAlloc(position, radius, surroundingColliders, checkLayer);
-
-        for (int i = 0; i < count; i++)
-        {
-            Collider other = surroundingColliders[i];
-            Vector3 otherDirection = Vector3.ProjectOnPlane(other.ClosestPoint(position) - position, transform.up).normalized;
-            
-            if (Vector3.Angle(checkDirection, otherDirection) <= criticalParkourAngle &&
-                other.Raycast(new Ray(position, otherDirection), out RaycastHit otherHit, radius))
-            {
-                return true;
-            }
-        }
-
-        return false;
     }
 }
