@@ -88,6 +88,7 @@ public static class AnimationMachineExtensions
                 ScaleMode.AvgValue => targetValue / ((curve.Evaluate(totalTime) - curve.Evaluate(0f)) / totalTime),
                 ScaleMode.MaxValue => targetValue / (GetMaxValue(curve) - curve.Evaluate(0f)),
                 ScaleMode.TotalValue => targetValue / (curve.Evaluate(totalTime) - curve.Evaluate(0f)),
+                ScaleMode.Invert => -1f,
                 _ => 1f
             };
         }

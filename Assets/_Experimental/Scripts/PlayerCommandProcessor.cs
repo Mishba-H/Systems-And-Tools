@@ -118,6 +118,8 @@ public class PlayerCommandProcessor : MonoBehaviour
                 walk = false;
             }
         }
+
+        character.characterCommand.InvokeParkourDirCommand(moveInput);
     }
 
     private void OnWalkInput(InputAction.CallbackContext context)
@@ -155,8 +157,18 @@ public class PlayerCommandProcessor : MonoBehaviour
     {
         if (context.performed)
         {
+            var parkourController = character.GetControllerModule<ParkourController>();
+            if (parkourController != null)
+            {
+                if (character.CanPerformAction<ClimbOverFromGround>() || character.CanPerformAction<VaultOverFence>() ||
+                    (parkourController.ladderAscendAvailable && character.CanPerformAction<LadderTraverse>()))
+                {
+                    characterCommand.InvokeParkourUpCommand();
+                    return;
+                }
+            }
+
             characterCommand.InvokeJumpCommand();
-            characterCommand.InvokeParkourUpCommand();
         }
     }
 
@@ -164,8 +176,18 @@ public class PlayerCommandProcessor : MonoBehaviour
     {
         if (context.performed)
         {
+            var parkourController = character.GetControllerModule<ParkourController>();
+            if (parkourController != null)
+            {
+                if ((parkourController.ladderDescendAvailable && character.CanPerformAction<LadderTraverse>()) ||
+                    character.PerformingAction<LadderTraverse>())
+                {
+                    characterCommand.InvokeParkourDownCommand();
+                    return;
+                }
+            }
+
             characterCommand.InvokeDodgeCommand();
-            characterCommand.InvokeParkourDownCommand();
         }
     }
 

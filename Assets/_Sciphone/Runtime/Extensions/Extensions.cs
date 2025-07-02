@@ -32,5 +32,13 @@ namespace Sciphone
         {
             return ((1 << layer) & mask) != 0;
         }
+        public static bool IsConvexMesh(this Collider other)
+        {
+            if (other is MeshCollider meshCollider)
+            {
+                return meshCollider.convex;
+            }
+            return false;
+        }
     }
 }

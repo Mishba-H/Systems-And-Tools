@@ -39,6 +39,7 @@ public class CharacterMover : MonoBehaviour
     [TabGroup("Algorithm Settings")] public int maxDepth = 3;
     [TabGroup("Algorithm Settings")] public int noOfSpheres = 5;
     [TabGroup("Algorithm Settings")] public float sweepDistance = 1.5f;
+    [TabGroup("Algorithm Settings")] public LayerMask collisionLayer;
 
     [TabGroup("Algorithm Settings")] public CapsuleOrientation capsuleOrientation = CapsuleOrientation.Y;
     [TabGroup("Algorithm Settings")] public Vector3 capsuleOffset;
@@ -69,7 +70,7 @@ public class CharacterMover : MonoBehaviour
     #endregion
 
     #region CHECKER_SETTINGS
-    [TabGroup("Checker Settings")] public LayerMask collisionLayer;
+    [TabGroup("Checker Settings")] public LayerMask groundLayer;
     [TabGroup("Checker Settings")][SerializeReference] private bool isGrounded;
     [TabGroup("Checker Settings")] public RaycastHit groundHit;
     [TabGroup("Checker Settings")] public int sides = 8;
@@ -425,7 +426,7 @@ public class CharacterMover : MonoBehaviour
         var groundCheckerDepth = GetGroundCheckerDepth();
 
         if (Physics.Raycast(pos + transform.up * (groundCheckerHeight + skinWidth),
-            -transform.up, out groundHit, groundCheckerHeight + skinWidth + groundCheckerDepth, collisionLayer, QueryTriggerInteraction.Ignore))
+            -transform.up, out groundHit, groundCheckerHeight + skinWidth + groundCheckerDepth, groundLayer, QueryTriggerInteraction.Ignore))
         {
             if (Vector3.Angle(groundHit.normal, transform.up) <= criticalSlopeAngle)
             {
@@ -441,7 +442,7 @@ public class CharacterMover : MonoBehaviour
                 float angle = j * angleStep;
                 Vector3 direction = Quaternion.AngleAxis(angle, transform.up) * transform.forward;
                 Vector3 rayStart = pos + transform.up * (groundCheckerHeight + skinWidth) + direction * radius;
-                if (Physics.Raycast(rayStart, -transform.up, out groundHit, groundCheckerHeight + skinWidth + groundCheckerDepth, collisionLayer, 
+                if (Physics.Raycast(rayStart, -transform.up, out groundHit, groundCheckerHeight + skinWidth + groundCheckerDepth, groundLayer, 
                     QueryTriggerInteraction.Ignore))
                 {
                     if (Vector3.Angle(groundHit.normal, transform.up) <= criticalSlopeAngle)

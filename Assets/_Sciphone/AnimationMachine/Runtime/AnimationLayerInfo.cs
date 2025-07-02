@@ -89,7 +89,7 @@ public class AnimationLayerInfo
 
         float elapsedTime = 0f;
         int stateIndex = layerPlayable.GetIndexOf(targetState.statePlayable);
-        while (elapsedTime <= blendDuration)
+        while (elapsedTime < blendDuration)
         {
             for (int i = 0; i < layerPlayable.GetInputCount(); i++)
             {

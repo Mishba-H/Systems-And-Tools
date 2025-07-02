@@ -1,6 +1,7 @@
 using System;
 using System.Linq.Expressions;
 using UnityEngine;
+using static ParkourController;
 
 [Serializable]
 public abstract class ParkourAction : CharacterAction
@@ -104,9 +105,12 @@ public class ClimbOverFromGround : ParkourAction
 
         character.characterMover.ApplyCapsulePreset("Zero");
 
-        controller.CalculateScaleFactor(controller.climbHeight);
-        controller.CalculateStartingDistanceFromWall();
-        controller.SetInitialTransform(controller.climbHit, controller.climbHeight);
+        character.characterMover.SetWorldVelocity(Vector3.zero);
+        character.characterMover.SetGravitySimulation(false);
+
+        controller.CalculateScaleFactor();
+        controller.CalculateStartingDistanceFromAnchor();
+        controller.SetInitialTransform(controller.climbHit.point, controller.climbNormal, controller.climbHeight, controller.startingDistFromWall);
     }
 }
 
@@ -206,25 +210,32 @@ public class VaultOverFence : ParkourAction
 
         character.characterMover.ApplyCapsulePreset("Zero");
 
-        controller.CalculateScaleFactor(controller.fenceHeight);
-        controller.CalculateStartingDistanceFromWall();
-        controller.SetInitialTransform(controller.fenceHit, controller.fenceHeight);
+        character.characterMover.SetWorldVelocity(Vector3.zero);
+        character.characterMover.SetGravitySimulation(false);
+
+        controller.CalculateScaleFactor();
+        controller.CalculateStartingDistanceFromAnchor();
+        controller.SetInitialTransform(controller.fenceHit.point, controller.fenceNormal, controller.fenceHeight, controller.startingDistFromWall);
     }
 }
 
 [Serializable]
-public class TraverseLadder : ParkourAction
+public class LadderTraverse : ParkourAction
 {
     private void CharacterCommand_ParkourUpCommand()
     {
-        if (CanPerform)
+        if (!IsBeingPerformed && CanPerform && controller.ladderAscendAvailable)
         {
             IsBeingPerformed = true;
         }
     }
     private void CharacterCommand_ParkourDownCommand()
     {
-        if (IsBeingPerformed)
+        if (!IsBeingPerformed && CanPerform && controller.ladderDescendAvailable)
+        {
+            IsBeingPerformed = true;
+        }
+        else if (IsBeingPerformed)
         {
             IsBeingPerformed = false;
         }
@@ -242,6 +253,7 @@ public class TraverseLadder : ParkourAction
         if (baseController != null)
         {
             var baseExpression = (Expression<Func<bool>>)(() =>
+                !character.PerformingAction<Fall>() &&
                 !character.PerformingAction<Jump>() &&
                 !character.PerformingAction<AirJump>());
             condition = CombineExpressions(condition, baseExpression);
@@ -250,8 +262,9 @@ public class TraverseLadder : ParkourAction
         if (parkourController != null)
         {
             var parkourExpression = (Expression<Func<bool>>)(() =>
-                controller.ladderAvailable &&
-                !character.PerformingAction<ParkourAction>());
+                (controller.ladderAscendAvailable || controller.ladderDescendAvailable) &&
+                !character.PerformingAction<ClimbOverFromGround>() &&
+                !character.PerformingAction<VaultOverFence>());
             condition = CombineExpressions(condition, parkourExpression);
         }
         var meleeCombatController = character.GetControllerModule<MeleeCombatController>();
@@ -267,5 +280,51 @@ public class TraverseLadder : ParkourAction
     public override void EvaluateStatus()
     {
         base.EvaluateStatus();
+
+        if (CanPerform)
+        {
+            if (controller.autoAscendLadder && controller.ladderAscendAvailable)
+            {
+                IsBeingPerformed = true;
+            }
+            if (controller.autoDescendLadder && controller.ladderDescendAvailable)
+            {
+                IsBeingPerformed = true;
+            }
+        }
+
+        if (controller.ladderState == LadderTraverseStates.ClimbUpEnd || controller.ladderState == LadderTraverseStates.ClimbDownEnd)
+        {
+            if (Mathf.Abs(character.animMachine.rootState.NormalizedTime() - 1f) < 0.01f)
+            {
+                IsBeingPerformed = false;
+                controller.ChangeLadderState(LadderTraverseStates.None);
+            }
+        }
+    }
+    public override void Update()
+    {
+        if (IsBeingPerformed)
+        {
+            controller.RunLadderStateMachine();
+        }
+    }
+    public override void OnPerform()
+    {
+        character.characterMover.ApplyCapsulePreset("Zero");
+
+        if (controller.ladderAscendAvailable)
+        {
+            controller.ChangeLadderState(LadderTraverseStates.ClimbUpStart);
+        }
+        else if (controller.ladderDescendAvailable)
+        {
+            controller.ChangeLadderState(LadderTraverseStates.ClimbDownStart);
+        }
+    }
+    public override void OnStop()
+    {
+        character.characterMover.SetWorldVelocity(Vector2.zero);
+        controller.ChangeLadderState(LadderTraverseStates.None);
     }
 }

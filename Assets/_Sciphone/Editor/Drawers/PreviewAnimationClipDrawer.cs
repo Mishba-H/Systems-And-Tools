@@ -100,7 +100,7 @@ namespace Sciphone
             float labelWidth = line2.width * 0.2f;
             float fieldSpacing = 4f;
             float floatFieldWidth = 30f;
-            float toggleWidth = 40f;
+            float toggleWidth = 30f;
             float buttonWidth = 20f;
 
             Rect previewLabel = new Rect(line2.x, line2.y, labelWidth, line2.height);
@@ -125,9 +125,9 @@ namespace Sciphone
             range = new Vector2(Mathf.Clamp01(min), Mathf.Clamp01(max));
             previewRangeMap[key] = range;
 
-            previewRangeToggleMap[key] = GUI.Toggle(previewToggle, previewRangeToggleMap[key], "Crop", EditorStyles.miniButton);
-            rootXZMap[key] = GUI.Toggle(xzToggle, rootXZMap[key], "XZ", EditorStyles.miniButton);
-            rootYMap[key] = GUI.Toggle(yToggle, rootYMap[key], "Y", EditorStyles.miniButton);
+            previewRangeToggleMap[key] = GUI.Toggle(previewToggle, previewRangeToggleMap[key], new GUIContent("<>", "Preview Cropped Animation"), EditorStyles.miniButton);
+            rootXZMap[key] = GUI.Toggle(xzToggle, rootXZMap[key], new GUIContent("XZ", "Preview Root Transform XZ"), EditorStyles.miniButton);
+            rootYMap[key] = GUI.Toggle(yToggle, rootYMap[key], new GUIContent("Y", "Preview Root Transform Y"), EditorStyles.miniButton);
 
             if (GUI.Button(button, new GUIContent("T", "Reset to T-Pose")))
             {
@@ -168,7 +168,6 @@ namespace Sciphone
             if (target.TryGetComponent(out Animator animator))
             {
                 Transform hips = animator.GetBoneTransform(HumanBodyBones.Hips);
-
 
                 clip.SampleAnimation(target, 0f);
                 Vector3 hipsPositionAtZero = hips.position;

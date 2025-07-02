@@ -7,6 +7,7 @@ public class CharacterCommand : MonoBehaviour
     internal event Action<BaseController.MovementMode> ChangeMovementModeCommand;
     internal event Action<Vector3> FaceDirCommand;
     internal event Action<Vector3> MoveDirCommand;
+    internal event Action<Vector2> ParkourDirCommand;
     internal event Action<Vector3> AttackDirCommand;
 
     internal event Action<bool> WalkCommand;
@@ -25,6 +26,7 @@ public class CharacterCommand : MonoBehaviour
     public void InvokeChangeMovementModeCommand(BaseController.MovementMode value) => ChangeMovementModeCommand?.Invoke(value);
     public void InvokeFaceDirCommand(Vector3 dir) => FaceDirCommand?.Invoke(dir);
     public void InvokeMoveDirCommand(Vector3 dir) => MoveDirCommand?.Invoke(dir);
+    public void InvokeParkourDirCommand(Vector2 dir) => ParkourDirCommand?.Invoke(dir);
     public void InvokeAttackDirCommand(Vector3 dir) => AttackDirCommand?.Invoke(dir);
 
     public void InvokeWalkCommand(bool value) => WalkCommand?.Invoke(value);

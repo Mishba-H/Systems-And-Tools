@@ -345,11 +345,10 @@ public class Crouch : BaseAction
 {
     private void CharacterCommand_CrouchCommand(bool crouch)
     {
-        if (!CanPerform)
+        if (CanPerform)
         {
-            IsBeingPerformed = false;
+            IsBeingPerformed = crouch;
         }
-        IsBeingPerformed = crouch;
     }
     public override void OnEnable()
     {
@@ -395,7 +394,6 @@ public class Crouch : BaseAction
         if (!CanPerform)
         {
             IsBeingPerformed = false;
-            return;
         }
     }
     public override void OnPerform()
@@ -464,9 +462,7 @@ public class Jump : BaseAction
         if (parkourController != null)
         {
             var parkourExpression = (Expression<Func<bool>>)(() =>
-                !character.PerformingAction<ParkourAction>() &&
-                !character.CanPerformAction<ClimbOverFromGround>() &&
-                !character.CanPerformAction<VaultOverFence>());
+                !character.PerformingAction<ParkourAction>());
             condition = CombineExpressions(condition, parkourExpression);
         }
         var meleeCombatController = character.GetControllerModule<MeleeCombatController>();
@@ -567,9 +563,7 @@ public class AirJump : BaseAction
         if (parkourController != null)
         {
             var parkourExpression = (Expression<Func<bool>>)(() =>
-                !character.PerformingAction<ParkourAction>() &&
-                !character.CanPerformAction<ClimbOverFromGround>() &&
-                !character.CanPerformAction<VaultOverFence>());
+                !character.PerformingAction<ParkourAction>());
             condition = CombineExpressions(condition, parkourExpression);
         }
         var meleeCombatController = character.GetControllerModule<MeleeCombatController>();

@@ -70,7 +70,8 @@ public enum ScaleMode
     Zero,
     AvgValue,
     MaxValue,
-    TotalValue
+    TotalValue,
+    Invert
 }
 #endregion
 

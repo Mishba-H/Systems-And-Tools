@@ -8,6 +8,12 @@ public class TimeOfContact : AnimationData
 }
 
 [Serializable]
+public class StartingDistanceFromWall : AnimationData
+{
+    [LocalGizmoHandle] public Vector3 dist;
+}
+
+[Serializable]
 public class ChangeAnimationState : TriggerEvent
 {
     public string newState;

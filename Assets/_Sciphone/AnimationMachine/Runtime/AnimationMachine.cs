@@ -272,9 +272,10 @@ public class AnimationMachine : MonoBehaviour
                     }
                 }
             }
+            layersBlendCoroutine = StartCoroutine(LayersBlendCoroutine(targetLayer, currentRootLayer));
+
             currentRootLayer = targetLayer;
             currentRootLayer.ChangeStateImmediate(targetState);
-            layersBlendCoroutine = StartCoroutine(LayersBlendCoroutine(targetLayer));
         }
 
         ChangeRootState(targetState);
@@ -310,7 +311,7 @@ public class AnimationMachine : MonoBehaviour
         ChangeRootState(state);
     }
 
-    public IEnumerator LayersBlendCoroutine(AnimationLayerInfo targetLayer)
+    public IEnumerator LayersBlendCoroutine(AnimationLayerInfo targetLayer, AnimationLayerInfo currentLayer)
     {
         for (int i = 0; i < rootLayers.Count; i++)
         {
@@ -324,8 +325,9 @@ public class AnimationMachine : MonoBehaviour
         }
 
         int a = rootLayers.GetIndexOf(targetLayer);
+        int b = rootLayers.GetIndexOf(currentLayer);
         float elapsedTime = 0f;
-        while (elapsedTime <= blendDuration)
+        while (elapsedTime < blendDuration)
         {
             for (int i = 0; i < rootLayers.Count; i++)
             {
@@ -335,7 +337,10 @@ public class AnimationMachine : MonoBehaviour
                 }
                 else if (i == a)
                 {
-                    rootPlayable.SetInputWeight(i, elapsedTime / blendDuration);
+                    if (a > b)
+                        rootPlayable.SetInputWeight(i, elapsedTime / blendDuration);
+                    else
+                        rootPlayable.SetInputWeight(i, 1f);
                 }
                 else if (i > a && previousWeights[i] == 1f)
                 {

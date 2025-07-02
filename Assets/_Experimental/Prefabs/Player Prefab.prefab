@@ -56,8 +56,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 47434677592526497}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.34285384, y: 0.05138107, z: 0.8420552, w: -0.41322422}
-  m_LocalPosition: {x: -0.011104011, y: 0.2529174, z: 0.7788361}
+  m_LocalRotation: {x: -0.03280191, y: -0.0024229407, z: -0.818278, w: 0.5738809}
+  m_LocalPosition: {x: -0.099224776, y: 0.3858037, z: 0.65833503}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -307,8 +307,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1054841811385503970}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.23821917, y: 0.027892755, z: 0.9559093, w: 0.16944325}
-  m_LocalPosition: {x: 0.12581635, y: -0.057260282, z: 0.028552856}
+  m_LocalRotation: {x: 0.23821902, y: 0.02789244, z: 0.95590925, w: 0.16944382}
+  m_LocalPosition: {x: 0.1263143, y: -0.056909706, z: 0.02823074}
   m_LocalScale: {x: 1, y: 0.999999, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1429,7 +1429,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3733807259692305122}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -2328,9 +2328,9 @@ MonoBehaviour:
     - rid: 3179479351961321588
       type: {class: ScaleModeProperty, ns: , asm: Sciphone.AnimationMachine}
       data:
-        scaleModeX: 0
+        scaleModeX: 1
         scaleModeY: 1
-        scaleModeZ: 0
+        scaleModeZ: 1
     - rid: 3179479351961321589
       type: {class: LoopProperty, ns: , asm: Sciphone.AnimationMachine}
       data: 
@@ -10203,6 +10203,13 @@ MonoBehaviour:
         - rid: 3179479351961321622
         - rid: 3179479351961321623
         - rid: 3179479351961321624
+        - rid: 8095615084715835497
+        - rid: 3179479351961322131
+        - rid: 8095615084715835487
+        - rid: 3179479351961322134
+        - rid: 8095615084715835490
+        - rid: 8095615084715835494
+        - rid: 3179479351961322138
     - rid: 3179479351961321618
       type: {class: LayerTypeProperty, ns: , asm: Sciphone.AnimationMachine}
       data:
@@ -10247,7 +10254,7 @@ MonoBehaviour:
         data:
         - rid: 3179479351961321636
         length: 0
-        preview: 0.742
+        preview: 0
         clip: {fileID: -203655887218126122, guid: 7b8bb2885ab27c8479713af1dc012d84, type: 3}
     - rid: 3179479351961321622
       type: {class: AnimationClipState, ns: , asm: Sciphone.AnimationMachine}
@@ -10261,7 +10268,7 @@ MonoBehaviour:
         data:
         - rid: 3179479351961321640
         length: 0
-        preview: 0.387
+        preview: 0
         clip: {fileID: 1827226128182048838, guid: 58acc1209d1cb93419b300f8869389c1, type: 3}
     - rid: 3179479351961321623
       type: {class: AnimationClipState, ns: , asm: Sciphone.AnimationMachine}
@@ -10275,7 +10282,7 @@ MonoBehaviour:
         data:
         - rid: 3179479351961321644
         length: 0
-        preview: 0.507
+        preview: 0
         clip: {fileID: 1827226128182048838, guid: 904aa70e908d97a43bbb49b970ae63dd, type: 3}
     - rid: 3179479351961321624
       type: {class: AnimationClipState, ns: , asm: Sciphone.AnimationMachine}
@@ -25715,11 +25722,11 @@ MonoBehaviour:
     - rid: 3179479351961321635
       type: {class: PlayWindowProperty, ns: , asm: Sciphone.AnimationMachine}
       data:
-        playWindow: {x: 0.208, y: 1}
+        playWindow: {x: 0.208, y: 0.859}
     - rid: 3179479351961321636
       type: {class: TimeOfContact, ns: , asm: Experimental}
       data:
-        timeOfContact: 0.67
+        timeOfContact: 0.75
     - rid: 3179479351961321637
       type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone.AnimationMachine}
       data:
@@ -29743,11 +29750,11 @@ MonoBehaviour:
     - rid: 3179479351961321643
       type: {class: PlayWindowProperty, ns: , asm: Sciphone.AnimationMachine}
       data:
-        playWindow: {x: 0.179, y: 0.645}
+        playWindow: {x: 0.179, y: 0.846}
     - rid: 3179479351961321644
       type: {class: TimeOfContact, ns: , asm: Experimental}
       data:
-        timeOfContact: 0.507
+        timeOfContact: 0.406
     - rid: 3179479351961321645
       type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone.AnimationMachine}
       data:
@@ -83473,6 +83480,514 @@ MonoBehaviour:
         scaleModeX: 0
         scaleModeY: 1
         scaleModeZ: 0
+    - rid: 3179479351961322131
+      type: {class: AnimationClipState, ns: , asm: Sciphone.AnimationMachine}
+      data:
+        stateName: LadderClimbUpStart
+        properties:
+        - rid: 3179479351961322132
+        - rid: 3179479351961322133
+        - rid: 8095615110949896287
+        events: []
+        data:
+        - rid: 8095615107981377632
+        length: 0
+        preview: 1
+        clip: {fileID: 1827226128182048838, guid: 0960338e76f908d439fc19a558e3cd27, type: 3}
+    - rid: 3179479351961322132
+      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone.AnimationMachine}
+      data:
+        rootMotionData:
+          rootTX:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          rootTY:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          rootTZ:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          rootQX:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          rootQY:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          rootQZ:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          rootQW:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          totalTime: 0
+    - rid: 3179479351961322133
+      type: {class: ScaleModeProperty, ns: , asm: Sciphone.AnimationMachine}
+      data:
+        scaleModeX: 0
+        scaleModeY: 0
+        scaleModeZ: 0
+    - rid: 3179479351961322134
+      type: {class: AnimationClipState, ns: , asm: Sciphone.AnimationMachine}
+      data:
+        stateName: LadderClimbUpLoop
+        properties:
+        - rid: 3179479351961322135
+        - rid: 3179479351961322136
+        - rid: 3179479351961322137
+        events: []
+        data:
+        - rid: 8095615107981377641
+        length: 0
+        preview: 0
+        clip: {fileID: 1827226128182048838, guid: 3b7ac1793fc8f2d4a8155dcc552619d0, type: 3}
+    - rid: 3179479351961322135
+      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone.AnimationMachine}
+      data:
+        rootMotionData:
+          rootTX:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          rootTY:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          rootTZ:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          rootQX:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          rootQY:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          rootQZ:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          rootQW:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          totalTime: 0
+    - rid: 3179479351961322136
+      type: {class: ScaleModeProperty, ns: , asm: Sciphone.AnimationMachine}
+      data:
+        scaleModeX: 0
+        scaleModeY: 0
+        scaleModeZ: 0
+    - rid: 3179479351961322137
+      type: {class: LoopProperty, ns: , asm: Sciphone.AnimationMachine}
+      data: 
+    - rid: 3179479351961322138
+      type: {class: AnimationClipState, ns: , asm: Sciphone.AnimationMachine}
+      data:
+        stateName: LadderClimbDownEnd
+        properties:
+        - rid: 3179479351961322139
+        - rid: 3179479351961322140
+        events: []
+        data:
+        - rid: 8095615107981377643
+        length: 0
+        preview: 0
+        clip: {fileID: 1827226128182048838, guid: 3ea76b425d184d749915e3805222da8e, type: 3}
+    - rid: 3179479351961322139
+      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone.AnimationMachine}
+      data:
+        rootMotionData:
+          rootTX:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          rootTY:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          rootTZ:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          rootQX:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          rootQY:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          rootQZ:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          rootQW:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          totalTime: 0
+    - rid: 3179479351961322140
+      type: {class: ScaleModeProperty, ns: , asm: Sciphone.AnimationMachine}
+      data:
+        scaleModeX: 0
+        scaleModeY: 0
+        scaleModeZ: 0
+    - rid: 8095615084715835487
+      type: {class: AnimationClipState, ns: , asm: Sciphone.AnimationMachine}
+      data:
+        stateName: LadderClimbDownStart
+        properties:
+        - rid: 8095615084715835488
+        - rid: 8095615084715835489
+        events: []
+        data:
+        - rid: 8095615107981377640
+        length: 0
+        preview: 1
+        clip: {fileID: 1827226128182048838, guid: 04be3975e88fc614cad33ad22f1d1da6, type: 3}
+    - rid: 8095615084715835488
+      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone.AnimationMachine}
+      data:
+        rootMotionData:
+          rootTX:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          rootTY:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          rootTZ:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          rootQX:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          rootQY:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          rootQZ:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          rootQW:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          totalTime: 0
+    - rid: 8095615084715835489
+      type: {class: ScaleModeProperty, ns: , asm: Sciphone.AnimationMachine}
+      data:
+        scaleModeX: 0
+        scaleModeY: 0
+        scaleModeZ: 5
+    - rid: 8095615084715835490
+      type: {class: AnimationClipState, ns: , asm: Sciphone.AnimationMachine}
+      data:
+        stateName: LadderClimbDownLoop
+        properties:
+        - rid: 8095615084715835491
+        - rid: 8095615084715835492
+        - rid: 8095615084715835493
+        events: []
+        data:
+        - rid: 8095615107981377642
+        length: 0
+        preview: 1
+        clip: {fileID: 1827226128182048838, guid: 8ef8cd2fd7224d24fac31ff66cfe81a4, type: 3}
+    - rid: 8095615084715835491
+      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone.AnimationMachine}
+      data:
+        rootMotionData:
+          rootTX:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          rootTY:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          rootTZ:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          rootQX:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          rootQY:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          rootQZ:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          rootQW:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          totalTime: 0
+    - rid: 8095615084715835492
+      type: {class: ScaleModeProperty, ns: , asm: Sciphone.AnimationMachine}
+      data:
+        scaleModeX: 0
+        scaleModeY: 0
+        scaleModeZ: 0
+    - rid: 8095615084715835493
+      type: {class: LoopProperty, ns: , asm: Sciphone.AnimationMachine}
+      data: 
+    - rid: 8095615084715835494
+      type: {class: AnimationClipState, ns: , asm: Sciphone.AnimationMachine}
+      data:
+        stateName: LadderClimbUpEnd
+        properties:
+        - rid: 8095615084715835495
+        - rid: 8095615084715835496
+        events: []
+        data:
+        - rid: 8095615107981377644
+        length: 0
+        preview: 0
+        clip: {fileID: 1827226128182048838, guid: 5d29fd27a6523df4abf8ba003b67341b, type: 3}
+    - rid: 8095615084715835495
+      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone.AnimationMachine}
+      data:
+        rootMotionData:
+          rootTX:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          rootTY:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          rootTZ:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          rootQX:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          rootQY:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          rootQZ:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          rootQW:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          totalTime: 0
+    - rid: 8095615084715835496
+      type: {class: ScaleModeProperty, ns: , asm: Sciphone.AnimationMachine}
+      data:
+        scaleModeX: 0
+        scaleModeY: 0
+        scaleModeZ: 0
+    - rid: 8095615084715835497
+      type: {class: AnimationClipState, ns: , asm: Sciphone.AnimationMachine}
+      data:
+        stateName: LadderIdle
+        properties:
+        - rid: 8095615084715835498
+        - rid: 8095615084715835499
+        - rid: 8095615107981377645
+        events: []
+        data:
+        - rid: 8095615107981377639
+        length: 0
+        preview: 0.128
+        clip: {fileID: 1827226128182048838, guid: c9c543c5d7496ff4ea4f31e1f6c9f4b1, type: 3}
+    - rid: 8095615084715835498
+      type: {class: RootMotionCurvesProperty, ns: , asm: Sciphone.AnimationMachine}
+      data:
+        rootMotionData:
+          rootTX:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          rootTY:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          rootTZ:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          rootQX:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          rootQY:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          rootQZ:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          rootQW:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          totalTime: 0
+    - rid: 8095615084715835499
+      type: {class: ScaleModeProperty, ns: , asm: Sciphone.AnimationMachine}
+      data:
+        scaleModeX: 0
+        scaleModeY: 0
+        scaleModeZ: 0
+    - rid: 8095615107981377632
+      type: {class: StartingDistanceFromWall, ns: , asm: Experimental}
+      data:
+        dist: {x: 0, y: 1.9569601, z: 0.42316842}
+    - rid: 8095615107981377639
+      type: {class: StartingDistanceFromWall, ns: , asm: Experimental}
+      data:
+        dist: {x: 0, y: 1.9539514, z: 0.4279269}
+    - rid: 8095615107981377640
+      type: {class: StartingDistanceFromWall, ns: , asm: Experimental}
+      data:
+        dist: {x: 0, y: -0.37391043, z: -0.36}
+    - rid: 8095615107981377641
+      type: {class: StartingDistanceFromWall, ns: , asm: Experimental}
+      data:
+        dist: {x: 0, y: 1.9618157, z: 0.4280244}
+    - rid: 8095615107981377642
+      type: {class: StartingDistanceFromWall, ns: , asm: Experimental}
+      data:
+        dist: {x: 0, y: 1.9618163, z: 0.42316845}
+    - rid: 8095615107981377643
+      type: {class: StartingDistanceFromWall, ns: , asm: Experimental}
+      data:
+        dist: {x: 0, y: 0, z: 0.53}
+    - rid: 8095615107981377644
+      type: {class: StartingDistanceFromWall, ns: , asm: Experimental}
+      data:
+        dist: {x: 0, y: 0, z: 0.4}
+    - rid: 8095615107981377645
+      type: {class: BlendDurationProperty, ns: , asm: Sciphone.AnimationMachine}
+      data:
+        blendDuration: 0
+    - rid: 8095615110949896287
+      type: {class: PlayWindowProperty, ns: , asm: Sciphone.AnimationMachine}
+      data:
+        playWindow: {x: 0, y: 0.9827932}
 --- !u!114 &1263092472546482360
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -83501,6 +84016,7 @@ MonoBehaviour:
   - rid: 3049075905773174794
   - rid: 3179478975646007395
   - rid: 3179479052709527650
+  - rid: 8095615094589489248
   animMachine: {fileID: 0}
   characterCommand: {fileID: 0}
   characterAnimator: {fileID: 0}
@@ -83612,6 +84128,14 @@ MonoBehaviour:
         canPerform: 0
         isBeingPerformed: 0
         controller: {fileID: 0}
+    - rid: 8095615094589489248
+      type: {class: LadderTraverse, ns: , asm: Experimental}
+      data:
+        character: {fileID: 0}
+        enabled: 1
+        canPerform: 0
+        isBeingPerformed: 0
+        controller: {fileID: 0}
 --- !u!114 &8291776451430213621
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -83646,6 +84170,9 @@ MonoBehaviour:
   maxDepth: 5
   noOfSpheres: 5
   sweepDistance: 1.5
+  collisionLayer:
+    serializedVersion: 2
+    m_Bits: 2147484608
   capsuleOrientation: 1
   capsuleOffset: {x: 0, y: 0.9, z: 0}
   capsuleRadius: 0.3
@@ -83684,9 +84211,9 @@ MonoBehaviour:
   gravityDirection: {x: 0, y: -1, z: 0}
   gravityMagnitude: 35
   terminalVelocity: -50
-  collisionLayer:
+  groundLayer:
     serializedVersion: 2
-    m_Bits: 2147483840
+    m_Bits: 64
   isGrounded: 1
   sides: 6
   noOfLayers: 3
@@ -83831,37 +84358,54 @@ MonoBehaviour:
   autoVaultOverFenceLow: 1
   autoVaultOverFenceMedium: 1
   autoVaultOverFenceHigh: 1
+  autoAscendLadder: 1
+  autoDescendLadder: 1
   climbAvailable: 0
-  climbLowRange: {x: 0.5, y: 0.75}
-  climbMediumRange: {x: 0.75, y: 1.25}
-  climbHighRange: {x: 1.25, y: 2.75}
   climbHeight: 0
   climbLayer:
     serializedVersion: 2
     m_Bits: 64
-  climbCheckerDistance: 1
-  climbCheckerOffset: {x: 0, y: 0}
+  climbOverFromGroundRadius: 1
+  climbLowRange: {x: 0.5, y: 0.75}
+  climbMediumRange: {x: 0.75, y: 1.25}
+  climbHighRange: {x: 1.25, y: 2.75}
   fenceAvalilable: 0
   fenceHeight: 0
-  vaultFenceLowRange: {x: 0, y: 1.3}
-  vaultFenceMediumRange: {x: 1.3, y: 2.5}
-  vaultFenceHighRange: {x: 2.5, y: 3.8}
   fenceLayer:
     serializedVersion: 2
     m_Bits: 128
-  fenceCheckerOffset: {x: 0, y: 0}
-  fenceCheckerDistance: 1.2
+  vaultOverFenceRadius: 1
+  vaultFenceLowRange: {x: 0, y: 1.3}
+  vaultFenceMediumRange: {x: 1.3, y: 2.5}
+  vaultFenceHighRange: {x: 2.5, y: 3.8}
   criticalFenceWidth: 0.3
-  scaleFactor: {x: 1, y: 1, z: 1}
-  wallLayer:
+  ladderState: 0
+  ladderAscendAvailable: 0
+  ladderDescendAvailable: 0
+  ladderAtFeetAvailable: 0
+  ladderAtHeadAvailable: 0
+  ladderLayer:
     serializedVersion: 2
-    m_Bits: 448
-  startingDistFromWall: 0
+    m_Bits: 512
+  distFromLadder: 0.75
+  ladderCenterAtHeight: {x: 0, y: 0, z: 0}
+  ladderUp: {x: 0, y: 0, z: 0}
+  ladderTraverseRadius: 1
+  minLadderHeight: 1.5
+  minLadderWidth: 1
+  ladderClimbUpEndHeight: 1.4
+  ladderClimbDownEndHeight: 0.6
+  ladderChecerRadius: 0.1
+  ladderCheckerCount: 3
+  allParkourLayer:
+    serializedVersion: 2
+    m_Bits: 960
+  criticalParkourAngle: 50
+  surroundingCheckerRadius: 3
   allCheckerInterval: 0.1
-  targetPos: {x: 0, y: 0, z: 0}
-  targetForward: {x: 0, y: 0, z: 0}
-  parkourDir: {x: 0, y: 0, z: 0}
-  criticalParkourAngle: 0
+  scaleFactor: {x: 1, y: 1, z: 1}
+  startingDistFromWall: 0
+  worldParkourDir: {x: 0, y: 0, z: 0}
 --- !u!114 &4646400752311590440
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -85638,8 +86182,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7811858900502696557}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.2382258, y: 0.02788645, z: 0.9559076, w: -0.16944511}
-  m_LocalPosition: {x: 0.11088955, y: -0.018625945, z: -0.08532425}
+  m_LocalRotation: {x: 0.23822568, y: 0.027886234, z: 0.95590764, w: -0.16944495}
+  m_LocalPosition: {x: 0.111327894, y: -0.01809784, z: -0.08526108}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
