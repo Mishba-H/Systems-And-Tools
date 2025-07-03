@@ -85,7 +85,7 @@ public class ClimbOverFromGround : ParkourAction
     {
         if (IsBeingPerformed)
         {
-            controller.HandleParkourMovement(Time.deltaTime * character.timeScale);
+            controller.HandleParkourMovement(character.transform.up, -controller.climbNormal, Time.deltaTime * character.timeScale);
         }
     }
     public override void OnPerform()
@@ -190,7 +190,7 @@ public class VaultOverFence : ParkourAction
     {
         if (IsBeingPerformed)
         {
-            controller.HandleParkourMovement(Time.deltaTime * character.timeScale);
+            controller.HandleParkourMovement(character.transform.up, -controller.fenceNormal, Time.deltaTime * character.timeScale);
         }
     }
     public override void OnPerform()

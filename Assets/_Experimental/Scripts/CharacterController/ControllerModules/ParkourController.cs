@@ -84,7 +84,6 @@ public class ParkourController : MonoBehaviour, IControllerModule
     public Vector3 scaleFactor = Vector3.one;
     public float startingDistFromWall;
     private Vector3 targetPos;
-    private Vector3 targetForward;
     private Vector3 worldMoveDir;
     public Vector3 worldParkourDir;
 
@@ -319,6 +318,15 @@ public class ParkourController : MonoBehaviour, IControllerModule
                 Vector3 ladderFwd = other.transform.forward;
                 Vector3 ladderRight = other.transform.right;
 
+                if (Vector3.Angle(ladderFwd, transform.up) < 15f)
+                {
+                    ladderAscendAvailable = false;
+                    ladderDescendAvailable = false;
+                    ladderAtFeetAvailable = false;
+                    ladderAtHeadAvailable = false;
+                    return;
+                }
+
                 if (!character.PerformingAction<LadderTraverse>())
                 {
                     bool centerFound = DetectLadder(centerAtHeight, other);
@@ -454,25 +462,8 @@ public class ParkourController : MonoBehaviour, IControllerModule
     public void SetInitialTransform(Vector3 anchorPoint, Vector3 normal, float anchorHeight, float anchorDistance)
     {
         targetPos = anchorPoint - anchorHeight * transform.up + anchorDistance * normal;
-        targetForward = -normal;
 
-        character.characterMover.TargetMatching(targetPos, targetForward, true);
-    }
-
-    public void HandleParkourMovement(float dt)
-    {
-        Vector3 up = transform.up;
-        Vector3 forward = targetForward;
-        Vector3 right = Vector3.Cross(up, forward).normalized;
-
-        Vector3 rootDeltaPosition = character.animMachine.rootLinearVelocity * dt;
-        Vector3 scaledDeltaPosition = new Vector3(rootDeltaPosition.x * scaleFactor.x, rootDeltaPosition.y * scaleFactor.y,
-            rootDeltaPosition.z * scaleFactor.z);
-
-        Vector3 worldDeltaPostition = scaledDeltaPosition.x * right + scaledDeltaPosition.y * up + scaledDeltaPosition.z * forward;
-
-        targetPos += worldDeltaPostition;
-        character.characterMover.TargetMatching(targetPos, targetForward, false);
+        character.characterMover.TargetMatching(targetPos, -normal, true);
     }
 
     public void RunLadderStateMachine()
@@ -515,7 +506,7 @@ public class ParkourController : MonoBehaviour, IControllerModule
             }
         }
 
-        HandleLadderMovement(Time.deltaTime * character.timeScale);
+        HandleParkourMovement(ladderUp, -ladderNormal, Time.deltaTime * character.timeScale);
     }
 
     public void ChangeLadderState(LadderTraverseStates newState)
@@ -532,22 +523,6 @@ public class ParkourController : MonoBehaviour, IControllerModule
             CalculateStartingDistanceFromAnchor();
             SetInitialTransform(ladderCenterAtHeight, ladderNormal, 0f, startingDistFromWall);
         }
-    }
-
-    public void HandleLadderMovement(float dt)
-    {
-        Vector3 up = ladderUp;
-        Vector3 forward = -ladderNormal;
-        Vector3 right = Vector3.Cross(up, forward).normalized;
-
-        Vector3 rootDeltaPosition = character.animMachine.rootLinearVelocity * dt;
-        Vector3 scaledDeltaPosition = new Vector3(rootDeltaPosition.x * scaleFactor.x, rootDeltaPosition.y * scaleFactor.y,
-            rootDeltaPosition.z * scaleFactor.z);
-
-        Vector3 worldDeltaPostition = scaledDeltaPosition.x * right + scaledDeltaPosition.y * up + scaledDeltaPosition.z * forward;
-
-        targetPos += worldDeltaPostition;
-        character.characterMover.TargetMatching(targetPos, targetForward, false);
     }
 
     public void HandleLadderAnimation()
@@ -579,5 +554,19 @@ public class ParkourController : MonoBehaviour, IControllerModule
             //    character.characterAnimator.ChangeAnimationState("", "Parkour");
             //    break;
         }
+    }
+
+    public void HandleParkourMovement(Vector3 up, Vector3 forward, float dt)
+    {
+        Vector3 right = Vector3.Cross(up, forward).normalized;
+
+        Vector3 rootDeltaPosition = character.animMachine.rootLinearVelocity * dt;
+        Vector3 scaledDeltaPosition = new Vector3(rootDeltaPosition.x * scaleFactor.x, rootDeltaPosition.y * scaleFactor.y,
+            rootDeltaPosition.z * scaleFactor.z);
+
+        Vector3 worldDeltaPostition = scaledDeltaPosition.x * right + scaledDeltaPosition.y * up + scaledDeltaPosition.z * forward;
+
+        targetPos += worldDeltaPostition;
+        character.characterMover.TargetMatching(targetPos, forward, false);
     }
 }

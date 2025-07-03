@@ -61,7 +61,6 @@ public class CharacterMover : MonoBehaviour
     [TabGroup("Gravity Settings")] public bool simulateGravity;
     [TabGroup("Gravity Settings")] public float simulationStep = 1 / 60f;
     [TabGroup("Gravity Settings")] public float accumulatedTime;
-
     [TabGroup("Gravity Settings")] public Vector3 gravityDirection = Vector3.down;
     [TabGroup("Gravity Settings")] public float gravityMagnitude = 10f;
     [TabGroup("Gravity Settings")] public float terminalVelocity = -50f;
@@ -102,6 +101,7 @@ public class CharacterMover : MonoBehaviour
     #endregion
 
     public Vector3 worldVelocity;
+    public Vector3 worldFaceDir;
 
     private void Awake()
     {
@@ -133,7 +133,22 @@ public class CharacterMover : MonoBehaviour
 
     private void Character_PreUpdateLoop()
     {
-        IsGrounded = CheckGround(transform.position, out groundHit);
+        if (CheckGround(transform.position, out groundHit))
+        {
+            IsGrounded = true;
+
+            if (groundHit.collider.TryGetComponent(out GravitySetterBlock gravitySetterBlock))
+            {
+                var newGravity = -groundHit.normal;
+                SetGravityVector(newGravity.normalized * gravityMagnitude);
+                var rot = Quaternion.LookRotation(Vector3.ProjectOnPlane(worldFaceDir, newGravity).normalized, -newGravity);
+                transform.rotation = rot;
+            }
+        }
+        else
+        {
+            IsGrounded = false;
+        }
     }
 
     private void Character_UpdateLoop()
@@ -649,13 +664,14 @@ public class CharacterMover : MonoBehaviour
         transform.position = worldPosition;
     }
 
-    public void SetFaceDir(Vector3 faceDir)
+    public void SetFaceDir(Vector3 dir)
     {   
-        faceDir = Vector3.ProjectOnPlane(faceDir, transform.up).normalized;
-        if (faceDir != Vector3.zero)
+        dir = Vector3.ProjectOnPlane(dir, transform.up).normalized;
+        if (dir != Vector3.zero)
         {
-            transform.rotation = Quaternion.LookRotation(faceDir, transform.up);
+            transform.rotation = Quaternion.LookRotation(dir, transform.up);
         }
+        worldFaceDir = dir;
     }
 
     public void SetWorldVelocity(Vector3 val)
