@@ -17,6 +17,7 @@ public class BasicFollow : BaseCameraMode
     public Vector3 camPosOffset = Vector3.back * 5f;
     public Vector3 camRotOffset = Vector3.right * 25f;
     public float camSpeed = 15f;
+    public float rollAlignSpeed = 10f;
 
     public Vector2 pitchRange = new Vector2(75f, 75f); // Looking up/down
     public Vector2 yawRange = new Vector2(0f, 360f); // Looking side to side
@@ -58,6 +59,10 @@ public class BasicFollow : BaseCameraMode
         controller.inputReader.Subscribe("Look", OnLookInput);
         controller.inputReader.Subscribe("Move", OnMoveInput);
     }
+    public override void OnActivate(CameraController controller)
+    {
+        base.OnActivate(controller);
+    }
     public override void HandlePivotPosition(CameraController controller, float dt)
     {
         var camForwardOnPlane = Vector3.ProjectOnPlane(camTransform.forward, followTransform.up);
@@ -72,57 +77,51 @@ public class BasicFollow : BaseCameraMode
         localOffset.y = Mathf.SmoothDamp(localOffset.y, 0, ref vel.y, smoothTime.y * dt);
         localOffset.z = Mathf.SmoothDamp(localOffset.z, 0, ref vel.z, smoothTime.z * dt);
 
-        controller.transform.position = targetPosition + refTransform.TransformDirection(localOffset);
+        pivotTransform.position = targetPosition + refTransform.TransformDirection(localOffset);
+        rollPivot.localPosition = Vector3.zero;
+        yawPivot.localPosition = Vector3.zero;
+        pitchPivot.localPosition = Vector3.zero;
     }
     public override void HandlePivotRotation(CameraController controller, float dt)
     {
         HandleLookInput(dt / controller.timeScale);
 
-        Vector3 refUp = followTransform.up;
-        Vector3 arbitrary = (Mathf.Abs(Vector3.Dot(refUp, Vector3.up)) < 0.99f) ? Vector3.up : Vector3.right;
-        Vector3 refRight = Vector3.Normalize(Vector3.Cross(arbitrary, refUp));
-        Vector3 refForward = Vector3.Normalize(Vector3.Cross(refUp, refRight));
+        Quaternion rollAlignDelta = Quaternion.FromToRotation(rollPivot.up, followTransform.up);
+        Quaternion targetRotation = rollAlignDelta * rollPivot.rotation;
+        rollPivot.rotation = Quaternion.Slerp(rollPivot.rotation, targetRotation, dt * rollAlignSpeed);
 
-        //Debug.DrawRay(pivotTransform.position, refUp, Color.green);
-        //Debug.DrawRay(pivotTransform.position, refRight, Color.red);
-        //Debug.DrawRay(pivotTransform.position, refForward, Color.blue);
+        HandleRecentering(dt);
 
-        HandleRecentering(dt, refUp, refRight, refForward);
-
-        Quaternion baseRotation = Quaternion.LookRotation(refForward, refUp);
-        Quaternion yawRotation = Quaternion.AngleAxis(yawAngle, refUp);
-        Quaternion pitchRotation = Quaternion.AngleAxis(pitchAngle, yawRotation * refRight);
-        Quaternion targetRotation = pitchRotation * yawRotation * baseRotation;
-
-        pivotTransform.rotation = targetRotation;
+        yawPivot.localRotation = Quaternion.Euler(0f, yawAngle, 0f);
+        pitchPivot.localRotation = Quaternion.Euler(pitchAngle, 0f, 0f);
     }
     public void HandleLookInput(float dt)
     {
         if (device is Mouse)
         {
-            pitchAngle += lookInput.y * mouseSensitivity * 0.01f;
+            pitchAngle -= lookInput.y * mouseSensitivity * 0.01f;
             yawAngle += lookInput.x * mouseSensitivity * 0.01f;
         }
         else if (device is Gamepad)
         {
-            pitchAngle += lookInput.y * dt * gamepadSensitivity * 10;
+            pitchAngle -= lookInput.y * dt * gamepadSensitivity * 10;
             yawAngle += lookInput.x * dt * gamepadSensitivity * 10;
         }
         else if (device is Touchscreen)
         {
-            pitchAngle += lookInput.y * touchscreenSensitivity * 0.01f;
+            pitchAngle -= lookInput.y * touchscreenSensitivity * 0.01f;
             yawAngle += lookInput.x * touchscreenSensitivity * 0.01f;
         }
 
-        pitchAngle = Mathf.Clamp(pitchAngle, -pitchRange.x, pitchRange.y);
+        pitchAngle = Mathf.Clamp(pitchAngle, pitchRange.x, pitchRange.y);
         if (pitchAngle >= 180f) pitchAngle -= 360f;
         else if (pitchAngle <= -180f) pitchAngle += 360f;
 
-        yawAngle = Mathf.Clamp(yawAngle, -yawRange.x, yawRange.y);
+        yawAngle = Mathf.Clamp(yawAngle, yawRange.x, yawRange.y);
         if (yawAngle >= 180f) yawAngle -= 360f;
         else if (yawAngle <= -180f) yawAngle += 360f;
     }
-    public void HandleRecentering(float dt, Vector3 refUp, Vector3 refRight, Vector3 refForward)
+    public void HandleRecentering(float dt)
     {
         if (lookInput == Vector2.zero && moveInput != Vector2.zero)
         {
@@ -137,30 +136,30 @@ public class BasicFollow : BaseCameraMode
         if (recenterTimer > recenterDelay)
         {
             var centeredForward = (followTransform.position - followTargetPrevPos);
-            centeredForward = Vector3.ProjectOnPlane(centeredForward, followTransform.up).normalized;
+            centeredForward = Vector3.ProjectOnPlane(centeredForward, rollPivot.up).normalized;
 
-            var camForwardOnPlane = Vector3.ProjectOnPlane(camTransform.forward, followTransform.up).normalized;
+            var camForwardOnPlane = Vector3.ProjectOnPlane(camTransform.forward, rollPivot.up).normalized;
             if (Vector3.Angle(centeredForward, camForwardOnPlane) > 90f)
             {
                 var front = Vector3.Project(centeredForward, camForwardOnPlane);
                 var right = centeredForward - front;
                 centeredForward = right - front;
             }
-            var dampedForward = Vector3.SmoothDamp(pivotTransform.forward, centeredForward, ref recenterVel, recenterTime * dt);
+            var dampedForward = Vector3.SmoothDamp(pitchPivot.forward, centeredForward, ref recenterVel, recenterTime * dt);
+            var localDampedForward = rollPivot.InverseTransformDirection(dampedForward);
 
             if (horizontalRecentering || verticalRecentering)
             {
                 if (horizontalRecentering)
                 {
-                    Vector3 forwardOnUpPlane = Vector3.ProjectOnPlane(dampedForward, refUp);
-                    yawAngle = Vector3.SignedAngle(refForward, forwardOnUpPlane, refUp);
+                    yawAngle = Quaternion.LookRotation(localDampedForward, rollPivot.up).eulerAngles.y;
+                    yawAngle = yawAngle.NormalizeAngle();
                 }
 
                 if (verticalRecentering)
                 {
-                    Quaternion referenceRotation = Quaternion.LookRotation(refForward, refUp);
-                    Vector3 localForward = Quaternion.Inverse(referenceRotation) * dampedForward;
-                    pitchAngle = Mathf.Asin(localForward.y) * Mathf.Rad2Deg;
+                    pitchAngle = Quaternion.LookRotation(localDampedForward, rollPivot.up).eulerAngles.x;
+                    pitchAngle = pitchAngle.NormalizeAngle();
                 }
             }
         }
@@ -168,10 +167,19 @@ public class BasicFollow : BaseCameraMode
     }
     public override void HandleCamera(CameraController controller, float dt)
     {
+        if (setCamTransformCo != null)
+            return;
+
         //Check for camera collision and move the camera
         var dist = camPosOffset.magnitude;
-        var dir = (pivotTransform.rotation * camPosOffset).normalized;
+        var dir = (pitchPivot.TransformPoint(camPosOffset) - pivotTransform.position).normalized;
         if (Physics.SphereCast(pivotTransform.position, cameraRadius, dir, out RaycastHit cameraHit, dist, collisionLayer))
+        {
+            var cameraCurrentPos = camTransform.position;
+            var cameraTargetPos = pivotTransform.position + dir * cameraHit.distance;
+            camTransform.position = Vector3.Lerp(cameraCurrentPos, cameraTargetPos, camSpeed * dt);
+        }
+        else if (Physics.Raycast(pivotTransform.position, dir, out cameraHit, dist, collisionLayer))
         {
             var cameraCurrentPos = camTransform.position;
             var cameraTargetPos = pivotTransform.position + dir * cameraHit.distance;
@@ -200,5 +208,6 @@ public class BasicFollow : BaseCameraMode
             camTransform.localRotation = Quaternion.Lerp(currentRot, targetRot, 1 - remainingTime / switchTime);
             yield return null;
         }
+        setCamTransformCo = null;
     }
 }

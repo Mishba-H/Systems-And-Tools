@@ -30,6 +30,7 @@ public class ClimbOverFromGround : ParkourAction
         if (baseController != null)
         {
             var baseExpression = (Expression<Func<bool>>)(() =>
+                (!character.PerformingAction<Crouch>() || baseController.canEndCrouch) &&
                 !character.PerformingAction<Jump>() &&
                 !character.PerformingAction<AirJump>() &&
                 !character.PerformingAction<Fall>());
@@ -136,6 +137,7 @@ public class VaultOverFence : ParkourAction
         if (baseController != null)
         {
             var baseExpression = (Expression<Func<bool>>)(() =>
+                (!character.PerformingAction<Crouch>() || baseController.canEndCrouch) &&
                 !character.PerformingAction<Jump>() &&
                 !character.PerformingAction<AirJump>() &&
                 !character.PerformingAction<Fall>());
@@ -235,7 +237,8 @@ public class LadderTraverse : ParkourAction
         {
             IsBeingPerformed = true;
         }
-        else if (IsBeingPerformed)
+        else if (IsBeingPerformed && controller.ladderState != LadderTraverseStates.ClimbUpStart && controller.ladderState != LadderTraverseStates.ClimbDownStart &&
+            controller.ladderState != LadderTraverseStates.ClimbUpEnd && controller.ladderState != LadderTraverseStates.ClimbDownEnd)
         {
             IsBeingPerformed = false;
         }
@@ -253,6 +256,7 @@ public class LadderTraverse : ParkourAction
         if (baseController != null)
         {
             var baseExpression = (Expression<Func<bool>>)(() =>
+                (!character.PerformingAction<Crouch>() || baseController.canEndCrouch) &&
                 !character.PerformingAction<Fall>() &&
                 !character.PerformingAction<Jump>() &&
                 !character.PerformingAction<AirJump>());

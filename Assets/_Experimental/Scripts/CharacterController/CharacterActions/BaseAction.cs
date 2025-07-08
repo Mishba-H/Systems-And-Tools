@@ -279,6 +279,7 @@ public class Sprint : BaseAction
         {
             var baseExpression = (Expression<Func<bool>>)(() =>
                 character.characterMover.IsGrounded &&
+                (!character.PerformingAction<Crouch>() || baseController.canEndCrouch) &&
                 !character.PerformingAction<Jump>() &&
                 !character.PerformingAction<AirJump>() &&
                 !character.PerformingAction<Fall>());
@@ -345,9 +346,13 @@ public class Crouch : BaseAction
 {
     private void CharacterCommand_CrouchCommand(bool crouch)
     {
-        if (CanPerform)
+        if (CanPerform && crouch)
         {
-            IsBeingPerformed = crouch;
+            IsBeingPerformed = true;
+        }
+        if (IsBeingPerformed && !crouch && controller.canEndCrouch)
+        {
+            IsBeingPerformed = false;
         }
     }
     public override void OnEnable()
@@ -455,6 +460,7 @@ public class Jump : BaseAction
         {
             var baseExpression = (Expression<Func<bool>>)(() =>
                 character.characterMover.IsGrounded &&
+                (!character.PerformingAction<Crouch>() || baseController.canEndCrouch) &&
                 baseController.jumpDurationCounter <= 0f);
             condition = CombineExpressions(condition, baseExpression);
         }

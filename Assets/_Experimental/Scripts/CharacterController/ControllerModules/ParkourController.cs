@@ -1,6 +1,5 @@
 using Sciphone;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 //#if UNITY_EDITOR
 //using Physics = Nomnom.RaycastVisualization.VisualPhysics;
@@ -132,7 +131,7 @@ public class ParkourController : MonoBehaviour, IControllerModule
         for (int i = 0; i < surroundingCollidersCount; i++)
         {
             Collider other = surroundingColliders[i];
-            if (!other.IsConvexMesh())
+            if (other is MeshCollider && !(other as MeshCollider).convex)
             {
                 surroundingColliders[i] = null;
                 toSurroundingColliders[i] = Vector3.zero;
@@ -156,16 +155,9 @@ public class ParkourController : MonoBehaviour, IControllerModule
         }
     }
 
-    public bool ObstructionPresent(Vector3 start, Vector3 end)
-    {
-        var startPoint = start - end * character.characterMover.capsuleRadius;
-        var endPoint = start + end;
-        return Physics.Linecast(startPoint, endPoint, allParkourLayer, QueryTriggerInteraction.Ignore);
-    }
-
     public void CheckClimbAvailability(Vector3 direction)
     {
-        if (direction == Vector3.zero)
+        if (direction == Vector3.zero || character.PerformingAction<ClimbOverFromGround>())
         {
             climbAvailable = false;
             return;
@@ -183,8 +175,7 @@ public class ParkourController : MonoBehaviour, IControllerModule
             }
 
             if (climbLayer.Contains(other.gameObject.layer) && toOtherOnPlane.magnitude <= climbOverFromGroundRadius &&
-                Vector3.Angle(Vector3.ProjectOnPlane(toOther, transform.up), direction) <= criticalParkourAngle &&
-                !ObstructionPresent(transform.position, toOther))
+                Vector3.Angle(Vector3.ProjectOnPlane(toOther, transform.up), direction) <= criticalParkourAngle)
             {
                 if (DetectClimbPoint(toOtherOnPlane, out RaycastHit climbHit))
                 {
@@ -224,7 +215,7 @@ public class ParkourController : MonoBehaviour, IControllerModule
 
     public void CheckFenceAvailability(Vector3 direction)
     {
-        if (direction == Vector3.zero)
+        if (direction == Vector3.zero || character.PerformingAction<VaultOverFence>())
         {
             fenceAvalilable = false;
             return;
@@ -242,8 +233,7 @@ public class ParkourController : MonoBehaviour, IControllerModule
             }
 
             if (fenceLayer.Contains(other.gameObject.layer) && toOtherOnPlane.magnitude <= vaultOverFenceRadius &&
-                Vector3.Angle(Vector3.ProjectOnPlane(toOther, transform.up), direction) <= criticalParkourAngle &&
-                !ObstructionPresent(transform.position, toOther))
+                Vector3.Angle(Vector3.ProjectOnPlane(toOther, transform.up), direction) <= criticalParkourAngle)
             {
                 if (DetectFence(toOtherOnPlane, out RaycastHit fenceHit, out Vector3 fenceCheckerPosOnHit))
                 {
@@ -313,6 +303,7 @@ public class ParkourController : MonoBehaviour, IControllerModule
                 && toOtherOnPlane.magnitude <= ladderTraverseRadius)
             {
                 Vector3 centerAtHeight = GetLadderCenterAtHeight(other);
+                Physics.OverlapSphere(centerAtHeight, ladderChecerRadius);
 
                 Vector3 ladderUp = other.transform.up;
                 Vector3 ladderFwd = other.transform.forward;
@@ -348,7 +339,6 @@ public class ParkourController : MonoBehaviour, IControllerModule
                     ladderDescendAvailable = false;
                 }
 
-
                 if (ladderAscendAvailable || ladderDescendAvailable || ladderAtFeetAvailable || ladderAtHeadAvailable)
                 {
                     this.ladderUp = ladderUp;
@@ -368,9 +358,9 @@ public class ParkourController : MonoBehaviour, IControllerModule
     private Vector3 GetLadderCenterAtHeight(Collider ladderCollider)
     {
         Vector3 boundsCenter = ladderCollider.bounds.center;
-        var angleDiff = Vector3.Angle(ladderCollider.transform.up, transform.up);
-        var heightDiff = transform.position.y - boundsCenter.y;
-        var centerAtHeight = boundsCenter + heightDiff * Mathf.Cos(angleDiff * Mathf.Deg2Rad) * ladderCollider.transform.up;
+        var localBoundsCenter = transform.InverseTransformPoint(boundsCenter);
+        var heightDiff = localBoundsCenter.y;
+        var centerAtHeight = boundsCenter - heightDiff * ladderCollider.transform.up;
         return centerAtHeight;
     }
 
@@ -412,60 +402,6 @@ public class ParkourController : MonoBehaviour, IControllerModule
         return false;
     }
 
-    public void CalculateScaleFactor()
-    {
-        Vector3 targetValue = Vector3.zero;
-        if (character.PerformingAction<ClimbOverFromGround>())
-        {
-            targetValue = new Vector3(0f, climbHeight, 0f);
-        }
-        else if (character.PerformingAction<VaultOverFence>())
-        {
-            targetValue = new Vector3(0f, fenceHeight, 0f);
-        }
-        else if (character.PerformingAction<LadderTraverse>())
-        {
-            targetValue = Vector3.zero;
-        }
-
-        if (character.animMachine.rootState.TryGetProperty<RootMotionCurvesProperty>(out var rootMotionProp)
-            && character.animMachine.rootState.TryGetProperty<ScaleModeProperty>(out var scaleModeProp))
-        {
-            scaleFactor = AnimationMachineExtensions.EvaluateScaleFactor(rootMotionProp, scaleModeProp, targetValue);
-        }
-    }
-
-    public void CalculateStartingDistanceFromAnchor()
-    {
-        if (character.animMachine.rootState.TryGetData(out StartingDistanceFromWall distData))
-        {
-            startingDistFromWall = distData.dist.z;
-            return;
-        }
-
-        if (character.animMachine.rootState.TryGetProperty(out RootMotionCurvesProperty property))
-        {
-            RootMotionData curves = property.rootMotionData;
-            float totalTime = curves.totalTime;
-
-            if (character.animMachine.rootState.TryGetData(out TimeOfContact data))
-            {
-                var timeOfContact = data.timeOfContact * totalTime;
-
-                AnimationCurve rootTZCurve = curves.rootTZ;
-                startingDistFromWall = rootTZCurve.Evaluate(timeOfContact) - rootTZCurve.Evaluate(0f);
-            }
-            return;
-        }
-    }
-
-    public void SetInitialTransform(Vector3 anchorPoint, Vector3 normal, float anchorHeight, float anchorDistance)
-    {
-        targetPos = anchorPoint - anchorHeight * transform.up + anchorDistance * normal;
-
-        character.characterMover.TargetMatching(targetPos, -normal, true);
-    }
-
     public void RunLadderStateMachine()
     {
         if (ladderState == LadderTraverseStates.None || ladderState == LadderTraverseStates.Idle || ladderState == LadderTraverseStates.ClimbUp ||
@@ -473,7 +409,11 @@ public class ParkourController : MonoBehaviour, IControllerModule
         {
             if (worldParkourDir == Vector3.zero)
             {
-                ChangeLadderState(LadderTraverseStates.Idle);
+                if (!(ladderState == LadderTraverseStates.ClimbUp && Mathf.Abs(character.animMachine.rootState.NormalizedTime() - 1f) > 0.1f) &&
+                !(ladderState == LadderTraverseStates.ClimbDown && Mathf.Abs(character.animMachine.rootState.NormalizedTime() - 1f) > 0.1f))
+                {
+                    ChangeLadderState(LadderTraverseStates.Idle);
+                }
             }
             else if (Vector3.Angle(worldParkourDir, transform.up) < 60f)
             {
@@ -481,7 +421,8 @@ public class ParkourController : MonoBehaviour, IControllerModule
                 {
                     ChangeLadderState(LadderTraverseStates.ClimbUpEnd);
                 }
-                else
+                else if (!(ladderState == LadderTraverseStates.ClimbUp && Mathf.Abs(character.animMachine.rootState.NormalizedTime() - 1f) > 0.1f) &&
+                !(ladderState == LadderTraverseStates.ClimbDown && Mathf.Abs(character.animMachine.rootState.NormalizedTime() - 1f) > 0.1f))
                 {
                     ChangeLadderState(LadderTraverseStates.ClimbUp);
                 }
@@ -492,7 +433,8 @@ public class ParkourController : MonoBehaviour, IControllerModule
                 {
                     ChangeLadderState(LadderTraverseStates.ClimbDownEnd);
                 }
-                else
+                else if (!(ladderState == LadderTraverseStates.ClimbUp && Mathf.Abs(character.animMachine.rootState.NormalizedTime() - 1f) > 0.1f) &&
+                !(ladderState == LadderTraverseStates.ClimbDown && Mathf.Abs(character.animMachine.rootState.NormalizedTime() - 1f) > 0.1f))
                 {
                     ChangeLadderState(LadderTraverseStates.ClimbDown);
                 }
@@ -554,6 +496,60 @@ public class ParkourController : MonoBehaviour, IControllerModule
             //    character.characterAnimator.ChangeAnimationState("", "Parkour");
             //    break;
         }
+    }
+
+    public void CalculateScaleFactor()
+    {
+        Vector3 targetValue = Vector3.zero;
+        if (character.PerformingAction<ClimbOverFromGround>())
+        {
+            targetValue = new Vector3(0f, climbHeight, 0f);
+        }
+        else if (character.PerformingAction<VaultOverFence>())
+        {
+            targetValue = new Vector3(0f, fenceHeight, 0f);
+        }
+        else if (character.PerformingAction<LadderTraverse>())
+        {
+            targetValue = Vector3.zero;
+        }
+
+        if (character.animMachine.rootState.TryGetProperty<RootMotionCurvesProperty>(out var rootMotionProp)
+            && character.animMachine.rootState.TryGetProperty<ScaleModeProperty>(out var scaleModeProp))
+        {
+            scaleFactor = AnimationMachineExtensions.EvaluateScaleFactor(rootMotionProp, scaleModeProp, targetValue);
+        }
+    }
+
+    public void CalculateStartingDistanceFromAnchor()
+    {
+        if (character.animMachine.rootState.TryGetData(out StartingDistanceFromWall distData))
+        {
+            startingDistFromWall = distData.dist.z;
+            return;
+        }
+
+        if (character.animMachine.rootState.TryGetProperty(out RootMotionCurvesProperty property))
+        {
+            RootMotionData curves = property.rootMotionData;
+            float totalTime = curves.totalTime;
+
+            if (character.animMachine.rootState.TryGetData(out TimeOfContact data))
+            {
+                var timeOfContact = data.timeOfContact * totalTime;
+
+                AnimationCurve rootTZCurve = curves.rootTZ;
+                startingDistFromWall = rootTZCurve.Evaluate(timeOfContact) - rootTZCurve.Evaluate(0f);
+            }
+            return;
+        }
+    }
+
+    public void SetInitialTransform(Vector3 anchorPoint, Vector3 normal, float anchorHeight, float anchorDistance)
+    {
+        targetPos = anchorPoint - anchorHeight * transform.up + anchorDistance * normal;
+
+        character.characterMover.TargetMatching(targetPos, -normal, true);
     }
 
     public void HandleParkourMovement(Vector3 up, Vector3 forward, float dt)

@@ -16,6 +16,8 @@ public class BaseController : MonoBehaviour, IControllerModule
 
     #region MOVEMENT_PARAMETERS
     [TabGroup("Movement")] public MovementMode movementMode = MovementMode.Forward;
+    [TabGroup("Movement")] public bool canEndCrouch;
+    [TabGroup("Movement")] public float minStandingHeight = 1.8f;
     [TabGroup("Movement"), Disable] public float targetSpeed;
     [TabGroup("Movement")] public float baseSpeed = 1f;
     [TabGroup("Movement")] public float walkSpeedMultiplier = 2f;
@@ -55,6 +57,7 @@ public class BaseController : MonoBehaviour, IControllerModule
         character.characterCommand.FaceDirCommand += CharacterCommand_FaceDirCommand;
         character.characterCommand.MoveDirCommand += CharacterCommand_MoveDirCommand;
 
+        character.PreUpdateLoop += Character_PreUpdateLoop;
         character.UpdateLoop += Character_UpdateLoop;
         foreach (var action in character.actions)
         {
@@ -91,9 +94,20 @@ public class BaseController : MonoBehaviour, IControllerModule
         worldMoveDir = Vector3.ProjectOnPlane(dir, transform.up).normalized;
     }
 
+    private void Character_PreUpdateLoop()
+    {
+        CheckCanEndCrouch();
+    }
+
     private void Character_UpdateLoop()
     {
         HandleAnimationParameters(Time.deltaTime * character.timeScale);
+    }
+
+    private void CheckCanEndCrouch()
+    {
+         canEndCrouch = !Physics.Raycast(transform.position, transform.up, minStandingHeight, 
+             character.characterMover.collisionLayer, QueryTriggerInteraction.Ignore);
     }
 
     public void CalculateScaleFactor()

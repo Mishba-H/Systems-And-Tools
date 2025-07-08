@@ -94,9 +94,9 @@ public class CharacterMover : MonoBehaviour
     #endregion
 
     #region TARGET_MATCHING
-    [TabGroup("Target Mathcing")] public Vector3 targetPosition;
-    [TabGroup("Target Mathcing")] public Vector3 targetForward;
-    [TabGroup("Target Mathcing")] public float lerpTime;
+    [TabGroup("Target Matching")] public Vector3 targetPosition;
+    [TabGroup("Target Matching")] public Quaternion targetRotation;
+    [TabGroup("Target Matching")] public float lerpTime;
     private Coroutine lerpToTargetCoroutine;
     #endregion
 
@@ -133,22 +133,9 @@ public class CharacterMover : MonoBehaviour
 
     private void Character_PreUpdateLoop()
     {
-        if (CheckGround(transform.position, out groundHit))
-        {
-            IsGrounded = true;
+        IsGrounded = CheckGround(transform.position, out groundHit);
 
-            if (groundHit.collider.TryGetComponent(out GravitySetterBlock gravitySetterBlock))
-            {
-                var newGravity = -groundHit.normal;
-                SetGravityVector(newGravity.normalized * gravityMagnitude);
-                var rot = Quaternion.LookRotation(Vector3.ProjectOnPlane(worldFaceDir, newGravity).normalized, -newGravity);
-                transform.rotation = rot;
-            }
-        }
-        else
-        {
-            IsGrounded = false;
-        }
+        AlignWithGravity();
     }
 
     private void Character_UpdateLoop()
@@ -168,6 +155,17 @@ public class CharacterMover : MonoBehaviour
         }
 
         ResolveOverlaps(Time.deltaTime * character.timeScale);
+    }
+
+    private void AlignWithGravity()
+    {
+        if (IsGrounded && groundHit.collider.TryGetComponent(out GravitySetterBlock gravitySetterBlock))
+        {
+            var newGravity = -groundHit.normal;
+            SetGravityVector(newGravity.normalized * gravityMagnitude);
+            var rot = Quaternion.LookRotation(Vector3.ProjectOnPlane(worldFaceDir, newGravity).normalized, -newGravity);
+            transform.rotation = rot;
+        }
     }
 
     private void SimulateGravity()
@@ -281,10 +279,10 @@ public class CharacterMover : MonoBehaviour
     public void TargetMatching(Vector3 targetPosition, Vector3 targetForward, bool initiateLerp)
     {
         this.targetPosition = targetPosition;
-        this.targetForward = targetForward;
+        targetRotation = Quaternion.LookRotation(targetForward, transform.up);
         if (initiateLerp && lerpToTargetCoroutine == null)
         {
-            lerpToTargetCoroutine = StartCoroutine(LerpToTarget());
+            lerpToTargetCoroutine = StartCoroutine(TargetMatchingCoroutine());
         }
         if (lerpToTargetCoroutine == null)
         {
@@ -292,14 +290,14 @@ public class CharacterMover : MonoBehaviour
         }
     }
 
-    private IEnumerator LerpToTarget()
+    private IEnumerator TargetMatchingCoroutine()
     {
         float elapsedTime = 0f;
         while (elapsedTime <= lerpTime)
         {
             elapsedTime += Time.deltaTime * character.timeScale;
             transform.position = Vector3.Lerp(transform.position, targetPosition, elapsedTime / lerpTime);
-            transform.forward = Vector3.Slerp(transform.forward, targetForward, elapsedTime / lerpTime);
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, elapsedTime / lerpTime);
             yield return null;
         }
         lerpToTargetCoroutine = null;
@@ -589,7 +587,7 @@ public class CharacterMover : MonoBehaviour
             {
                 capsuleHit = sphereHit;
                 Vector3 centerAtHit = center + sphereHit.distance * sweepDir;
-                if (Physics.Raycast(centerAtHit, -sphereHit.normal, out surfaceHit, capsuleRadius, collisionLayer, QueryTriggerInteraction.Ignore))
+                if (Physics.SphereCast(centerAtHit, 0.1f, -sphereHit.normal, out surfaceHit, capsuleRadius, collisionLayer, QueryTriggerInteraction.Ignore))
                 {
                     returnValue = true;
                 }

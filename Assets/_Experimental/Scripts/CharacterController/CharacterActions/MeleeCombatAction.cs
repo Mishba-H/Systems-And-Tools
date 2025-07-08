@@ -30,6 +30,7 @@ public class Evade : MeleeCombatAction
         if (baseController != null)
         {
             var baseExpression = (Expression<Func<bool>>)(() =>
+                (!character.PerformingAction<Crouch>() || baseController.canEndCrouch) &&
                 !character.PerformingAction<Sprint>() &&
                 !character.PerformingAction<Jump>() &&
                 !character.PerformingAction<Fall>());
@@ -112,6 +113,7 @@ public class Roll : MeleeCombatAction
         if (baseController != null)
         {
             var baseExpression = (Expression<Func<bool>>)(() =>
+                (!character.PerformingAction<Crouch>() || baseController.canEndCrouch) &&
                 !character.PerformingAction<Jump>() &&
                 !character.PerformingAction<Fall>());
             condition = CombineExpressions(condition, baseExpression);
@@ -207,6 +209,7 @@ public class Attack : MeleeCombatAction
         if (baseController != null)
         {
             var baseExpression = (Expression<Func<bool>>)(() =>
+                (!character.PerformingAction<Crouch>() || baseController.canEndCrouch) &&
                 !character.PerformingAction<Jump>() &&
                 !character.PerformingAction<AirJump>() &&
                 !character.PerformingAction<Fall>());

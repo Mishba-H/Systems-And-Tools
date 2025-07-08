@@ -13,6 +13,10 @@ public class CameraController : MonoBehaviour
     [HideInInspector] public Transform refTransform;
     public LayerMask cameraCollisionLayer;
 
+    public Transform rollPivot;
+    public Transform yawPivot;
+    public Transform pitchPivot;
+
     [SerializeField] internal InputReader inputReader;
 
     [SerializeReference, Polymorphic] public ICameraMode[] cameraModes;
@@ -31,7 +35,7 @@ public class CameraController : MonoBehaviour
             cameraMode.Initialize(this);
         }
         currentCameraMode = cameraModes[0];
-        StartCoroutine(currentCameraMode.SetCameraTransform(this));
+        currentCameraMode.OnActivate(this);
     }
 
     private void LateUpdate()
@@ -44,13 +48,14 @@ public class CameraController : MonoBehaviour
     [Button(nameof(ResetCameraTransform))]
     public void ResetCameraTransform()
     {
-        StartCoroutine(currentCameraMode.SetCameraTransform(this));
+        currentCameraMode.OnActivate(this);
     }
 }
 
 public interface ICameraMode
 {
     public void Initialize(CameraController controller);
+    public void OnActivate(CameraController controller);
     public void HandlePivotPosition(CameraController controller, float dt);
     public void HandlePivotRotation(CameraController controller, float dt);
     public void HandleCamera(CameraController controller, float dt);
@@ -68,7 +73,13 @@ public abstract class BaseCameraMode : ICameraMode
     [HideInInspector] public Transform refTransform;
     [HideInInspector] public LayerMask collisionLayer;
 
+    [HideInInspector] public Transform rollPivot;
+    [HideInInspector] public Transform yawPivot;
+    [HideInInspector] public Transform pitchPivot;
+
     public float switchTime = 0.5f;
+
+    internal Coroutine setCamTransformCo;
 
     public virtual void Initialize(CameraController controller)
     {
@@ -77,6 +88,14 @@ public abstract class BaseCameraMode : ICameraMode
         followTransform = controller.playerTransform;
         refTransform = controller.refTransform;
         collisionLayer = controller.cameraCollisionLayer;
+
+        rollPivot = controller.rollPivot;
+        yawPivot = controller.yawPivot;
+        pitchPivot = controller.pitchPivot;
+    }
+    public virtual void OnActivate(CameraController controller)
+    {
+        setCamTransformCo = controller.StartCoroutine(SetCameraTransform(controller));
     }
     public virtual void HandleVirtualTarget(CameraController controller, float dt)
     {

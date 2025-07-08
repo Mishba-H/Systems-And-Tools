@@ -62,7 +62,7 @@ public class PlayerCommandProcessor : MonoBehaviour
         Vector3 worldMoveDir = (camRightOnPlane * moveInput.x + camForwardOnPlane * moveInput.y).normalized;
         characterCommand.InvokeMoveDirCommand(worldMoveDir);
 
-        if (moveInput.sqrMagnitude == 0f)
+        if (moveInput.sqrMagnitude == 0f || character.PerformingAction<Crouch>())
         {
             sprint = false;
         }

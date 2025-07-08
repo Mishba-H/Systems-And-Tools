@@ -22,7 +22,7 @@ namespace Sciphone
 
             return value;
         }
-        public static float NormalizeAngle(float angle)
+        public static float NormalizeAngle(this float angle)
         {
             angle %= 360f;
             if (angle > 180f) angle -= 360f;
